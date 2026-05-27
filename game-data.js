@@ -331,6 +331,22 @@ const GAME_DATA = {
       style: "適合做探索與落地之間的橋接，需要清楚問題和可試驗範圍。",
       distilled: { confidence: "中", turns: 38, traits: ["進度更新", "急件處理", "執行排程"] },
       vectors: { clarity: 72, context: 72, speed: 72, risk: 58, data: 72, warmth: 58 }
+    },
+    {
+      id: "huihui",
+      name: "Huihui",
+      role: "專員",
+      department: "平湖",
+      birthday: "待補",
+      numerology: "?",
+      element: "土",
+      zodiac: "待補",
+      archetype: "待觀察",
+      animal: "待補",
+      star: "待補",
+      style: "目前觀察資料極少，先以保留判斷和接手風險標記為主。",
+      distilled: { confidence: "低", turns: 1, traits: ["資料稀薄", "2D 接手風險", "需直接觀察"] },
+      vectors: { clarity: 58, context: 52, speed: 50, risk: 70, data: 54, warmth: 50 }
     }
   ],
   scenarios: [
@@ -440,5 +456,157 @@ const GAME_DATA = {
     "水-火": "相剋：靈感與速度易互相消耗，需要節奏管理。",
     "火-金": "相剋：推動力碰到標準，摩擦高但能打磨決策。",
     "金-木": "相剋：標準會修剪願景，適合做策略取捨。"
+  },
+  distillations: {
+    karen: {
+      source: "三場績效評估 + org chart + 工作觀察",
+      mode: "架構型整合者，前線偵測器不夠靈敏。",
+      trigger: "需要整合多地資源、協調複雜分工時會啟動。",
+      limiter: "被要求直接說出意見時會猶豫，需要明確授權發聲。",
+      assignment: "跨地 coordination、人員分工架構設計；品質 gate 需要外部結構支撐。",
+      leverage: "架構設計能力與人員配置邏輯。",
+      risk: "Elly 不在場時品質標準容易滑動；需要強硬介入時可能形成真空。",
+      aiFit: 3
+    },
+    alan: {
+      source: "三場績效評估 + org chart + 工作觀察",
+      mode: "判斷力在，但等待模式預設開啟。",
+      trigger: "把「甲方需求定義者」角色講清楚，並授權他主動要求資源。",
+      limiter: "交接邊界模糊會加重等待傾向。",
+      assignment: "產品規格決策、業務判斷介入、與 Karen 組的需求 interface。",
+      leverage: "看得出什麼值得做，商業判斷力可用。",
+      risk: "若只被當執行者，會用執行力完成任務但不主動 claim 資源。",
+      aiFit: 3
+    },
+    andy: {
+      source: "三場績效評估 + org chart + 工作觀察",
+      mode: "全端獨立研究者，時間節奏需要外部錨點。",
+      trigger: "明確 deadline、展會或里程碑壓力，加上研究自主空間。",
+      limiter: "沒有外部節點時，自我驅動節奏容易漂移。",
+      assignment: "AI 轉型技術研究、前沿工具評估、VR/AR 研發。",
+      leverage: "技術深度、自主評估工具、後設反思能力。",
+      risk: "完美主義會把標準拉高，形成拖延。",
+      aiFit: 5
+    },
+    yoko: {
+      source: "三場績效評估 + org chart + 工作觀察",
+      mode: "組織可靠度的壓艙石，承壓能力被低估。",
+      trigger: "給明確授權和足夠資訊，她會自主把事情做好。",
+      limiter: "需要強硬介入時偏白臉；目前吸收 Debbie 缺口，負載偏高。",
+      assignment: "AI 種子首選、英文對外溝通培養、Debbie 回來後分工重設關鍵點。",
+      leverage: "穩定郵件品質、英文能力、主動承接缺口。",
+      risk: "超載和強硬度不足。",
+      aiFit: 4
+    },
+    debbie: {
+      source: "三場績效評估 + org chart + 工作觀察",
+      mode: "Profile 建立中，英文 presentation 候選之一。",
+      trigger: "產假回來是自然重分工節點。",
+      limiter: "實際工作觀察資料有限。",
+      assignment: "提前設計回歸後定位，不要直接插回舊位置。",
+      leverage: "presentation 培養潛力。",
+      risk: "資料不足，回歸定位若未設計會延續舊混亂。",
+      aiFit: 2
+    },
+    adia: {
+      source: "三場績效評估 + org chart + 工作觀察",
+      mode: "執行力有，主體性需要被點燃。",
+      trigger: "給帶邊界的 AI 專案獨立主導，可能啟動主動性。",
+      limiter: "開放式任務容易卡住，需要具體方向。",
+      assignment: "視覺製作執行、特定專案主導。",
+      leverage: "IG 視覺輸出能力與穩定執行。",
+      risk: "等指令模式穩定，可能不是短期狀態。",
+      aiFit: 2
+    },
+    jean: {
+      source: "三場績效評估 + org chart + 工作觀察",
+      mode: "內容製作者，已在自主導入 AI 工具。",
+      trigger: "給品牌視覺和 3D 建模任務，搭配 AI 輔助工作流。",
+      limiter: "業務流程理解仍在建立；不要把 VFX/Unreal 工作誤歸給她。",
+      assignment: "品牌視覺內容產出、3D 建模執行、AI 輔助工作流建立。",
+      leverage: "影片、IG、建模與 AI 半操作模式的自主導入。",
+      risk: "技術路線邊界需要保護。",
+      aiFit: 3
+    },
+    rou: {
+      source: "三場績效評估 + org chart + 工作觀察",
+      mode: "細節把關者，表達是弱環。",
+      trigger: "用 AI 輔助強化表達，並設計 RC 溝通結構。",
+      limiter: "知道答案但說不清楚；對外溝通需配對表達能力強的人。",
+      assignment: "3D 品質把關、布料驗證。",
+      leverage: "布料驗證與 3D 品質細節能力。",
+      risk: "與 RC 的溝通障礙若無結構解法，會卡住流程。",
+      aiFit: 2
+    },
+    sixian: {
+      source: "三場績效評估 + org chart + 工作觀察",
+      mode: "穩定低調的儲備能量，尚未被充分使用。",
+      trigger: "主動增加工作量，觀察較高負載下的判斷品質。",
+      limiter: "曝光度低、review 資料薄。",
+      assignment: "UA 支援、布料掃測、GAP 布料。",
+      leverage: "不出錯、有餘力，曾主動分享 plug-in。",
+      risk: "觀察深度不足，潛力可能被低估。",
+      aiFit: 2
+    },
+    chieh: {
+      source: "三場績效評估 + org chart + 工作觀察",
+      mode: "執行力穩定，但投入感有觸發點後退潮。",
+      trigger: "先直接問撤退原因，再決定 KPI 或支持策略。",
+      limiter: "在理解原因前施壓，可能加速離開。",
+      assignment: "量產高通量執行；動機結構需先釐清。",
+      leverage: "工作量翻倍仍能撐住，執行力穩定。",
+      risk: "從主動改善退回 KPI 施壓，速度過快，疑似有未被理解的觸發點。",
+      aiFit: 1
+    },
+    yota: {
+      source: "三場績效評估 + org chart + 工作觀察",
+      mode: "獨立主體型技術人員，被地理因素系統性低估。",
+      trigger: "跨地協作需主動設計，直接問出差意願，不代替她決定。",
+      limiter: "台北視角曝光不足；出差成本不能用台北標準判斷。",
+      assignment: "AI 種子候選、流程優化、高技術作工、嘉義在地工作線統籌。",
+      leverage: "TD 溝通、主體想法、AI 學習意願。",
+      risk: "地理距離造成低估與資訊不對稱。",
+      aiFit: 4
+    },
+    jan: {
+      source: "三場績效評估 + org chart + 工作觀察",
+      mode: "PM 型思考者，邏輯清晰、記憶力強、喜歡直接講。",
+      trigger: "在 review 中給直接發言位置，讓她被聽到而不只是被討論。",
+      limiter: "英文郵件需修；與 Zizi 摩擦需正式會議記錄保護。",
+      assignment: "ATH Project Managing、GAP 協調、PM 培養。",
+      leverage: "大局觀、1-2-3 直線溝通、專案協調潛力。",
+      risk: "地理曝光不足與跨部門摩擦結構化不足。",
+      aiFit: 3
+    },
+    huihui: {
+      source: "三場績效評估 + org chart + 工作觀察",
+      mode: "Profile 資料極稀薄，無法做有意義判斷。",
+      trigger: "需要先取得直接觀察或自評資料。",
+      limiter: "平湖成員在 review 中幾乎缺席。",
+      assignment: "若請假，需確認誰能接手 2D 工作。",
+      leverage: "目前不可判斷。",
+      risk: "接手設計不清時會形成 2D 工作斷點。",
+      aiFit: 0
+    },
+    rock: {
+      source: "三場績效評估 + org chart + 工作觀察",
+      mode: "組織的技術 ground truth，也是最大的單點風險。",
+      trigger: "展會、交付等外部截止節點有效；需要制度壓力。",
+      limiter: "知識嚴重不輸出，口頭要求無效，需文件化義務。",
+      assignment: "技術標準制定；必須配套知識輸出和文件交付。",
+      leverage: "驗證標準制定、NunoX 應用測試深度。",
+      risk: "知識鎖倉與時間管理失誤影響至少三條工作線。",
+      aiFit: 1
+    },
+    tinley: {
+      source: "三場績效評估 + org chart + 工作觀察",
+      mode: "成長曲線清晰可見，接手意願強。",
+      trigger: "繼續接手重要工作，讓成長速度被看見。",
+      limiter: "技術深度仍在建立，需要 RC 知識轉移配合。",
+      assignment: "TGT 數位布料接手、VivaTech 支援、AI + 布料工作流整合。",
+      leverage: "英文郵件改善明顯，主動填補能力缺口。",
+      risk: "若 RC 不輸出知識，成長會被上游卡住。",
+      aiFit: 3
+    }
   }
 };

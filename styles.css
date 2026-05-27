@@ -280,6 +280,60 @@ select {
   font-size: .74rem;
 }
 
+.deep-distill {
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px solid #d7e4f5;
+  border-radius: 8px;
+  background: #fbfdff;
+}
+
+.deep-head {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  align-items: start;
+  cursor: pointer;
+  list-style: none;
+}
+
+.deep-head::-webkit-details-marker {
+  display: none;
+}
+
+.deep-distill[open] .deep-head {
+  margin-bottom: 8px;
+}
+
+.deep-head strong {
+  font-size: .88rem;
+  line-height: 1.45;
+}
+
+.deep-head span {
+  color: #7c3aed;
+  font-size: .76rem;
+  white-space: nowrap;
+}
+
+.deep-distill p {
+  margin-bottom: 6px;
+  color: #46566f;
+  font-size: .8rem;
+  line-height: 1.5;
+}
+
+.deep-distill p:last-child {
+  margin-bottom: 0;
+}
+
+.deep-distill b {
+  display: inline-block;
+  min-width: 34px;
+  margin-right: 6px;
+  color: var(--ink);
+}
+
 .chips {
   display: flex;
   flex-wrap: wrap;

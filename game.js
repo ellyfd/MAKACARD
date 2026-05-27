@@ -97,6 +97,28 @@ function distilledMarkup(member) {
   `;
 }
 
+function deepDistillationMarkup(member) {
+  const profile = GAME_DATA.distillations?.[member.id];
+  if (!profile) return "";
+  const aiFit = Number(profile.aiFit || 0);
+  const blocks = [
+    ["啟動", profile.trigger],
+    ["限制", profile.limiter],
+    ["派任", profile.assignment],
+    ["槓桿", profile.leverage],
+    ["風險", profile.risk]
+  ];
+  return `
+    <details class="deep-distill">
+      <summary class="deep-head">
+        <strong>${profile.mode}</strong>
+        <span>AI ${"■".repeat(aiFit)}${"□".repeat(Math.max(0, 5 - aiFit))}</span>
+      </summary>
+      <div>${blocks.map(([label, text]) => `<p><b>${label}</b>${text}</p>`).join("")}</div>
+    </details>
+  `;
+}
+
 function relationFor(a, b) {
   if (a.element === b.element) return `同元素：兩人都是${a.element}行，起手默契高，但盲點可能相似。`;
   return GAME_DATA.elementRelations[`${a.element}-${b.element}`]
@@ -160,6 +182,7 @@ function renderMember(member) {
         <p class="meta">${member.archetype} · ${member.animal}年 · ${member.star}</p>
         <p class="style-copy">${member.style}</p>
         ${distilledMarkup(member)}
+        ${deepDistillationMarkup(member)}
       </div>
     </article>
   `;
@@ -169,7 +192,8 @@ function renderMembers() {
   const query = els.memberSearch.value.trim().toLowerCase();
   const department = els.departmentFilter.value;
   const members = GAME_DATA.members.filter((member) => {
-    const haystack = `${member.name} ${member.department} ${member.role} ${member.archetype} ${member.element} ${member.zodiac}`.toLowerCase();
+    const profile = GAME_DATA.distillations?.[member.id];
+    const haystack = `${member.name} ${member.department} ${member.role} ${member.archetype} ${member.element} ${member.zodiac} ${profile ? Object.values(profile).join(" ") : ""}`.toLowerCase();
     const matchesQuery = !query || haystack.includes(query);
     const matchesDept = department === "all" || member.department === department;
     return matchesQuery && matchesDept;
@@ -237,10 +261,16 @@ function analyzePair() {
     <p><strong>情境：</strong>${scenario.prompt}</p>
     <p><strong>象徵層：</strong>${relationFor(a, b)}</p>
     <p><strong>會議信心：</strong>${meetingConfidence(a)} × ${meetingConfidence(b)}。分數以實際會議訊號、組織角色與象徵層混合推估。</p>
+    <p><strong>蒸餾提醒：</strong>${distillHint(a)} / ${distillHint(b)}</p>
     <p><strong>最合的軸：</strong>${axisName(strongest)}。<strong>最需要翻譯：</strong>${axisName(weakest)}。</p>
     <p><strong>建議打法：</strong>${strategy.text}${fit ? " 這張策略很適合此情境。" : " 這張策略可用，但不是此情境的最佳解。"}</p>
     <p><strong>開場句：</strong>${openingLine(a, b, scenario, strategy)}</p>
   `;
+}
+
+function distillHint(member) {
+  const profile = GAME_DATA.distillations?.[member.id];
+  return profile ? `${member.name}: ${profile.mode}` : `${member.name}: 深度蒸餾待補`;
 }
 
 function meetingConfidence(member) {
