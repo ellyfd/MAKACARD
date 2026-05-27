@@ -3,16 +3,16 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>MAKACARD | Team Chemistry Deck</title>
-    <link rel="stylesheet" href="styles.css?v=20260527-game3">
+    <title>MAKACARD | Org Quest</title>
+    <link rel="stylesheet" href="styles.css?v=20260527-game4">
   </head>
   <body>
     <main class="app-shell">
       <header class="app-header">
         <div>
           <p class="eyebrow">MAKACARD</p>
-          <h1>Team Chemistry Deck</h1>
-          <p class="intro">以 Makalot 組織為地圖，讓不同單位在任務壓力下出牌、協作、補位，推演可執行 solutions。</p>
+          <h1>Org Quest</h1>
+          <p class="intro">抽人物牌、打跨單位 combo，在五回合內把組織問題轉成可執行 solution。</p>
         </div>
         <div class="header-metrics" aria-label="Dataset summary">
           <span><strong id="member-count">21</strong> members</span>
@@ -21,12 +21,71 @@
       </header>
 
       <nav class="tabs" aria-label="MAKACARD views">
-        <button class="tab active" type="button" data-view="members">成員總覽</button>
+        <button class="tab active" type="button" data-view="meeting">Mission Run</button>
+        <button class="tab" type="button" data-view="members">成員總覽</button>
         <button class="tab" type="button" data-view="lab">Chemistry Lab</button>
-        <button class="tab" type="button" data-view="meeting">Meeting Game</button>
       </nav>
 
-      <section id="members-view" class="view active" aria-label="成員總覽">
+      <section id="meeting-view" class="view active" aria-label="Mission Run">
+        <div class="game-board">
+          <section class="mission-panel">
+            <div class="result-heading">
+              <div>
+                <p class="label">Mission</p>
+                <h2 id="meeting-title">Mission Run</h2>
+              </div>
+              <span id="turn-count" class="fit-badge">Turn 1 / 5</span>
+            </div>
+            <p id="meeting-scenario" class="scenario-copy"></p>
+            <div id="mission-brief" class="mission-brief"></div>
+            <div class="meeting-stats">
+              <article>
+                <span>Trust</span>
+                <meter id="trust-meter" min="0" max="100" value="45"></meter>
+                <strong id="trust-value">45</strong>
+              </article>
+              <article>
+                <span>Clarity</span>
+                <meter id="clarity-meter" min="0" max="100" value="40"></meter>
+                <strong id="clarity-value">40</strong>
+              </article>
+              <article>
+                <span>Momentum</span>
+                <meter id="momentum-meter" min="0" max="100" value="35"></meter>
+                <strong id="momentum-value">35</strong>
+              </article>
+              <article>
+                <span>Friction</span>
+                <meter id="friction-meter" min="0" max="100" value="25"></meter>
+                <strong id="friction-value">25</strong>
+              </article>
+            </div>
+          </section>
+
+          <section class="hand-panel">
+            <div class="lane-heading">
+              <div>
+                <p class="label">Hand</p>
+                <h2>本回合人物牌</h2>
+              </div>
+              <button id="reset-meeting" class="secondary-button compact" type="button">新任務</button>
+            </div>
+            <div id="action-cards" class="action-cards" aria-label="本回合人物牌"></div>
+          </section>
+
+          <section class="timeline-panel">
+            <div class="lane-heading">
+              <div>
+                <p class="label">Run Log</p>
+                <h2>解法生成軌跡</h2>
+              </div>
+            </div>
+            <ol id="meeting-log" class="meeting-log"></ol>
+          </section>
+        </div>
+      </section>
+
+      <section id="members-view" class="view" aria-label="成員總覽">
         <div class="toolbar">
           <div>
             <p class="label">Roster</p>
@@ -57,7 +116,6 @@
               工作情境
               <select id="scenario-select"></select>
             </label>
-            <label>
             <button id="analyze-pair" class="primary-button" type="button">推演互動</button>
           </section>
 
@@ -75,58 +133,9 @@
         </div>
       </section>
 
-      <section id="meeting-view" class="view" aria-label="Meeting Game">
-        <div class="meeting-layout">
-          <section class="panel meeting-board">
-            <div class="result-heading">
-              <div>
-                <p class="label">Simulation</p>
-                <h2 id="meeting-title">Meeting Game</h2>
-              </div>
-              <span id="turn-count" class="fit-badge">Turn 1 / 5</span>
-            </div>
-            <p id="meeting-scenario" class="scenario-copy"></p>
-            <div class="meeting-stats">
-              <article>
-                <span>Trust</span>
-                <meter id="trust-meter" min="0" max="100" value="45"></meter>
-                <strong id="trust-value">45</strong>
-              </article>
-              <article>
-                <span>Clarity</span>
-                <meter id="clarity-meter" min="0" max="100" value="40"></meter>
-                <strong id="clarity-value">40</strong>
-              </article>
-              <article>
-                <span>Momentum</span>
-                <meter id="momentum-meter" min="0" max="100" value="35"></meter>
-                <strong id="momentum-value">35</strong>
-              </article>
-              <article>
-                <span>Friction</span>
-                <meter id="friction-meter" min="0" max="100" value="25"></meter>
-                <strong id="friction-value">25</strong>
-              </article>
-            </div>
-            <div id="mission-brief" class="mission-brief"></div>
-            <ol id="meeting-log" class="meeting-log"></ol>
-          </section>
-
-          <section class="panel controls-panel">
-            <p class="label">Move</p>
-            <h2>派一張人物牌</h2>
-            <label>
-              由誰介入
-              <select id="meeting-person"></select>
-            </label>
-            <div id="action-cards" class="action-cards" aria-label="本回合可用行動"></div>
-            <button id="reset-meeting" class="secondary-button" type="button">重新開局</button>
-          </section>
-        </div>
-      </section>
     </main>
 
-    <script src="game-data.js?v=20260527-game3"></script>
-    <script src="game.js?v=20260527-game3"></script>
+    <script src="game-data.js?v=20260527-game4"></script>
+    <script src="game.js?v=20260527-game4"></script>
   </body>
 </html>

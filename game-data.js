@@ -419,6 +419,46 @@ const GAME_DATA = {
       goal: "組出跨單位 seed team，交付一個可驗證 prototype。",
       pressure: { trust: 44, clarity: 38, momentum: 38, friction: 28 },
       weights: { speed: 1.15, context: 1.1, data: 1.15, clarity: 1, warmth: .9, risk: .9 }
+    },
+    {
+      id: "sttrix-gtm",
+      name: "StyTrix Soft Launch",
+      prompt: "Notion: StyTrix GTM。五月底前要問卷，六月中 VivaTech 要能 demo，六月底收內部回饋，七月底收外部回饋；同時還有 tutorial、FAQ、LinkedIn outreach、誘因機制和付款功能要接起來。",
+      goal: "在時間壓力下打出 launch loop：Demo -> Feedback -> Tutorial -> Outreach -> Conversion。",
+      pressure: { trust: 39, clarity: 31, momentum: 42, friction: 41 },
+      weights: { clarity: 1.25, speed: 1.25, context: 1.15, data: 1.1, warmth: .9, risk: 1.05 }
+    },
+    {
+      id: "nunox-ip",
+      name: "NunoX IP 權益迷霧",
+      prompt: "Notion: StyTrix GTM。AI 物料模型到底共有、獨有，還是自行開發？合作方技術進度不透明，但可能主張 50% 權益。",
+      goal: "釐清權利義務、貢獻比例與替代方案，避免被不確定合作綁住。",
+      pressure: { trust: 34, clarity: 28, momentum: 30, friction: 52 },
+      weights: { risk: 1.35, data: 1.25, clarity: 1.25, context: 1, speed: .75, warmth: .8 }
+    },
+    {
+      id: "vivatech-booth",
+      name: "VivaTech Booth Crisis",
+      prompt: "Notion: Vivatech 和群創的互動。攤位費 60-70 萬來源被誤解，合作方可能退出，三台螢幕與展示內容要重排，UI 延遲已壓縮測試時間。",
+      goal: "在成本、硬體、展示內容和合作關係之間做出可執行展位配置。",
+      pressure: { trust: 32, clarity: 30, momentum: 36, friction: 55 },
+      weights: { clarity: 1.2, risk: 1.3, speed: 1.15, data: 1.15, context: 1.05, warmth: .95 }
+    },
+    {
+      id: "ai-education-gap",
+      name: "AI Education Gap",
+      prompt: "Notion: Close-Door AI Meeting。產業和教育端都想用 AI，但設計師、學生、小品牌卡在工具門檻、成本、標準化和信任問題。",
+      goal: "把 AI 能力轉成可教、可試、可標準化的培訓與 mentor loop。",
+      pressure: { trust: 40, clarity: 33, momentum: 35, friction: 44 },
+      weights: { context: 1.3, warmth: 1.15, clarity: 1.15, data: 1, risk: 1, speed: .9 }
+    },
+    {
+      id: "pilot-feedback",
+      name: "Startup Pilot Feedback Loop",
+      prompt: "Notion: Close-Door AI Meeting。大公司有場域與供應鏈，小團隊有技術和彈性；如果沒有真實問題 brief 和 early feedback，pilot 會做成沒人要的東西。",
+      goal: "建立 pilot brief、回饋節奏與成功指標，讓合作從展示變成迭代。",
+      pressure: { trust: 37, clarity: 35, momentum: 40, friction: 39 },
+      weights: { data: 1.25, context: 1.2, clarity: 1.15, warmth: 1, speed: 1, risk: .95 }
     }
   ],
   actionTypes: [

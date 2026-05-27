@@ -1,5 +1,5 @@
 const state = {
-  activeView: "members",
+  activeView: "meeting",
   meeting: {
     turn: 1,
     scenario: null,
@@ -8,6 +8,8 @@ const state = {
     momentum: 35,
     friction: 25,
     hand: [],
+    played: [],
+    lastDepartment: null,
     log: []
   }
 };
@@ -29,7 +31,6 @@ const els = {
   pairInsight: document.querySelector("#pair-insight"),
   meetingTitle: document.querySelector("#meeting-title"),
   meetingScenario: document.querySelector("#meeting-scenario"),
-  meetingPerson: document.querySelector("#meeting-person"),
   missionBrief: document.querySelector("#mission-brief"),
   actionCards: document.querySelector("#action-cards"),
   resetMeeting: document.querySelector("#reset-meeting"),
@@ -275,11 +276,9 @@ function fillStaticControls() {
     .join("");
   fillSelect(els.personA, GAME_DATA.members, (member) => `${member.name} · ${member.department}`);
   fillSelect(els.personB, GAME_DATA.members, (member) => `${member.name} · ${member.department}`);
-  fillSelect(els.meetingPerson, GAME_DATA.members, (member) => `${member.name} · ${member.department}`);
   fillSelect(els.scenarioSelect, GAME_DATA.scenarios, (scenario) => scenario.name);
   els.personA.value = "elly";
   els.personB.value = "sixian";
-  els.meetingPerson.value = "sixian";
 }
 
 function renderScoreCard(label, value, helper) {
@@ -379,9 +378,11 @@ function resetMeeting() {
     momentum: mission.pressure.momentum,
     friction: mission.pressure.friction,
     hand: [],
+    played: [],
+    lastDepartment: null,
     log: [`任務展開：${mission.goal}`]
   };
-  refreshActionCards();
+  drawHand();
   renderMeeting();
 }
 
@@ -390,8 +391,8 @@ function renderMeeting() {
   els.meetingTitle.textContent = meeting.scenario.name;
   els.meetingScenario.textContent = meeting.scenario.prompt;
   els.missionBrief.innerHTML = `
-    <strong>Victory condition</strong>
-    <span>Trust / Clarity / Momentum 需達 70，Friction 低於 45。</span>
+    <strong>Win</strong>
+    <span>五回合內讓 Trust / Clarity / Momentum 達 70，Friction 低於 45。連續打不同單位會觸發跨域 combo。</span>
   `;
   els.turnCount.textContent = `Turn ${Math.min(meeting.turn, 5)} / 5`;
   ["trust", "clarity", "momentum", "friction"].forEach((key) => {
@@ -402,19 +403,14 @@ function renderMeeting() {
   renderActionCards();
 }
 
-function refreshActionCards() {
-  const person = memberById(els.meetingPerson.value);
-  if (!person || !state.meeting.scenario) return;
-  const profile = GAME_DATA.distillations?.[person.id];
-  const ranked = GAME_DATA.actionTypes
-    .map((action) => ({
-      action,
-      score: vectorsFor(person)[action.vector] + (state.meeting.scenario.weights[action.vector] || 1) * 16 + actionProfileBonus(action, profile)
-    }))
-    .sort((left, right) => right.score - left.score)
-    .slice(0, 3)
-    .map((item) => item.action.id);
-  state.meeting.hand = ranked;
+function drawHand() {
+  const played = new Set(state.meeting.played);
+  const candidates = GAME_DATA.members.filter((member) => !played.has(member.id));
+  const pool = candidates.length >= 5 ? candidates : GAME_DATA.members;
+  state.meeting.hand = [...pool]
+    .sort(() => Math.random() - .5)
+    .slice(0, 5)
+    .map((member) => member.id);
 }
 
 function actionProfileBonus(action, profile) {
@@ -433,25 +429,46 @@ function actionProfileBonus(action, profile) {
 
 function renderActionCards() {
   const disabled = state.meeting.turn > 5 ? "disabled" : "";
-  els.actionCards.innerHTML = state.meeting.hand.map((id) => {
-    const action = actionById(id);
+  els.actionCards.innerHTML = state.meeting.hand.map((memberId) => {
+    const member = memberById(memberId);
+    const action = bestActionForMember(member);
+    const birth = birthProfile(member);
+    const combo = comboPreview(member);
     return `
-      <button class="action-card" type="button" data-action="${action.id}" ${disabled}>
+      <button class="action-card play-card ${elementClass(birth.element)}" type="button" data-member="${member.id}" ${disabled}>
         <span>${action.icon}</span>
-        <strong>${action.name}</strong>
-        <small>${action.copy}</small>
+        <strong>${member.name}</strong>
+        <em>${member.department} · ${birth.archetype}</em>
+        <small>${action.name}: ${action.copy}</small>
+        <b>${combo}</b>
       </button>
     `;
   }).join("");
   els.actionCards.querySelectorAll(".action-card").forEach((button) => {
-    button.addEventListener("click", () => playMeetingTurn(button.dataset.action));
+    button.addEventListener("click", () => playMeetingTurn(button.dataset.member));
   });
 }
 
-function playMeetingTurn(actionId) {
+function bestActionForMember(person) {
+  const profile = GAME_DATA.distillations?.[person.id];
+  return GAME_DATA.actionTypes
+    .map((action) => ({
+      action,
+      score: vectorsFor(person)[action.vector] + (state.meeting.scenario.weights[action.vector] || 1) * 16 + actionProfileBonus(action, profile)
+    }))
+    .sort((left, right) => right.score - left.score)[0].action;
+}
+
+function comboPreview(person) {
+  if (!state.meeting.lastDepartment) return "Opening move";
+  if (state.meeting.lastDepartment !== person.department) return "Cross-unit combo +";
+  return "Same-lane pressure";
+}
+
+function playMeetingTurn(memberId) {
   const meeting = state.meeting;
-  const person = memberById(els.meetingPerson.value);
-  const action = actionById(actionId);
+  const person = memberById(memberId);
+  const action = bestActionForMember(person);
   const self = memberById("elly");
   const pseudoScenario = { id: meeting.scenario.id, weights: meeting.scenario.weights };
   const strategy = strategyFromAction(action);
@@ -459,22 +476,29 @@ function playMeetingTurn(actionId) {
   const boost = action.boosts;
   const vectorFit = (vectorsFor(person)[action.vector] - 50) / 6;
   const orgFit = actionProfileBonus(action, GAME_DATA.distillations?.[person.id]) / 4;
+  const crossUnit = meeting.lastDepartment && meeting.lastDepartment !== person.department;
+  const sameLane = meeting.lastDepartment && meeting.lastDepartment === person.department;
+  const elementText = relationFor(self, person);
+  const elementBoost = elementText.includes("相生") ? 4 : elementText.includes("相剋") ? -2 : 1;
 
-  meeting.trust = clamp(meeting.trust + (boost.trust || 0) + (scores.communication - 62) / 9 + orgFit);
-  meeting.clarity = clamp(meeting.clarity + (boost.clarity || 0) + vectorFit + (scores.work - 62) / 11);
-  meeting.momentum = clamp(meeting.momentum + (boost.momentum || 0) + (scores.decision - 60) / 10);
-  meeting.friction = clamp(meeting.friction + (boost.friction || 0) + (scores.stress - 52) / 10 - orgFit);
+  meeting.trust = clamp(meeting.trust + (boost.trust || 0) + (scores.communication - 62) / 9 + orgFit + (crossUnit ? 5 : 0));
+  meeting.clarity = clamp(meeting.clarity + (boost.clarity || 0) + vectorFit + (scores.work - 62) / 11 + elementBoost);
+  meeting.momentum = clamp(meeting.momentum + (boost.momentum || 0) + (scores.decision - 60) / 10 + (sameLane ? 4 : 0));
+  meeting.friction = clamp(meeting.friction + (boost.friction || 0) + (scores.stress - 52) / 10 - orgFit + (crossUnit ? -6 : 0) + (sameLane ? 4 : 0));
 
   const profile = GAME_DATA.distillations?.[person.id];
   const solution = profile ? profile.assignment : "先補資料，再建立可交接節點。";
-  meeting.log.unshift(`T${meeting.turn}: ${person.name} 打出「${action.name}」；${solution}`);
+  const comboText = crossUnit ? `觸發跨單位 combo：${meeting.lastDepartment} → ${person.department}` : sameLane ? "同線加壓，速度上升但摩擦也變高" : "開場佈局";
+  meeting.log.unshift(`T${meeting.turn}: ${person.name} 打出「${action.name}」。${comboText}。解法片段：${solution}`);
+  meeting.played.push(person.id);
+  meeting.lastDepartment = person.department;
   meeting.turn += 1;
 
   if (meeting.turn > 5) {
     const win = meeting.trust >= 70 && meeting.clarity >= 70 && meeting.momentum >= 70 && meeting.friction < 45;
     meeting.log.unshift(win ? `任務完成：${meeting.scenario.goal}` : "任務卡住：solution 還沒成形，下一輪需要換單位或補一張結構牌。");
   }
-  refreshActionCards();
+  drawHand();
   renderMeeting();
 }
 
@@ -501,10 +525,6 @@ function bindEvents() {
   els.memberSearch.addEventListener("input", renderMembers);
   els.departmentFilter.addEventListener("change", renderMembers);
   els.analyzePair.addEventListener("click", analyzePair);
-  els.meetingPerson.addEventListener("change", () => {
-    refreshActionCards();
-    renderMeeting();
-  });
   els.resetMeeting.addEventListener("click", resetMeeting);
 }
 
