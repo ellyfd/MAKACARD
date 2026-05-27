@@ -459,6 +459,46 @@ const GAME_DATA = {
       goal: "建立 pilot brief、回饋節奏與成功指標，讓合作從展示變成迭代。",
       pressure: { trust: 37, clarity: 35, momentum: 40, friction: 39 },
       weights: { data: 1.25, context: 1.2, clarity: 1.15, warmth: 1, speed: 1, risk: .95 }
+    },
+    {
+      id: "dicks-placement-print",
+      name: "DICKS 定位裁印花",
+      prompt: "TXT: DICKS SPORTING GOODS MAX156P_Q227。客人只給小彩圖，前片要定位，後片袖子領子口袋要宿舍處理；若先全套出圖，可能最後才發現花位、斜度、工差錯誤。",
+      goal: "先用小圖鎖定前片定位，再讓 2D、布廠、3D 依序驗證，避免全碼展開後返工。",
+      pressure: { trust: 43, clarity: 29, momentum: 37, friction: 48 },
+      weights: { clarity: 1.25, risk: 1.35, data: 1.1, speed: 1, context: 1, warmth: .75 }
+    },
+    {
+      id: "dpo-training-data",
+      name: "台科 DPO 資料標註迷宮",
+      prompt: "TXT: 聚陽 X 台科大雙週會。要做 DPO / LoRA 前，必須先定義品牌風格、人種、光線、構圖、驗收標準，還要處理好圖/壞圖標註和 prompt 定位不準。",
+      goal: "把抽象風格需求變成可標註資料、訓練流程和驗收規則。",
+      pressure: { trust: 38, clarity: 27, momentum: 31, friction: 46 },
+      weights: { clarity: 1.35, data: 1.35, context: 1.15, risk: 1.1, speed: .7, warmth: .8 }
+    },
+    {
+      id: "fabric-api-78",
+      name: "Jack API 只有 78 筆",
+      prompt: "TXT: Meeting Transcription。期待的是完整布料資料庫，但 API 測到只有 78 筆，關鍵字不知道怎麼下，marketplace、AI 生成、3D 成像、物性資料又分成不同階段。",
+      goal: "把 API 測試站、資料欄位、階段切分和上線範圍釐清，先求可用再談商業包裝。",
+      pressure: { trust: 35, clarity: 30, momentum: 39, friction: 50 },
+      weights: { data: 1.35, clarity: 1.25, risk: 1.2, speed: 1.1, context: 1, warmth: .75 }
+    },
+    {
+      id: "sequin-qipao",
+      name: "3D 亮片旗袍失真",
+      prompt: "TXT: 3D 周會。亮片材質在 Clo / Substance / AI 流程間反覆測試，Gemini 可能太誇張，自家流程比較真但花會變形；資料夾裡 map 和最終 3D 版本也需要整理。",
+      goal: "在材質真實度、AI 修圖、3D 效能和檔案版本之間找到可展示方案。",
+      pressure: { trust: 41, clarity: 33, momentum: 34, friction: 47 },
+      weights: { risk: 1.25, data: 1.2, clarity: 1.15, speed: 1.05, context: .9, warmth: .85 }
+    },
+    {
+      id: "seoul-dev-trip",
+      name: "SP27 Seoul Dev Trip",
+      prompt: "TXT: Seoul Dev trip / workshop 類會議。出差回來有客戶方向、款式開發、樣布/版型/影像素材要同步，如果沒有快速整理，市場訊號會散掉。",
+      goal: "把 trip insight 轉成款式方向、素材需求和下一輪開發 brief。",
+      pressure: { trust: 44, clarity: 35, momentum: 42, friction: 34 },
+      weights: { context: 1.25, speed: 1.15, clarity: 1.1, warmth: 1, data: 1, risk: .85 }
     }
   ],
   actionTypes: [

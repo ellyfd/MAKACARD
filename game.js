@@ -392,7 +392,9 @@ function renderMeeting() {
   els.meetingScenario.textContent = meeting.scenario.prompt;
   els.missionBrief.innerHTML = `
     <strong>Win</strong>
-    <span>五回合內讓 Trust / Clarity / Momentum 達 70，Friction 低於 45。連續打不同單位會觸發跨域 combo。</span>
+    <span>五回合內讓 Trust / Clarity / Momentum 達 70，Friction 低於 45。</span>
+    <b>${meeting.played.length} cards played</b>
+    <b>${meeting.lastDepartment ? `chain: ${meeting.lastDepartment}` : "chain: none"}</b>
   `;
   els.turnCount.textContent = `Turn ${Math.min(meeting.turn, 5)} / 5`;
   ["trust", "clarity", "momentum", "friction"].forEach((key) => {
@@ -434,12 +436,16 @@ function renderActionCards() {
     const action = bestActionForMember(member);
     const birth = birthProfile(member);
     const combo = comboPreview(member);
+    const rarity = cardRarity(member, action);
+    const pips = cardPips(member, action);
     return `
-      <button class="action-card play-card ${elementClass(birth.element)}" type="button" data-member="${member.id}" ${disabled}>
-        <span>${action.icon}</span>
+      <button class="action-card play-card ${elementClass(birth.element)} ${rarity}" type="button" data-member="${member.id}" ${disabled}>
+        <span class="sigil">${action.icon}</span>
+        <i>${rarityLabel(rarity)}</i>
         <strong>${member.name}</strong>
         <em>${member.department} · ${birth.archetype}</em>
         <small>${action.name}: ${action.copy}</small>
+        <div class="card-pips">${pips.map((pip) => `<mark>${pip}</mark>`).join("")}</div>
         <b>${combo}</b>
       </button>
     `;
@@ -447,6 +453,31 @@ function renderActionCards() {
   els.actionCards.querySelectorAll(".action-card").forEach((button) => {
     button.addEventListener("click", () => playMeetingTurn(button.dataset.member));
   });
+}
+
+function cardRarity(member, action) {
+  const profile = GAME_DATA.distillations?.[member.id];
+  const base = vectorsFor(member)[action.vector] + actionProfileBonus(action, profile);
+  if (base >= 96) return "legendary";
+  if (base >= 86) return "rare";
+  return "common";
+}
+
+function rarityLabel(rarity) {
+  return {
+    legendary: "LEGEND",
+    rare: "RARE",
+    common: "CORE"
+  }[rarity];
+}
+
+function cardPips(member, action) {
+  const vector = vectorsFor(member)[action.vector];
+  const profile = GAME_DATA.distillations?.[member.id];
+  const pips = [`${axisName(action.vector)} ${vector}`];
+  if (profile?.aiFit >= 4) pips.push("AI+");
+  if (state.meeting.lastDepartment && state.meeting.lastDepartment !== member.department) pips.push("COMBO");
+  return pips.slice(0, 3);
 }
 
 function bestActionForMember(person) {
