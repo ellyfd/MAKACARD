@@ -477,6 +477,7 @@ function renderOrgMap() {
     if (!membersByUnit[unit]) membersByUnit[unit] = [];
     membersByUnit[unit].push(member);
   });
+  const directoryGroups = GAME_DATA.orgDirectory || [];
 
   els.orgLegend.innerHTML = `
     <span><b>${mission.name}</b></span>
@@ -494,7 +495,14 @@ function renderOrgMap() {
         <p>${unit.tagline}</p>
         <div class="node-tags">${unit.capability.map((item) => `<b>${item}</b>`).join("")}</div>
         <small>${unit.risk}</small>
-        <div class="node-roster">${members.slice(0, 8).map((member) => `<i>${member.name}</i>`).join("")}</div>
+        <div class="node-roster">
+          ${directoryGroups.filter((group) => group.unit === unit.id).map((group) => `
+            <section>
+              <strong>${group.name}</strong>
+              <span>${group.members.map((memberId) => memberById(memberId)).filter(Boolean).map((member) => `<i>${member.name}</i>`).join("")}</span>
+            </section>
+          `).join("") || members.map((member) => `<i>${member.name}</i>`).join("")}
+        </div>
       </article>
     `;
   }).join("");
