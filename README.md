@@ -1,26 +1,24 @@
-# Skillforge Cards
+# MAKACARD
 
-一個可直接放上 GitHub Pages 的靜態卡牌遊戲。玩法靈感來自 Elly 本機 Claude skills 裡的 Makalot / Portal:M / StyTrix 組織架構，以及 Elly 偏好的溝通人格。
+一個可直接放上 GitHub Pages 的靜態 Team Chemistry Deck。玩法把 Makalot 團隊成員做成平等人物卡，結合組織角色、溝通偏好、生日象徵層，分析兩個人在不同工作情境下的對話合拍度。
 
 ## 遊戲概念
 
-玩家要在 6 回合內組出一個能服務 Elly 的策略代理：
+MAKACARD 目前有三個頁面：
 
-- `清晰度` 來自 AI Journey Radar、Opportunity Window、Threat Warning
-- `可靠度` 來自 Construction DB、Techpack Creation、Uncertainty Honesty
-- `人格` 來自 So What、Concise With Edge、Senior Secretary Mode
-- `組織` 來自 Makalot Core、Portal:M HUB、StyTrix、台發案
-- `Drift 壓力` 太高就會失敗
+- `成員總覽`：21 位成員的人物卡，含部門、角色、生日、星座、五行、生命靈數、人格原型。
+- `Chemistry Lab`：選兩個人 + 一個工作情境 + 一張溝通策略卡，計算 Work Fit、Communication、Decision、Stress Friction。
+- `Meeting Game`：用 5 回合推進一個專案，透過選人與溝通策略提高 Trust、Clarity、Momentum 並降低 Friction。
 
-## 來源轉譯
+## 資料層
 
-目前卡牌資料整理自本機 `Documents/Claude/Scheduled` 的 Claude skills：
+每個人物卡目前包含三層：
 
-- `client-ai-roadmap-weekly-analysis`: Makalot、StyTrix、Techpack Creation、Portal:M HUB、VivaTech 2026、台發案
-- `brand-intel-weekly-strategy`: DB2/DB3 情報、AI Journey、機會窗口、威脅預警、行動建議
-- `morning-schedule-digest`: Elly 偏好的資深秘書語氣、繁體中文、簡潔有力、不捏造、不客套
+- `組織層`：部門、職務、專案位置。
+- `行為層`：結論需求、脈絡需求、節奏、風險敏感度、資料依賴、情緒溫度。
+- `象徵層`：生日、星座、生肖、五行、生命靈數、人格原型。
 
-註：多個 skill 提到要載入 `elly-preferences skill`，但目前磁碟搜尋沒有找到該檔案本體；人格卡先依已讀到的晨報/週報 skill 規則轉譯。
+第一版先以 DPC、數發、Portal:M 相關成員作為 MVP。行為層是可調整的推論值，之後可以用會議紀錄、Teams、Email、Notion 摘要或 Elly 的人工標註校準。
 
 ## 在本機開啟
 

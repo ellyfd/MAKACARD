@@ -1,208 +1,349 @@
 const state = {
-  round: 1,
-  deck: [],
-  hand: [],
-  built: [],
-  stats: {
-    clarity: 0,
-    reliability: 0,
-    persona: 0,
-    context: 0
-  },
-  drift: 0,
-  mission: GAME_DATA.missions[0]
+  activeView: "members",
+  meeting: {
+    turn: 1,
+    scenario: null,
+    trust: 45,
+    clarity: 40,
+    momentum: 35,
+    friction: 25,
+    log: []
+  }
 };
 
 const els = {
-  round: document.querySelector("#round"),
-  clarity: document.querySelector("#clarity"),
-  reliability: document.querySelector("#reliability"),
-  persona: document.querySelector("#persona"),
-  context: document.querySelector("#context"),
-  drift: document.querySelector("#drift"),
-  driftMeter: document.querySelector("#drift-meter"),
-  missionTitle: document.querySelector("#mission-title"),
-  missionCopy: document.querySelector("#mission-copy"),
-  personaName: document.querySelector("#persona-name"),
-  personaDesc: document.querySelector("#persona-desc"),
-  hand: document.querySelector("#hand"),
-  built: document.querySelector("#built"),
-  builtCount: document.querySelector("#built-count"),
-  log: document.querySelector("#log"),
-  drawCard: document.querySelector("#draw-card"),
-  endRound: document.querySelector("#end-round"),
-  resetGame: document.querySelector("#reset-game")
+  memberCount: document.querySelector("#member-count"),
+  tabs: document.querySelectorAll(".tab"),
+  views: document.querySelectorAll(".view"),
+  memberGrid: document.querySelector("#member-grid"),
+  memberSearch: document.querySelector("#member-search"),
+  departmentFilter: document.querySelector("#department-filter"),
+  personA: document.querySelector("#person-a"),
+  personB: document.querySelector("#person-b"),
+  scenarioSelect: document.querySelector("#scenario-select"),
+  strategySelect: document.querySelector("#strategy-select"),
+  analyzePair: document.querySelector("#analyze-pair"),
+  pairTitle: document.querySelector("#pair-title"),
+  fitBadge: document.querySelector("#fit-badge"),
+  scoreGrid: document.querySelector("#score-grid"),
+  pairInsight: document.querySelector("#pair-insight"),
+  meetingTitle: document.querySelector("#meeting-title"),
+  meetingScenario: document.querySelector("#meeting-scenario"),
+  meetingPerson: document.querySelector("#meeting-person"),
+  meetingStrategy: document.querySelector("#meeting-strategy"),
+  playTurn: document.querySelector("#play-turn"),
+  resetMeeting: document.querySelector("#reset-meeting"),
+  turnCount: document.querySelector("#turn-count"),
+  meetingLog: document.querySelector("#meeting-log"),
+  meters: {
+    trust: document.querySelector("#trust-meter"),
+    clarity: document.querySelector("#clarity-meter"),
+    momentum: document.querySelector("#momentum-meter"),
+    friction: document.querySelector("#friction-meter")
+  },
+  values: {
+    trust: document.querySelector("#trust-value"),
+    clarity: document.querySelector("#clarity-value"),
+    momentum: document.querySelector("#momentum-value"),
+    friction: document.querySelector("#friction-value")
+  }
 };
 
-function shuffle(cards) {
-  const copy = [...cards];
-  for (let i = copy.length - 1; i > 0; i -= 1) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [copy[i], copy[j]] = [copy[j], copy[i]];
+function clamp(value, min = 0, max = 100) {
+  return Math.max(min, Math.min(max, Math.round(value)));
+}
+
+function average(values) {
+  return values.reduce((sum, value) => sum + value, 0) / values.length;
+}
+
+function memberById(id) {
+  return GAME_DATA.members.find((member) => member.id === id);
+}
+
+function scenarioById(id) {
+  return GAME_DATA.scenarios.find((scenario) => scenario.id === id);
+}
+
+function strategyById(id) {
+  return GAME_DATA.strategies.find((strategy) => strategy.id === id);
+}
+
+function initials(name) {
+  return name.slice(0, 2);
+}
+
+function elementClass(element) {
+  return {
+    木: "wood",
+    火: "fire",
+    土: "earth",
+    金: "metal",
+    水: "water"
+  }[element] || "wood";
+}
+
+function distilledMarkup(member) {
+  if (!member.distilled) {
+    return `<p class="distilled muted">會議蒸餾：尚未有足夠逐字稿訊號</p>`;
   }
-  return copy;
-}
-
-function clamp(value, min, max) {
-  return Math.max(min, Math.min(max, value));
-}
-
-function startGame() {
-  state.round = 1;
-  state.deck = shuffle(GAME_DATA.cards);
-  state.hand = [];
-  state.built = [];
-  state.stats = { clarity: 0, reliability: 0, persona: 0, context: 0 };
-  state.drift = 0;
-  state.mission = GAME_DATA.missions[Math.floor(Math.random() * GAME_DATA.missions.length)];
-  els.log.innerHTML = "";
-
-  draw(5);
-  addLog("新局開始：從 Makalot 組織脈絡與 Elly 溝通偏好抽取卡牌語彙。");
-  render();
-}
-
-function draw(amount = 1) {
-  for (let i = 0; i < amount; i += 1) {
-    if (!state.deck.length) {
-      state.deck = shuffle(state.built);
-      state.built = [];
-      addLog("牌庫耗盡，已把建構區洗回牌庫。");
-    }
-
-    const card = state.deck.shift();
-    if (card) state.hand.push(card);
-  }
-}
-
-function playCard(index) {
-  const [card] = state.hand.splice(index, 1);
-  if (!card) return;
-
-  state.built.unshift(card);
-  state.stats.clarity += card.clarity;
-  state.stats.reliability += card.reliability;
-  state.stats.persona += card.persona;
-  state.stats.context += card.context;
-  state.drift = clamp(state.drift + card.drift, 0, 12);
-
-  const statLine = [
-    card.clarity ? `清晰 +${card.clarity}` : "",
-    card.reliability ? `可靠 +${card.reliability}` : "",
-    card.persona ? `人格 +${card.persona}` : "",
-    card.context ? `組織 +${card.context}` : ""
-  ].filter(Boolean).join("、");
-
-  addLog(`打出 ${card.name}：${statLine || "穩定架構"}。`);
-  checkOutcome();
-  render();
-}
-
-function endRound() {
-  state.round += 1;
-  const missingStructure = state.built.filter((card) => card.type === "架構" || card.type === "核心").length < 3;
-  const personaHeavy = state.stats.persona > state.stats.reliability + 4;
-  const driftGain = 1 + (missingStructure ? 1 : 0) + (personaHeavy ? 2 : 0);
-
-  state.drift = clamp(state.drift + driftGain, 0, 12);
-  draw(2);
-  addLog(`第 ${state.round - 1} 回合結算：Drift +${driftGain}，抽 2 張卡。`);
-  checkOutcome();
-  render();
-}
-
-function checkOutcome() {
-  const values = Object.values(state.stats);
-  const complete = values.every((value) => value >= 8) && state.drift < 12;
-
-  if (complete) {
-    addLog("勝利：代理的架構與人格已經穩定成形。");
-    els.endRound.disabled = true;
-    els.drawCard.disabled = true;
-  } else if (state.round > 6 || state.drift >= 12) {
-    addLog("本局失敗：Drift 壓力過高或回合耗盡，重新調整 skill 結構吧。");
-    els.endRound.disabled = true;
-    els.drawCard.disabled = true;
-  }
-}
-
-function currentPersona() {
-  return [...GAME_DATA.personas]
-    .reverse()
-    .find((persona) => state.stats.persona >= persona.threshold);
-}
-
-function addLog(message) {
-  const item = document.createElement("li");
-  item.textContent = message;
-  els.log.prepend(item);
-}
-
-function statPips(card) {
-  const stats = [
-    ["C", card.clarity],
-    ["R", card.reliability],
-    ["P", card.persona],
-    ["X", card.context]
-  ];
-
-  return stats
-    .filter(([, value]) => value)
-    .map(([label, value]) => `<span>${label}+${value}</span>`)
-    .join("");
-}
-
-function cardTemplate(card, index, playable) {
-  const button = playable ? `<button type="button" data-card="${index}">打出</button>` : "";
+  const traits = member.distilled.traits.map((trait) => `<span>${trait}</span>`).join("");
   return `
-    <article class="card ${card.type}" style="--tilt:${(index % 5) - 2}deg">
-      <div class="card-top">
-        <span>${card.type}</span>
-        <small>${card.source}</small>
+    <div class="distilled">
+      <strong>會議蒸餾 ${member.distilled.confidence}</strong>
+      <small>${member.distilled.turns} turns</small>
+      <div>${traits}</div>
+    </div>
+  `;
+}
+
+function relationFor(a, b) {
+  if (a.element === b.element) return `同元素：兩人都是${a.element}行，起手默契高，但盲點可能相似。`;
+  return GAME_DATA.elementRelations[`${a.element}-${b.element}`]
+    || GAME_DATA.elementRelations[`${b.element}-${a.element}`]
+    || "元素關係中性：需要靠情境和策略決定合作手感。";
+}
+
+function vectorDistance(a, b, key) {
+  return Math.abs(a.vectors[key] - b.vectors[key]);
+}
+
+function scorePair(a, b, scenario, strategy) {
+  const weights = scenario.weights;
+  const closeness = {
+    clarity: 100 - vectorDistance(a, b, "clarity"),
+    context: 100 - vectorDistance(a, b, "context"),
+    speed: 100 - vectorDistance(a, b, "speed"),
+    risk: 100 - vectorDistance(a, b, "risk"),
+    data: 100 - vectorDistance(a, b, "data"),
+    warmth: 100 - vectorDistance(a, b, "warmth")
+  };
+  const weightedFit = Object.entries(closeness).map(([key, value]) => value * (weights[key] || 1));
+  const weightedBase = Object.entries(closeness).map(([key]) => weights[key] || 1);
+  const weightedAverage = weightedFit.reduce((sum, value) => sum + value, 0) / weightedBase.reduce((sum, value) => sum + value, 0);
+  const sameDept = a.department === b.department ? 6 : -2;
+  const roleSpread = a.role !== b.role ? 4 : 1;
+  const elementBonus = a.element === b.element ? 4 : relationFor(a, b).includes("相生") ? 6 : relationFor(a, b).includes("相剋") ? -3 : 0;
+  const strategyBonus = strategy.fits.includes(scenario.id) ? 8 : -2;
+
+  const work = clamp(weightedAverage + sameDept + roleSpread + strategyBonus * .35);
+  const communication = clamp(average([closeness.clarity, closeness.context, closeness.warmth]) + elementBonus + strategyBonus);
+  const decision = clamp(average([closeness.risk, closeness.data, closeness.speed]) + roleSpread + strategyBonus * .5);
+  const stress = clamp(100 - average([closeness.risk, closeness.speed, closeness.warmth]) + (strategy.fits.includes(scenario.id) ? -8 : 6));
+  const overall = clamp(average([work, communication, decision, 100 - stress]));
+
+  return { work, communication, decision, stress, overall, closeness };
+}
+
+function scoreLabel(score) {
+  if (score >= 82) return "高合拍";
+  if (score >= 68) return "可推進";
+  if (score >= 52) return "需翻譯";
+  return "高摩擦";
+}
+
+function renderMember(member) {
+  return `
+    <article class="member-card ${elementClass(member.element)}" data-member="${member.id}">
+      <div class="avatar" aria-hidden="true">${initials(member.name)}</div>
+      <div class="member-main">
+        <div class="member-topline">
+          <h3>${member.name}</h3>
+          <span>${member.department}</span>
+        </div>
+        <p class="role">${member.role} · ${member.birthday}</p>
+        <div class="chips">
+          <span class="chip number">靈數 ${member.numerology}</span>
+          <span class="chip ${elementClass(member.element)}">${member.element}行</span>
+          <span class="chip sign">${member.zodiac}</span>
+        </div>
+        <p class="meta">${member.archetype} · ${member.animal}年 · ${member.star}</p>
+        <p class="style-copy">${member.style}</p>
+        ${distilledMarkup(member)}
       </div>
-      <h3>${card.name}</h3>
-      <p>${card.text}</p>
-      <blockquote>${card.quote}</blockquote>
-      <div class="pips">${statPips(card)}</div>
-      ${button}
     </article>
   `;
 }
 
-function render() {
-  const persona = currentPersona();
-  els.round.textContent = state.round;
-  els.clarity.textContent = state.stats.clarity;
-  els.reliability.textContent = state.stats.reliability;
-  els.persona.textContent = state.stats.persona;
-  els.context.textContent = state.stats.context;
-  els.drift.textContent = state.drift;
-  els.driftMeter.value = state.drift;
-  els.missionTitle.textContent = state.mission.title;
-  els.missionCopy.textContent = state.mission.copy;
-  els.personaName.textContent = persona.name;
-  els.personaDesc.textContent = persona.desc;
-  els.hand.innerHTML = state.hand.map((card, index) => cardTemplate(card, index, true)).join("");
-  els.built.innerHTML = state.built.slice(0, 8).map((card, index) => cardTemplate(card, index, false)).join("");
-  els.builtCount.textContent = `${state.built.length} cards`;
-  els.hand.querySelectorAll("button[data-card]").forEach((button) => {
-    button.addEventListener("click", () => playCard(Number(button.dataset.card)));
+function renderMembers() {
+  const query = els.memberSearch.value.trim().toLowerCase();
+  const department = els.departmentFilter.value;
+  const members = GAME_DATA.members.filter((member) => {
+    const haystack = `${member.name} ${member.department} ${member.role} ${member.archetype} ${member.element} ${member.zodiac}`.toLowerCase();
+    const matchesQuery = !query || haystack.includes(query);
+    const matchesDept = department === "all" || member.department === department;
+    return matchesQuery && matchesDept;
   });
+  els.memberGrid.innerHTML = members.map(renderMember).join("");
 }
 
-els.drawCard.addEventListener("click", () => {
-  draw(1);
-  state.drift = clamp(state.drift + 1, 0, 12);
-  addLog("額外抽牌：獲得更多選擇，但 Drift +1。");
-  checkOutcome();
-  render();
-});
+function fillSelect(select, items, label) {
+  select.innerHTML = items.map((item) => `<option value="${item.id}">${label(item)}</option>`).join("");
+}
 
-els.endRound.addEventListener("click", endRound);
-els.resetGame.addEventListener("click", () => {
-  els.endRound.disabled = false;
-  els.drawCard.disabled = false;
-  startGame();
-});
+function fillStaticControls() {
+  els.memberCount.textContent = GAME_DATA.members.length;
+  const departments = ["all", ...new Set(GAME_DATA.members.map((member) => member.department))];
+  els.departmentFilter.innerHTML = departments
+    .map((department) => `<option value="${department}">${department === "all" ? "全部部門" : department}</option>`)
+    .join("");
+  fillSelect(els.personA, GAME_DATA.members, (member) => `${member.name} · ${member.department}`);
+  fillSelect(els.personB, GAME_DATA.members, (member) => `${member.name} · ${member.department}`);
+  fillSelect(els.meetingPerson, GAME_DATA.members, (member) => `${member.name} · ${member.department}`);
+  fillSelect(els.scenarioSelect, GAME_DATA.scenarios, (scenario) => scenario.name);
+  fillSelect(els.strategySelect, GAME_DATA.strategies, (strategy) => strategy.name);
+  fillSelect(els.meetingStrategy, GAME_DATA.strategies, (strategy) => strategy.name);
+  els.personA.value = "elly";
+  els.personB.value = "sixian";
+  els.meetingPerson.value = "sixian";
+}
 
-startGame();
+function renderScoreCard(label, value, helper) {
+  const safeValue = clamp(value);
+  return `
+    <article class="score-card">
+      <span>${label}</span>
+      <strong>${safeValue}</strong>
+      <meter min="0" max="100" value="${safeValue}"></meter>
+      <p>${helper}</p>
+    </article>
+  `;
+}
+
+function analyzePair() {
+  const a = memberById(els.personA.value);
+  const b = memberById(els.personB.value);
+  const scenario = scenarioById(els.scenarioSelect.value);
+  const strategy = strategyById(els.strategySelect.value);
+  if (!a || !b || a.id === b.id) {
+    els.pairTitle.textContent = "請選兩位不同成員";
+    return;
+  }
+
+  const scores = scorePair(a, b, scenario, strategy);
+  els.pairTitle.textContent = `${a.name} × ${b.name}`;
+  els.fitBadge.textContent = `${scores.overall} · ${scoreLabel(scores.overall)}`;
+  els.scoreGrid.innerHTML = [
+    renderScoreCard("Work Fit", scores.work, "工作任務與組織角色的配合度"),
+    renderScoreCard("Communication", scores.communication, "語氣、脈絡與資訊密度是否合拍"),
+    renderScoreCard("Decision", scores.decision, "速度、風險與資料證據的決策節奏"),
+    renderScoreCard("Stress Friction", scores.stress, "壓力下互卡機率，分數越低越好")
+  ].join("");
+
+  const strongest = Object.entries(scores.closeness).sort((left, right) => right[1] - left[1])[0][0];
+  const weakest = Object.entries(scores.closeness).sort((left, right) => left[1] - right[1])[0][0];
+  const fit = strategy.fits.includes(scenario.id);
+  els.pairInsight.innerHTML = `
+    <p><strong>情境：</strong>${scenario.prompt}</p>
+    <p><strong>象徵層：</strong>${relationFor(a, b)}</p>
+    <p><strong>會議信心：</strong>${meetingConfidence(a)} × ${meetingConfidence(b)}。分數以實際會議訊號、組織角色與象徵層混合推估。</p>
+    <p><strong>最合的軸：</strong>${axisName(strongest)}。<strong>最需要翻譯：</strong>${axisName(weakest)}。</p>
+    <p><strong>建議打法：</strong>${strategy.text}${fit ? " 這張策略很適合此情境。" : " 這張策略可用，但不是此情境的最佳解。"}</p>
+    <p><strong>開場句：</strong>${openingLine(a, b, scenario, strategy)}</p>
+  `;
+}
+
+function meetingConfidence(member) {
+  return member.distilled ? `${member.distilled.confidence} (${member.distilled.turns} turns)` : "低 (待補資料)";
+}
+
+function axisName(key) {
+  return {
+    clarity: "結論清晰度",
+    context: "脈絡需求",
+    speed: "節奏速度",
+    risk: "風險敏感度",
+    data: "資料依賴",
+    warmth: "情緒溫度"
+  }[key];
+}
+
+function openingLine(a, b, scenario, strategy) {
+  const lines = {
+    "bottom-line": `我先講結論：這件事在「${scenario.name}」裡最需要先決定一個方向，細節我接著補。`,
+    "context-brief": `我先用一頁把背景、限制和要決定的點整理清楚，我們再看哪裡需要補資料。`,
+    "owner-risk": `我們先把 owner、deadline、risk 拆開，這樣今天可以至少定下一步。`,
+    "data-proof": `我先拿現有資料和樣本對齊，避免我們只是在猜彼此的意思。`,
+    "private-align": `我想先跟你一對一校準一下，確定進會議時我們不會各講各的。`,
+    "prototype": `與其先辯完所有可能性，我們先做一個小版本，看起來後再決定。`,
+    "options": `我整理成 A/B/C 三個選項，每個選項都有代價，我們先選方向。`,
+    "uncertainty": `我先說清楚哪些是已知、哪些還不確定，然後一起決定要補哪個缺口。`
+  };
+  return `${a.name} 對 ${b.name} 可以這樣開：${lines[strategy.id]}`;
+}
+
+function switchView(view) {
+  state.activeView = view;
+  els.tabs.forEach((tab) => tab.classList.toggle("active", tab.dataset.view === view));
+  els.views.forEach((viewEl) => viewEl.classList.toggle("active", viewEl.id === `${view}-view`));
+}
+
+function resetMeeting() {
+  state.meeting = {
+    turn: 1,
+    scenario: GAME_DATA.scenarios[Math.floor(Math.random() * GAME_DATA.scenarios.length)],
+    trust: 45,
+    clarity: 40,
+    momentum: 35,
+    friction: 25,
+    log: ["新局開始：選一位成員與策略，讓專案在五回合內達到 Trust / Clarity / Momentum 70 以上。"]
+  };
+  renderMeeting();
+}
+
+function renderMeeting() {
+  const meeting = state.meeting;
+  els.meetingTitle.textContent = meeting.scenario.name;
+  els.meetingScenario.textContent = meeting.scenario.prompt;
+  els.turnCount.textContent = `Turn ${Math.min(meeting.turn, 5)} / 5`;
+  ["trust", "clarity", "momentum", "friction"].forEach((key) => {
+    els.meters[key].value = meeting[key];
+    els.values[key].textContent = meeting[key];
+  });
+  els.meetingLog.innerHTML = meeting.log.map((item) => `<li>${item}</li>`).join("");
+  els.playTurn.disabled = meeting.turn > 5;
+}
+
+function playMeetingTurn() {
+  const meeting = state.meeting;
+  const person = memberById(els.meetingPerson.value);
+  const strategy = strategyById(els.meetingStrategy.value);
+  const self = memberById("elly");
+  const scores = scorePair(self, person, meeting.scenario, strategy);
+  const fit = strategy.fits.includes(meeting.scenario.id);
+  const boost = strategy.boosts;
+
+  meeting.trust = clamp(meeting.trust + (boost.trust || 0) + (scores.communication - 60) / 8);
+  meeting.clarity = clamp(meeting.clarity + (boost.clarity || 0) + (scores.work - 60) / 10);
+  meeting.momentum = clamp(meeting.momentum + (boost.momentum || 0) + (scores.decision - 60) / 9);
+  meeting.friction = clamp(meeting.friction + (boost.friction || 0) + (scores.stress - 50) / 8 + (fit ? -3 : 4));
+
+  const outcome = fit ? "策略命中情境" : "策略不完全對題";
+  meeting.log.unshift(`T${meeting.turn}: 找 ${person.name}，使用「${strategy.name}」；${outcome}，整體合拍 ${scores.overall}。`);
+  meeting.turn += 1;
+
+  if (meeting.turn > 5) {
+    const win = meeting.trust >= 70 && meeting.clarity >= 70 && meeting.momentum >= 70 && meeting.friction < 55;
+    meeting.log.unshift(win ? "專案過關：對話節奏穩住，團隊可以往下一步推進。" : "專案未過關：有些資訊或信任還沒補齊，需要換策略。");
+  }
+  renderMeeting();
+}
+
+function bindEvents() {
+  els.tabs.forEach((tab) => tab.addEventListener("click", () => switchView(tab.dataset.view)));
+  els.memberSearch.addEventListener("input", renderMembers);
+  els.departmentFilter.addEventListener("change", renderMembers);
+  els.analyzePair.addEventListener("click", analyzePair);
+  els.playTurn.addEventListener("click", playMeetingTurn);
+  els.resetMeeting.addEventListener("click", resetMeeting);
+}
+
+function init() {
+  fillStaticControls();
+  bindEvents();
+  renderMembers();
+  analyzePair();
+  resetMeeting();
+}
+
+init();

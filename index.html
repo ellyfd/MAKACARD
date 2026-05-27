@@ -3,103 +3,132 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Skillforge Cards</title>
+    <title>MAKACARD | Team Chemistry Deck</title>
     <link rel="stylesheet" href="styles.css">
   </head>
   <body>
-    <main class="game-shell">
-      <section class="table" aria-label="Skillforge card game">
-        <header class="topbar">
+    <main class="app-shell">
+      <header class="app-header">
+        <div>
+          <p class="eyebrow">MAKACARD</p>
+          <h1>Team Chemistry Deck</h1>
+          <p class="intro">用組織角色、溝通偏好與生日象徵層，映射兩個人在工作情境裡的對話合拍度。</p>
+        </div>
+        <div class="header-metrics" aria-label="Dataset summary">
+          <span><strong id="member-count">21</strong> members</span>
+          <span><strong>4</strong> chemistry scores</span>
+        </div>
+      </header>
+
+      <nav class="tabs" aria-label="MAKACARD views">
+        <button class="tab active" type="button" data-view="members">成員總覽</button>
+        <button class="tab" type="button" data-view="lab">Chemistry Lab</button>
+        <button class="tab" type="button" data-view="meeting">Meeting Game</button>
+      </nav>
+
+      <section id="members-view" class="view active" aria-label="成員總覽">
+        <div class="toolbar">
           <div>
-            <p class="kicker">Claude Skill Inspired Card Game</p>
-            <h1>Skillforge Cards</h1>
+            <p class="label">Roster</p>
+            <h2>成員總覽</h2>
           </div>
-          <div class="round-panel" aria-live="polite">
-            <span>Round</span>
-            <strong id="round">1</strong>
+          <div class="toolbar-controls">
+            <input id="member-search" type="search" placeholder="搜尋姓名 / 部門 / 原型" aria-label="搜尋成員">
+            <select id="department-filter" aria-label="依部門篩選"></select>
           </div>
-        </header>
+        </div>
+        <div id="member-grid" class="member-grid"></div>
+      </section>
 
-        <section class="scoreboard" aria-label="Current agent stats">
-          <article class="stat clarity">
-            <span>清晰度</span>
-            <strong id="clarity">0</strong>
-          </article>
-          <article class="stat reliability">
-            <span>可靠度</span>
-            <strong id="reliability">0</strong>
-          </article>
-          <article class="stat persona">
-            <span>人格</span>
-            <strong id="persona">0</strong>
-          </article>
-          <article class="stat context">
-            <span>組織</span>
-            <strong id="context">0</strong>
-          </article>
-        </section>
+      <section id="lab-view" class="view" aria-label="Chemistry Lab">
+        <div class="lab-layout">
+          <section class="panel controls-panel">
+            <p class="label">Pairing</p>
+            <h2>雙人合拍分析</h2>
+            <label>
+              成員 A
+              <select id="person-a"></select>
+            </label>
+            <label>
+              成員 B
+              <select id="person-b"></select>
+            </label>
+            <label>
+              工作情境
+              <select id="scenario-select"></select>
+            </label>
+            <label>
+              溝通策略
+              <select id="strategy-select"></select>
+            </label>
+            <button id="analyze-pair" class="primary-button" type="button">分析合拍度</button>
+          </section>
 
-        <section class="mission-strip">
-          <div>
-            <p class="label">本局目標</p>
-            <h2 id="mission-title"></h2>
-          </div>
-          <p id="mission-copy"></p>
-        </section>
-
-        <section class="play-area">
-          <div class="lane">
-            <div class="lane-heading">
-              <span>手牌</span>
-              <button id="draw-card" class="icon-button" type="button" title="抽一張卡" aria-label="抽一張卡">
-                <span aria-hidden="true">+</span>
-              </button>
+          <section class="panel result-panel">
+            <div class="result-heading">
+              <div>
+                <p class="label">Chemistry</p>
+                <h2 id="pair-title">選兩個人開始分析</h2>
+              </div>
+              <span id="fit-badge" class="fit-badge">--</span>
             </div>
-            <div id="hand" class="cards" aria-label="Playable cards"></div>
-          </div>
+            <div id="score-grid" class="score-grid"></div>
+            <div id="pair-insight" class="insight-box"></div>
+          </section>
+        </div>
+      </section>
 
-          <aside class="console">
-            <div class="console-art" aria-hidden="true">
-              <svg viewBox="0 0 220 180" role="img">
-                <path d="M25 128 88 22h64l43 75-64 57H60z" fill="none" stroke="currentColor" stroke-width="7" stroke-linejoin="round"/>
-                <path d="m88 22 43 132M152 22 60 154M25 128h170" fill="none" stroke="currentColor" stroke-width="5" opacity=".55"/>
-                <circle cx="88" cy="22" r="9" fill="currentColor"/>
-                <circle cx="152" cy="22" r="9" fill="currentColor"/>
-                <circle cx="25" cy="128" r="9" fill="currentColor"/>
-                <circle cx="195" cy="128" r="9" fill="currentColor"/>
-                <circle cx="131" cy="154" r="11" fill="currentColor"/>
-              </svg>
+      <section id="meeting-view" class="view" aria-label="Meeting Game">
+        <div class="meeting-layout">
+          <section class="panel meeting-board">
+            <div class="result-heading">
+              <div>
+                <p class="label">Simulation</p>
+                <h2 id="meeting-title">Meeting Game</h2>
+              </div>
+              <span id="turn-count" class="fit-badge">Turn 1 / 5</span>
             </div>
-            <div>
-              <p class="label">Elly Persona</p>
-              <h2 id="persona-name">尚未成形</h2>
-              <p id="persona-desc">打出卡牌後，代理會逐步獲得工作風格與技能骨架。</p>
+            <p id="meeting-scenario" class="scenario-copy"></p>
+            <div class="meeting-stats">
+              <article>
+                <span>Trust</span>
+                <meter id="trust-meter" min="0" max="100" value="45"></meter>
+                <strong id="trust-value">45</strong>
+              </article>
+              <article>
+                <span>Clarity</span>
+                <meter id="clarity-meter" min="0" max="100" value="40"></meter>
+                <strong id="clarity-value">40</strong>
+              </article>
+              <article>
+                <span>Momentum</span>
+                <meter id="momentum-meter" min="0" max="100" value="35"></meter>
+                <strong id="momentum-value">35</strong>
+              </article>
+              <article>
+                <span>Friction</span>
+                <meter id="friction-meter" min="0" max="100" value="25"></meter>
+                <strong id="friction-value">25</strong>
+              </article>
             </div>
-            <div class="threat">
-              <span>Drift 壓力</span>
-              <meter id="drift-meter" min="0" max="12" value="0"></meter>
-              <strong id="drift">0</strong>
-            </div>
-            <button id="end-round" class="primary-button" type="button">結束回合</button>
-            <button id="reset-game" class="secondary-button" type="button">重新開局</button>
-          </aside>
-        </section>
+            <ol id="meeting-log" class="meeting-log"></ol>
+          </section>
 
-        <section class="built-zone">
-          <div class="lane-heading">
-            <span>已建構 Skill 架構</span>
-            <span id="built-count">0 cards</span>
-          </div>
-          <div id="built" class="built-cards" aria-label="Built skill architecture"></div>
-        </section>
-
-        <section class="log-wrap">
-          <div class="lane-heading">
-            <span>系統紀錄</span>
-            <span>讀取自 Makalot / Elly skills</span>
-          </div>
-          <ol id="log" class="log" aria-live="polite"></ol>
-        </section>
+          <section class="panel controls-panel">
+            <p class="label">Move</p>
+            <h2>本回合行動</h2>
+            <label>
+              找誰對話
+              <select id="meeting-person"></select>
+            </label>
+            <label>
+              使用策略
+              <select id="meeting-strategy"></select>
+            </label>
+            <button id="play-turn" class="primary-button" type="button">推進一回合</button>
+            <button id="reset-meeting" class="secondary-button" type="button">重新開局</button>
+          </section>
+        </div>
       </section>
     </main>
 
