@@ -59,13 +59,13 @@ const MISSION_REQUIREMENTS = {
   "debbie-gap": ["exec", "dpc"],
   "taipei-chiayi": ["exec", "dpc", "factory"],
   "ai-seed": ["dpc", "digital-dev", "material", "portal"],
-  "sttrix-gtm": ["portal", "digital-dev", "dpc", "external"],
-  "nunox-ip": ["exec", "material", "external", "digital-dev"],
-  "vivatech-booth": ["exec", "portal", "dpc", "external"],
-  "ai-education-gap": ["portal", "digital-dev", "external", "dpc"],
-  "pilot-feedback": ["external", "digital-dev", "portal", "exec"],
+  "sttrix-gtm": ["portal", "digital-dev", "dpc", "exec"],
+  "nunox-ip": ["exec", "material", "digital-dev", "portal"],
+  "vivatech-booth": ["exec", "portal", "dpc", "digital-dev"],
+  "ai-education-gap": ["portal", "digital-dev", "dpc", "exec"],
+  "pilot-feedback": ["digital-dev", "portal", "exec", "dpc"],
   "dicks-placement-print": ["dpc", "factory", "material"],
-  "dpo-training-data": ["external", "digital-dev", "portal"],
+  "dpo-training-data": ["digital-dev", "portal", "exec"],
   "fabric-api-78": ["material", "digital-dev", "portal"],
   "sequin-qipao": ["dpc", "material", "digital-dev"],
   "seoul-dev-trip": ["portal", "dpc", "factory"]
@@ -77,20 +77,29 @@ const MEMBER_TRAITS = {
   alex: ["authority", "big-picture"],
   andy: ["research-depth", "deadline-needed", "over-research"],
   chieh: ["throughput", "motivation-risk"],
+  celia: ["profile-thin", "3d-weekly"],
   debbie: ["presentation-candidate", "profile-thin"],
   dianne: ["market-sense", "story"],
   doris: ["coordination", "taste"],
-  edison: ["deep-tech", "slow-proof"],
   elly: ["org-sense", "so-what"],
   emily: ["visual-quality", "teaching"],
+  erica: ["factory-eye", "2d-positioning"],
+  hazel: ["dev-trip", "market-signal"],
+  jessica: ["workshop", "audience-design"],
   jan: ["pm", "direct", "remote-owner"],
   jean: ["content-ai", "route-boundary"],
   karen: ["architect", "quality-gate-gap"],
+  lillian: ["dev-trip", "brief-builder"],
+  maggie: ["dev-trip", "material-need"],
   rock: ["ground-truth", "knowledge-lock"],
   rou: ["quality-eye", "weak-expression"],
+  rosa: ["workshop", "content-support"],
+  ruochen: ["workshop", "project-sense"],
+  sharon: ["factory-eye", "handoff"],
   sixian: ["reserve", "low-visibility"],
   tinley: ["growth", "needs-transfer"],
   vanessa: ["tradeoff", "coordination"],
+  winnie: ["factory-eye", "production-risk"],
   yoko: ["reliable", "overloaded", "soft-force"],
   yota: ["remote-owner", "geo-blindspot"]
 };
@@ -101,7 +110,6 @@ const UNIT_COLORS = {
   "digital-dev": "#26d5d0",
   material: "#9be96f",
   portal: "#b78cff",
-  external: "#ff8fb3",
   factory: "#d7c7a3"
 };
 
@@ -136,9 +144,9 @@ function unitById(id) {
 function unitFor(member) {
   if (member.department === "管理層") return "exec";
   if (member.department === "Portal:M") return "portal";
-  if (member.department === "平湖") return "factory";
+  if (member.department === "平湖" || member.department.includes("供應鏈") || member.department.includes("商品開發")) return "factory";
   if (["rock", "tinley", "rou"].includes(member.id)) return "material";
-  if (["alan", "andy", "edison", "yota"].includes(member.id)) return "digital-dev";
+  if (["alan", "andy", "yota"].includes(member.id)) return "digital-dev";
   if (member.department === "數位產品創造處") return "exec";
   return "dpc";
 }

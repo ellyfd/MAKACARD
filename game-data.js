@@ -43,16 +43,7 @@ const GAME_DATA = {
       capability: ["品牌洞察", "內容敘事", "feedback loop"],
       risk: "沒有真實產品或 demo 時，聲量無法轉成採用。",
       counters: ["market", "outreach", "feedback"],
-      links: ["exec", "digital-dev", "external"]
-    },
-    {
-      id: "external",
-      name: "外部合作",
-      tagline: "學研、展會、品牌、技術夥伴",
-      capability: ["研究資源", "曝光場域", "合作驗證"],
-      risk: "權利、目標、時程不一致時，合作會反過來拖慢節奏。",
-      counters: ["research", "ecosystem", "funding"],
-      links: ["portal", "exec", "digital-dev"]
+      links: ["exec", "digital-dev", "dpc"]
     },
     {
       id: "factory",
@@ -188,22 +179,6 @@ const GAME_DATA = {
       style: "在協調和美感判斷上敏銳，適合用共識框架推進。",
       distilled: { confidence: "高", turns: 53, traits: ["deadline 意識", "流程協調", "友善收斂"] },
       vectors: { clarity: 64, context: 78, speed: 54, risk: 60, data: 58, warmth: 82 }
-    },
-    {
-      id: "edison",
-      name: "Edison",
-      role: "AI 博士（外包）",
-      department: "數發",
-      birthday: "1989-11-07",
-      numerology: 9,
-      element: "土",
-      zodiac: "天蠍座",
-      archetype: "人道者",
-      animal: "蛇",
-      star: "天同星",
-      style: "適合用問題定義、模型限制和可驗證實驗對齊。",
-      distilled: { confidence: "高", turns: 345, traits: ["技術補充", "外部脈絡", "限制說明"] },
-      vectors: { clarity: 76, context: 72, speed: 48, risk: 78, data: 90, warmth: 56 }
     },
     {
       id: "elly",
@@ -396,6 +371,106 @@ const GAME_DATA = {
       style: "適合做探索與落地之間的橋接，需要清楚問題和可試驗範圍。",
       distilled: { confidence: "中", turns: 38, traits: ["進度更新", "急件處理", "執行排程"] },
       vectors: { clarity: 72, context: 72, speed: 72, risk: 58, data: 72, warmth: 58 }
+    },
+    {
+      id: "celia",
+      name: "Celia",
+      role: "專員",
+      department: "DPC",
+      birthday: "待補",
+      style: "3D 周會出現的內部成員，先以低觀察資料補入，可在後續用生日與會議表現校準。",
+      distilled: { confidence: "低", turns: 3, traits: ["3D 周會", "資料待補", "需觀察"] },
+      vectors: { clarity: 62, context: 58, speed: 58, risk: 62, data: 58, warmth: 58 }
+    },
+    {
+      id: "jessica",
+      name: "Jessica",
+      role: "專員",
+      department: "Portal:M",
+      birthday: "待補",
+      style: "Workshop 與 GTM 情境中的內部協作角色，適合放在活動設計、受眾定位與收斂討論。",
+      distilled: { confidence: "低", turns: 2, traits: ["workshop", "活動定位", "資料待補"] },
+      vectors: { clarity: 68, context: 76, speed: 56, risk: 62, data: 60, warmth: 70 }
+    },
+    {
+      id: "rosa",
+      name: "Rosa",
+      role: "專員",
+      department: "Portal:M",
+      birthday: "待補",
+      style: "Workshop 情境中出現的內部角色，先作為品牌互動與內容支援卡。",
+      distilled: { confidence: "低", turns: 1, traits: ["workshop", "內容支援", "資料待補"] },
+      vectors: { clarity: 60, context: 74, speed: 58, risk: 56, data: 56, warmth: 76 }
+    },
+    {
+      id: "ruochen",
+      name: "Ruo Chen",
+      role: "專員",
+      department: "Portal:M",
+      birthday: "待補",
+      style: "與 ROU / 林芓葇不同人，先作為 Workshop project 互動與需求理解角色。",
+      distilled: { confidence: "低", turns: 2, traits: ["workshop", "project理解", "需避免同名混淆"] },
+      vectors: { clarity: 64, context: 78, speed: 54, risk: 64, data: 60, warmth: 72 }
+    },
+    {
+      id: "hazel",
+      name: "Hazel",
+      role: "專員",
+      department: "商品開發 / PA",
+      birthday: "待補",
+      style: "Seoul Dev Trip 內部成員，適合承接市場觀察、開發素材與款式方向整理。",
+      distilled: { confidence: "低", turns: 1, traits: ["dev trip", "市場訊號", "資料待補"] },
+      vectors: { clarity: 66, context: 78, speed: 62, risk: 58, data: 64, warmth: 66 }
+    },
+    {
+      id: "lillian",
+      name: "Lillian",
+      role: "專員",
+      department: "商品開發 / PA",
+      birthday: "待補",
+      style: "Seoul Dev Trip 內部成員，先作為開發 brief、樣布與款式同步角色。",
+      distilled: { confidence: "低", turns: 1, traits: ["dev trip", "開發brief", "資料待補"] },
+      vectors: { clarity: 68, context: 72, speed: 60, risk: 62, data: 62, warmth: 62 }
+    },
+    {
+      id: "maggie",
+      name: "Maggie",
+      role: "專員",
+      department: "商品開發 / PA",
+      birthday: "待補",
+      style: "Seoul Dev Trip 內部成員，適合協助把客戶方向轉成素材需求與下一步行動。",
+      distilled: { confidence: "低", turns: 1, traits: ["dev trip", "素材需求", "資料待補"] },
+      vectors: { clarity: 64, context: 74, speed: 64, risk: 58, data: 60, warmth: 68 }
+    },
+    {
+      id: "erica",
+      name: "Erica",
+      role: "專員",
+      department: "供應鏈 / 2D",
+      birthday: "待補",
+      style: "DICKS 定位裁印花會議中的內部角色，適合處理 2D 定位、版型與工差風險。",
+      distilled: { confidence: "低", turns: 1, traits: ["2D定位", "供應鏈", "資料待補"] },
+      vectors: { clarity: 72, context: 58, speed: 62, risk: 78, data: 70, warmth: 52 }
+    },
+    {
+      id: "sharon",
+      name: "Sharon",
+      role: "專員",
+      department: "供應鏈 / 2D",
+      birthday: "待補",
+      style: "DICKS 定位裁印花會議中的內部角色，先作為版型與花位交接支援卡。",
+      distilled: { confidence: "低", turns: 1, traits: ["2D定位", "花位交接", "資料待補"] },
+      vectors: { clarity: 68, context: 60, speed: 64, risk: 74, data: 68, warmth: 56 }
+    },
+    {
+      id: "winnie",
+      name: "Winnie",
+      role: "專員",
+      department: "供應鏈 / 2D",
+      birthday: "待補",
+      style: "DICKS 定位裁印花會議中的內部角色，適合補足工廠端規格確認與量產風險視角。",
+      distilled: { confidence: "低", turns: 1, traits: ["2D定位", "量產風險", "資料待補"] },
+      vectors: { clarity: 66, context: 62, speed: 60, risk: 76, data: 70, warmth: 58 }
     },
     {
       id: "huihui",
