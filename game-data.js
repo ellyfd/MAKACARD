@@ -16,7 +16,7 @@ const GAME_DATA = {
       capability: ["3D 產出", "視覺判斷", "跨地執行"],
       risk: "需求邊界不清時，會用很高執行力做出錯方向。",
       counters: ["demo", "visual", "fit"],
-      links: ["material", "factory", "digital-dev"]
+      links: ["material", "pending", "digital-dev"]
     },
     {
       id: "digital-dev",
@@ -34,7 +34,7 @@ const GAME_DATA = {
       capability: ["布料標準", "物性資料", "驗證 gate"],
       risk: "知識鎖倉會讓整條工作線變成單點風險。",
       counters: ["standard", "fabric", "gate"],
-      links: ["dpc", "digital-dev", "factory"]
+      links: ["dpc", "digital-dev", "pending"]
     },
     {
       id: "portal",
@@ -46,13 +46,13 @@ const GAME_DATA = {
       links: ["exec", "digital-dev", "dpc"]
     },
     {
-      id: "factory",
-      name: "商品開發 / 供應鏈 / 平湖",
-      tagline: "PA 開發、2D 定位、開布、實碼驗證",
-      capability: ["2D 版型", "布廠溝通", "量產容差"],
-      risk: "前端規格不清，錯誤會在全碼展開時被放大。",
-      counters: ["2d", "production", "tolerance"],
-      links: ["dpc", "material"]
+      id: "pending",
+      name: "Makalot / 待定位",
+      tagline: "人名先掛上，組織歸屬待 makalot-org 校正",
+      capability: ["待補"],
+      risk: "不能用單場會議情境推定正式部門。",
+      counters: ["unknown"],
+      links: ["exec", "dpc", "portal", "material"]
     }
   ],
   orgDirectory: [
@@ -64,8 +64,7 @@ const GAME_DATA = {
     { id: "digital-fashion-remote", unit: "dpc", name: "數位服飾 / 嘉義・平湖", members: ["jan", "yota", "huihui"] },
     { id: "digital-fabric", unit: "material", name: "數位布料", members: ["rock", "tinley"] },
     { id: "portal-m", unit: "portal", name: "Portal:M / StyTrix", members: ["dianne", "doris", "emily", "jessica", "rosa", "ruochen"] },
-    { id: "pa-development", unit: "factory", name: "商品開發 / PA", members: ["hazel", "lillian", "maggie"] },
-    { id: "supply-chain-2d", unit: "factory", name: "供應鏈 / 2D", members: ["erica", "sharon", "winnie"] }
+    { id: "pending-members", unit: "pending", name: "待 makalot-org 定位", members: ["celia", "hazel", "lillian", "maggie", "erica", "sharon", "winnie"] }
   ],
   members: [
     {
@@ -388,7 +387,7 @@ const GAME_DATA = {
       id: "celia",
       name: "Celia",
       role: "專員",
-      department: "數位服飾 / 台北",
+      department: "Makalot / 待定位",
       birthday: "待補",
       style: "3D 周會出現的內部成員，先以低觀察資料補入，可在後續用生日與會議表現校準。",
       distilled: { confidence: "低", turns: 3, traits: ["3D 周會", "資料待補", "需觀察"] },
@@ -428,7 +427,7 @@ const GAME_DATA = {
       id: "hazel",
       name: "Hazel",
       role: "專員",
-      department: "商品開發 / PA",
+      department: "Makalot / 待定位",
       birthday: "待補",
       style: "Seoul Dev Trip 內部成員，適合承接市場觀察、開發素材與款式方向整理。",
       distilled: { confidence: "低", turns: 1, traits: ["dev trip", "市場訊號", "資料待補"] },
@@ -438,7 +437,7 @@ const GAME_DATA = {
       id: "lillian",
       name: "Lillian",
       role: "專員",
-      department: "商品開發 / PA",
+      department: "Makalot / 待定位",
       birthday: "待補",
       style: "Seoul Dev Trip 內部成員，先作為開發 brief、樣布與款式同步角色。",
       distilled: { confidence: "低", turns: 1, traits: ["dev trip", "開發brief", "資料待補"] },
@@ -448,7 +447,7 @@ const GAME_DATA = {
       id: "maggie",
       name: "Maggie",
       role: "專員",
-      department: "商品開發 / PA",
+      department: "Makalot / 待定位",
       birthday: "待補",
       style: "Seoul Dev Trip 內部成員，適合協助把客戶方向轉成素材需求與下一步行動。",
       distilled: { confidence: "低", turns: 1, traits: ["dev trip", "素材需求", "資料待補"] },
@@ -458,7 +457,7 @@ const GAME_DATA = {
       id: "erica",
       name: "Erica",
       role: "專員",
-      department: "供應鏈 / 2D",
+      department: "Makalot / 待定位",
       birthday: "待補",
       style: "DICKS 定位裁印花會議中的內部角色，適合處理 2D 定位、版型與工差風險。",
       distilled: { confidence: "低", turns: 1, traits: ["2D定位", "供應鏈", "資料待補"] },
@@ -468,7 +467,7 @@ const GAME_DATA = {
       id: "sharon",
       name: "Sharon",
       role: "專員",
-      department: "供應鏈 / 2D",
+      department: "Makalot / 待定位",
       birthday: "待補",
       style: "DICKS 定位裁印花會議中的內部角色，先作為版型與花位交接支援卡。",
       distilled: { confidence: "低", turns: 1, traits: ["2D定位", "花位交接", "資料待補"] },
@@ -478,7 +477,7 @@ const GAME_DATA = {
       id: "winnie",
       name: "Winnie",
       role: "專員",
-      department: "供應鏈 / 2D",
+      department: "Makalot / 待定位",
       birthday: "待補",
       style: "DICKS 定位裁印花會議中的內部角色，適合補足工廠端規格確認與量產風險視角。",
       distilled: { confidence: "低", turns: 1, traits: ["2D定位", "量產風險", "資料待補"] },

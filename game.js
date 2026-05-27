@@ -57,18 +57,18 @@ const els = {
 const MISSION_REQUIREMENTS = {
   "rc-lock": ["material", "dpc", "digital-dev"],
   "debbie-gap": ["exec", "dpc"],
-  "taipei-chiayi": ["exec", "dpc", "factory"],
+  "taipei-chiayi": ["exec", "dpc", "pending"],
   "ai-seed": ["dpc", "digital-dev", "material", "portal"],
   "sttrix-gtm": ["portal", "digital-dev", "dpc", "exec"],
   "nunox-ip": ["exec", "material", "digital-dev", "portal"],
   "vivatech-booth": ["exec", "portal", "dpc", "digital-dev"],
   "ai-education-gap": ["portal", "digital-dev", "dpc", "exec"],
   "pilot-feedback": ["digital-dev", "portal", "exec", "dpc"],
-  "dicks-placement-print": ["dpc", "factory", "material"],
+  "dicks-placement-print": ["dpc", "pending", "material"],
   "dpo-training-data": ["digital-dev", "portal", "exec"],
   "fabric-api-78": ["material", "digital-dev", "portal"],
   "sequin-qipao": ["dpc", "material", "digital-dev"],
-  "seoul-dev-trip": ["portal", "dpc", "factory"]
+  "seoul-dev-trip": ["portal", "dpc", "pending"]
 };
 
 const MEMBER_TRAITS = {
@@ -83,7 +83,7 @@ const MEMBER_TRAITS = {
   doris: ["coordination", "taste"],
   elly: ["org-sense", "so-what"],
   emily: ["visual-quality", "teaching"],
-  erica: ["factory-eye", "2d-positioning"],
+  erica: ["meeting-observed", "role-pending"],
   hazel: ["dev-trip", "market-signal"],
   jessica: ["workshop", "audience-design"],
   jan: ["pm", "direct", "remote-owner"],
@@ -95,11 +95,11 @@ const MEMBER_TRAITS = {
   rou: ["quality-eye", "weak-expression"],
   rosa: ["workshop", "content-support"],
   ruochen: ["workshop", "project-sense"],
-  sharon: ["factory-eye", "handoff"],
+  sharon: ["meeting-observed", "role-pending"],
   sixian: ["reserve", "low-visibility"],
   tinley: ["growth", "needs-transfer"],
   vanessa: ["tradeoff", "coordination"],
-  winnie: ["factory-eye", "production-risk"],
+  winnie: ["meeting-observed", "role-pending"],
   yoko: ["reliable", "overloaded", "soft-force"],
   yota: ["remote-owner", "geo-blindspot"]
 };
@@ -110,7 +110,7 @@ const UNIT_COLORS = {
   "digital-dev": "#26d5d0",
   material: "#9be96f",
   portal: "#b78cff",
-  factory: "#d7c7a3"
+  pending: "#d7c7a3"
 };
 
 function clamp(value, min = 0, max = 100) {
@@ -144,7 +144,7 @@ function unitById(id) {
 function unitFor(member) {
   if (member.department === "管理層") return "exec";
   if (member.department === "Portal:M") return "portal";
-  if (member.department === "平湖" || member.department.includes("供應鏈") || member.department.includes("商品開發")) return "factory";
+  if (member.department.includes("待定位")) return "pending";
   if (["rock", "tinley", "rou"].includes(member.id)) return "material";
   if (["alan", "andy", "yota"].includes(member.id)) return "digital-dev";
   if (member.department === "數位產品創造處") return "exec";
