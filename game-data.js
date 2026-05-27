@@ -1,4 +1,69 @@
 const GAME_DATA = {
+  orgUnits: [
+    {
+      id: "exec",
+      name: "管理層",
+      tagline: "方向、資源、取捨",
+      capability: ["決策授權", "商業取捨", "跨單位優先級"],
+      risk: "離現場太遠時，會把複雜問題壓成口號。",
+      counters: ["scope", "authority", "tradeoff"],
+      links: ["dpc", "digital-dev", "portal"]
+    },
+    {
+      id: "dpc",
+      name: "DPC / 數位服飾",
+      tagline: "3D 內容、視覺驗證、樣衣數位化",
+      capability: ["3D 產出", "視覺判斷", "跨地執行"],
+      risk: "需求邊界不清時，會用很高執行力做出錯方向。",
+      counters: ["demo", "visual", "fit"],
+      links: ["material", "factory", "digital-dev"]
+    },
+    {
+      id: "digital-dev",
+      name: "數發 / 系統與 AI",
+      tagline: "API、AI 流程、平台整合",
+      capability: ["資料管線", "系統整合", "AI prototype"],
+      risk: "如果 brief 不精準，會等規格或做出技術正確但業務錯位的版本。",
+      counters: ["api", "data", "prototype"],
+      links: ["dpc", "material", "portal"]
+    },
+    {
+      id: "material",
+      name: "數位布料",
+      tagline: "布料標準、物性驗證、NunoX / Jack API",
+      capability: ["布料標準", "物性資料", "驗證 gate"],
+      risk: "知識鎖倉會讓整條工作線變成單點風險。",
+      counters: ["standard", "fabric", "gate"],
+      links: ["dpc", "digital-dev", "factory"]
+    },
+    {
+      id: "portal",
+      name: "Portal:M / GTM",
+      tagline: "品牌情報、內容、外部觸達",
+      capability: ["品牌洞察", "內容敘事", "feedback loop"],
+      risk: "沒有真實產品或 demo 時，聲量無法轉成採用。",
+      counters: ["market", "outreach", "feedback"],
+      links: ["exec", "digital-dev", "external"]
+    },
+    {
+      id: "external",
+      name: "外部合作",
+      tagline: "學研、展會、品牌、技術夥伴",
+      capability: ["研究資源", "曝光場域", "合作驗證"],
+      risk: "權利、目標、時程不一致時，合作會反過來拖慢節奏。",
+      counters: ["research", "ecosystem", "funding"],
+      links: ["portal", "exec", "digital-dev"]
+    },
+    {
+      id: "factory",
+      name: "工廠 / 供應鏈",
+      tagline: "2D 定位、開布、實碼驗證",
+      capability: ["2D 版型", "布廠溝通", "量產容差"],
+      risk: "前端規格不清，錯誤會在全碼展開時被放大。",
+      counters: ["2d", "production", "tolerance"],
+      links: ["dpc", "material"]
+    }
+  ],
   members: [
     {
       id: "adia",

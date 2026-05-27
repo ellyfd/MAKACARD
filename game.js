@@ -9,7 +9,9 @@ const state = {
     friction: 25,
     hand: [],
     played: [],
+    coveredUnits: [],
     lastDepartment: null,
+    lastUnit: null,
     log: []
   }
 };
@@ -36,6 +38,8 @@ const els = {
   resetMeeting: document.querySelector("#reset-meeting"),
   turnCount: document.querySelector("#turn-count"),
   meetingLog: document.querySelector("#meeting-log"),
+  orgMap: document.querySelector("#org-map"),
+  orgLegend: document.querySelector("#org-legend"),
   meters: {
     trust: document.querySelector("#trust-meter"),
     clarity: document.querySelector("#clarity-meter"),
@@ -48,6 +52,57 @@ const els = {
     momentum: document.querySelector("#momentum-value"),
     friction: document.querySelector("#friction-value")
   }
+};
+
+const MISSION_REQUIREMENTS = {
+  "rc-lock": ["material", "dpc", "digital-dev"],
+  "debbie-gap": ["exec", "dpc"],
+  "taipei-chiayi": ["exec", "dpc", "factory"],
+  "ai-seed": ["dpc", "digital-dev", "material", "portal"],
+  "sttrix-gtm": ["portal", "digital-dev", "dpc", "external"],
+  "nunox-ip": ["exec", "material", "external", "digital-dev"],
+  "vivatech-booth": ["exec", "portal", "dpc", "external"],
+  "ai-education-gap": ["portal", "digital-dev", "external", "dpc"],
+  "pilot-feedback": ["external", "digital-dev", "portal", "exec"],
+  "dicks-placement-print": ["dpc", "factory", "material"],
+  "dpo-training-data": ["external", "digital-dev", "portal"],
+  "fabric-api-78": ["material", "digital-dev", "portal"],
+  "sequin-qipao": ["dpc", "material", "digital-dev"],
+  "seoul-dev-trip": ["portal", "dpc", "factory"]
+};
+
+const MEMBER_TRAITS = {
+  adia: ["visual-exec", "needs-boundary"],
+  alan: ["waits-for-brief", "interface"],
+  alex: ["authority", "big-picture"],
+  andy: ["research-depth", "deadline-needed", "over-research"],
+  chieh: ["throughput", "motivation-risk"],
+  debbie: ["presentation-candidate", "profile-thin"],
+  dianne: ["market-sense", "story"],
+  doris: ["coordination", "taste"],
+  edison: ["deep-tech", "slow-proof"],
+  elly: ["org-sense", "so-what"],
+  emily: ["visual-quality", "teaching"],
+  jan: ["pm", "direct", "remote-owner"],
+  jean: ["content-ai", "route-boundary"],
+  karen: ["architect", "quality-gate-gap"],
+  rock: ["ground-truth", "knowledge-lock"],
+  rou: ["quality-eye", "weak-expression"],
+  sixian: ["reserve", "low-visibility"],
+  tinley: ["growth", "needs-transfer"],
+  vanessa: ["tradeoff", "coordination"],
+  yoko: ["reliable", "overloaded", "soft-force"],
+  yota: ["remote-owner", "geo-blindspot"]
+};
+
+const UNIT_COLORS = {
+  exec: "#f6b44b",
+  dpc: "#56a8ff",
+  "digital-dev": "#26d5d0",
+  material: "#9be96f",
+  portal: "#b78cff",
+  external: "#ff8fb3",
+  factory: "#d7c7a3"
 };
 
 function clamp(value, min = 0, max = 100) {
@@ -72,6 +127,37 @@ function strategyById(id) {
 
 function actionById(id) {
   return GAME_DATA.actionTypes.find((action) => action.id === id);
+}
+
+function unitById(id) {
+  return GAME_DATA.orgUnits.find((unit) => unit.id === id);
+}
+
+function unitFor(member) {
+  if (member.department === "管理層") return "exec";
+  if (member.department === "Portal:M") return "portal";
+  if (member.department === "平湖") return "factory";
+  if (["rock", "tinley", "rou"].includes(member.id)) return "material";
+  if (["alan", "andy", "edison", "yota"].includes(member.id)) return "digital-dev";
+  if (member.department === "數位產品創造處") return "exec";
+  return "dpc";
+}
+
+function traitsFor(member) {
+  return MEMBER_TRAITS[member.id] || [];
+}
+
+function missionRequires(mission) {
+  return MISSION_REQUIREMENTS[mission.id] || ["dpc", "digital-dev", "exec"];
+}
+
+function missingUnits() {
+  const covered = new Set(state.meeting.coveredUnits);
+  return missionRequires(state.meeting.scenario).filter((unit) => !covered.has(unit));
+}
+
+function unitName(id) {
+  return unitById(id)?.name || id;
 }
 
 function initials(name) {
@@ -205,15 +291,19 @@ function scorePair(a, b, scenario, strategy) {
   const weightedAverage = weightedFit.reduce((sum, value) => sum + value, 0) / weightedBase.reduce((sum, value) => sum + value, 0);
   const sameDept = a.department === b.department ? 6 : -2;
   const roleSpread = a.role !== b.role ? 4 : 1;
+  const sameUnit = unitFor(a) === unitFor(b);
+  const crossUnitNeed = ["handoff", "innovation", "conflict"].includes(scenario.id);
+  const tunnelPenalty = sameUnit && crossUnitNeed ? 10 : sameUnit ? 4 : 0;
+  const mismatchPenalty = Object.values(closeness).filter((value) => value < 48).length * 6;
   const aElement = birthProfile(a).element;
   const bElement = birthProfile(b).element;
   const elementBonus = aElement === bElement ? 4 : relationFor(a, b).includes("相生") ? 6 : relationFor(a, b).includes("相剋") ? -3 : 0;
   const strategyBonus = strategy.fits.includes(scenario.id) ? 8 : -2;
 
-  const work = clamp(weightedAverage + sameDept + roleSpread + strategyBonus * .35);
-  const communication = clamp(average([closeness.clarity, closeness.context, closeness.warmth]) + elementBonus + strategyBonus);
-  const decision = clamp(average([closeness.risk, closeness.data, closeness.speed]) + roleSpread + strategyBonus * .5);
-  const stress = clamp(100 - average([closeness.risk, closeness.speed, closeness.warmth]) + (strategy.fits.includes(scenario.id) ? -8 : 6));
+  const work = clamp(weightedAverage + sameDept + roleSpread + strategyBonus * .35 - tunnelPenalty - mismatchPenalty);
+  const communication = clamp(average([closeness.clarity, closeness.context, closeness.warmth]) + elementBonus + strategyBonus - mismatchPenalty);
+  const decision = clamp(average([closeness.risk, closeness.data, closeness.speed]) + roleSpread + strategyBonus * .5 - tunnelPenalty * .5);
+  const stress = clamp(100 - average([closeness.risk, closeness.speed, closeness.warmth]) + (strategy.fits.includes(scenario.id) ? -4 : 10) + tunnelPenalty + mismatchPenalty);
   const overall = clamp(average([work, communication, decision, 100 - stress]));
 
   return { work, communication, decision, stress, overall, closeness };
@@ -244,7 +334,6 @@ function renderMember(member) {
         </div>
         <p class="meta">${birth.archetype} · ${birth.animal}年</p>
         <p class="style-copy">${member.style}</p>
-        ${deepDistillationMarkup(member)}
       </div>
     </article>
   `;
@@ -366,6 +455,41 @@ function switchView(view) {
   state.activeView = view;
   els.tabs.forEach((tab) => tab.classList.toggle("active", tab.dataset.view === view));
   els.views.forEach((viewEl) => viewEl.classList.toggle("active", viewEl.id === `${view}-view`));
+  if (view === "org") renderOrgMap();
+}
+
+function renderOrgMap() {
+  if (!els.orgMap) return;
+  const mission = state.meeting.scenario;
+  const required = new Set(missionRequires(mission));
+  const covered = new Set(state.meeting.coveredUnits);
+  const membersByUnit = GAME_DATA.orgUnits.reduce((acc, unit) => ({ ...acc, [unit.id]: [] }), {});
+  GAME_DATA.members.forEach((member) => {
+    const unit = unitFor(member);
+    if (!membersByUnit[unit]) membersByUnit[unit] = [];
+    membersByUnit[unit].push(member);
+  });
+
+  els.orgLegend.innerHTML = `
+    <span><b>${mission.name}</b></span>
+    <span>Required lanes: ${missionRequires(mission).map(unitName).join(" / ")}</span>
+  `;
+  els.orgMap.innerHTML = GAME_DATA.orgUnits.map((unit) => {
+    const status = covered.has(unit.id) ? "covered" : required.has(unit.id) ? "required" : "optional";
+    const members = membersByUnit[unit.id] || [];
+    return `
+      <article class="org-node ${status}" style="--unit:${UNIT_COLORS[unit.id] || "#fff"}">
+        <div class="org-node-head">
+          <span>${status.toUpperCase()}</span>
+          <h3>${unit.name}</h3>
+        </div>
+        <p>${unit.tagline}</p>
+        <div class="node-tags">${unit.capability.map((item) => `<b>${item}</b>`).join("")}</div>
+        <small>${unit.risk}</small>
+        <div class="node-roster">${members.slice(0, 8).map((member) => `<i>${member.name}</i>`).join("")}</div>
+      </article>
+    `;
+  }).join("");
 }
 
 function resetMeeting() {
@@ -379,7 +503,9 @@ function resetMeeting() {
     friction: mission.pressure.friction,
     hand: [],
     played: [],
+    coveredUnits: [],
     lastDepartment: null,
+    lastUnit: null,
     log: [`任務展開：${mission.goal}`]
   };
   drawHand();
@@ -388,13 +514,17 @@ function resetMeeting() {
 
 function renderMeeting() {
   const meeting = state.meeting;
+  const requiredUnits = missionRequires(meeting.scenario);
+  const covered = new Set(meeting.coveredUnits);
+  const missing = requiredUnits.filter((unit) => !covered.has(unit));
   els.meetingTitle.textContent = meeting.scenario.name;
   els.meetingScenario.textContent = meeting.scenario.prompt;
   els.missionBrief.innerHTML = `
     <strong>Win</strong>
-    <span>五回合內讓 Trust / Clarity / Momentum 達 70，Friction 低於 45。</span>
+    <span>五回合內讓 Trust / Clarity / Momentum 達 70，Friction 低於 45，且關鍵單位必須都上場。</span>
     <b>${meeting.played.length} cards played</b>
-    <b>${meeting.lastDepartment ? `chain: ${meeting.lastDepartment}` : "chain: none"}</b>
+    <b>${missing.length ? `missing: ${missing.map(unitName).join(" / ")}` : "coverage: complete"}</b>
+    <div class="lane-strip">${requiredUnits.map((unit) => `<i class="${covered.has(unit) ? "covered" : ""}" style="--unit:${UNIT_COLORS[unit] || "#fff"}">${unitName(unit)}</i>`).join("")}</div>
   `;
   els.turnCount.textContent = `Turn ${Math.min(meeting.turn, 5)} / 5`;
   ["trust", "clarity", "momentum", "friction"].forEach((key) => {
@@ -403,6 +533,7 @@ function renderMeeting() {
   });
   els.meetingLog.innerHTML = meeting.log.map((item) => `<li>${item}</li>`).join("");
   renderActionCards();
+  renderOrgMap();
 }
 
 function drawHand() {
@@ -435,24 +566,78 @@ function renderActionCards() {
     const member = memberById(memberId);
     const action = bestActionForMember(member);
     const birth = birthProfile(member);
-    const combo = comboPreview(member);
+    const fit = cardFit(member, action);
     const rarity = cardRarity(member, action);
-    const pips = cardPips(member, action);
+    const pips = cardPips(member, action, fit);
+    const unit = unitFor(member);
     return `
-      <button class="action-card play-card ${elementClass(birth.element)} ${rarity}" type="button" data-member="${member.id}" ${disabled}>
+      <button class="action-card play-card ${elementClass(birth.element)} ${rarity} ${fit.className}" type="button" data-member="${member.id}" ${disabled}>
         <span class="sigil">${action.icon}</span>
-        <i>${rarityLabel(rarity)}</i>
+        <i>${fit.label}</i>
         <strong>${member.name}</strong>
-        <em>${member.department} · ${birth.archetype}</em>
+        <em>${unitName(unit)} · ${birth.archetype}</em>
         <small>${action.name}: ${action.copy}</small>
         <div class="card-pips">${pips.map((pip) => `<mark>${pip}</mark>`).join("")}</div>
-        <b>${combo}</b>
+        <b>${fit.risk ? `Risk: ${fit.risk.title}` : comboPreview(member)}</b>
       </button>
     `;
   }).join("");
   els.actionCards.querySelectorAll(".action-card").forEach((button) => {
     button.addEventListener("click", () => playMeetingTurn(button.dataset.member));
   });
+}
+
+function cardFit(member, action) {
+  const meeting = state.meeting;
+  const unit = unitFor(member);
+  const required = missionRequires(meeting.scenario);
+  const traits = traitsFor(member);
+  const profile = GAME_DATA.distillations?.[member.id];
+  const vectorScore = vectorsFor(member)[action.vector] - 66;
+  const requiredBonus = required.includes(unit) ? 24 : -18;
+  const newLaneBonus = required.includes(unit) && !meeting.coveredUnits.includes(unit) ? 14 : 0;
+  const repeatPenalty = meeting.lastUnit && meeting.lastUnit === unit ? -12 : 0;
+  const profileBonus = actionProfileBonus(action, profile) / 3;
+  const risk = triggeredRisk(member, action, unit);
+  const riskPenalty = risk ? risk.penalty : 0;
+  const score = vectorScore + requiredBonus + newLaneBonus + repeatPenalty + profileBonus - riskPenalty;
+
+  if (risk?.fatal) return { score, label: "BLOCKER", className: "blocker", risk };
+  if (score >= 32) return { score, label: "CORE FIT", className: "core-fit", risk };
+  if (score >= 12) return { score, label: "USEFUL", className: "useful-fit", risk };
+  if (score >= -8) return { score, label: "RISKY", className: "risky-fit", risk };
+  return { score, label: "OFF-LANE", className: "off-lane", risk };
+}
+
+function triggeredRisk(member, action, unit) {
+  const mission = state.meeting.scenario;
+  const traits = traitsFor(member);
+  const required = missionRequires(mission);
+  if (!required.includes(unit)) {
+    return { title: "打錯戰場", text: `${unitName(unit)} 不是這張任務的關鍵缺口，會製造更多交接噪音。`, penalty: 16 };
+  }
+  if (member.id === "rock" && ["rc-lock", "fabric-api-78", "nunox-ip"].includes(mission.id)) {
+    return { title: "知識鎖倉", text: "技術真相有了，但如果不綁文件化義務，單點風險會變更大。", penalty: 18 };
+  }
+  if (traits.includes("waits-for-brief") && ["ai-seed", "sttrix-gtm", "pilot-feedback"].includes(mission.id) && action.id !== "frame") {
+    return { title: "等待模式", text: "需要主動定義需求的局，若沒先授權，會退回等規格。", penalty: 14 };
+  }
+  if (traits.includes("over-research") && ["vivatech-booth", "sttrix-gtm", "debbie-gap"].includes(mission.id) && action.id === "prototype") {
+    return { title: "研究過深", text: "這局缺的是取捨節奏，過度研究會讓 demo 窗口被吃掉。", penalty: 13 };
+  }
+  if (traits.includes("weak-expression") && ["taipei-chiayi", "rc-lock", "fabric-api-78"].includes(mission.id) && action.id === "bridge") {
+    return { title: "表達斷點", text: "細節判斷很準，但直接放到跨部門翻譯位會卡在說不清。", penalty: 15 };
+  }
+  if (traits.includes("overloaded") && ["debbie-gap", "sttrix-gtm"].includes(mission.id)) {
+    return { title: "超載", text: "可靠牌不是免洗資源，繼續加壓會讓 Trust 看似上升、Friction 暗中累積。", penalty: 12 };
+  }
+  if (traits.includes("quality-gate-gap") && ["rc-lock", "sequin-qipao", "dicks-placement-print"].includes(mission.id) && action.id === "gate") {
+    return { title: "白臉真空", text: "架構可以設，但品質 gate 需要外部標準撐住，不然現場會滑動。", penalty: 10 };
+  }
+  if (traits.includes("profile-thin") && state.meeting.turn <= 2) {
+    return { title: "資料薄", text: "太早把低觀察資料的人放核心位，會增加推演不確定性。", penalty: 10 };
+  }
+  return null;
 }
 
 function cardRarity(member, action) {
@@ -471,12 +656,14 @@ function rarityLabel(rarity) {
   }[rarity];
 }
 
-function cardPips(member, action) {
+function cardPips(member, action, fit) {
   const vector = vectorsFor(member)[action.vector];
   const profile = GAME_DATA.distillations?.[member.id];
-  const pips = [`${axisName(action.vector)} ${vector}`];
+  const unit = unitFor(member);
+  const pips = [unitName(unit), `${axisName(action.vector)} ${vector}`];
   if (profile?.aiFit >= 4) pips.push("AI+");
-  if (state.meeting.lastDepartment && state.meeting.lastDepartment !== member.department) pips.push("COMBO");
+  if (fit?.score < 0) pips.push("MISFIT");
+  if (state.meeting.lastUnit && state.meeting.lastUnit !== unit) pips.push("COMBO");
   return pips.slice(0, 3);
 }
 
@@ -491,8 +678,9 @@ function bestActionForMember(person) {
 }
 
 function comboPreview(person) {
-  if (!state.meeting.lastDepartment) return "Opening move";
-  if (state.meeting.lastDepartment !== person.department) return "Cross-unit combo +";
+  const unit = unitFor(person);
+  if (!state.meeting.lastUnit) return "Opening move";
+  if (state.meeting.lastUnit !== unit) return "Cross-unit combo +";
   return "Same-lane pressure";
 }
 
@@ -500,6 +688,8 @@ function playMeetingTurn(memberId) {
   const meeting = state.meeting;
   const person = memberById(memberId);
   const action = bestActionForMember(person);
+  const unit = unitFor(person);
+  const fit = cardFit(person, action);
   const self = memberById("elly");
   const pseudoScenario = { id: meeting.scenario.id, weights: meeting.scenario.weights };
   const strategy = strategyFromAction(action);
@@ -507,27 +697,38 @@ function playMeetingTurn(memberId) {
   const boost = action.boosts;
   const vectorFit = (vectorsFor(person)[action.vector] - 50) / 6;
   const orgFit = actionProfileBonus(action, GAME_DATA.distillations?.[person.id]) / 4;
-  const crossUnit = meeting.lastDepartment && meeting.lastDepartment !== person.department;
-  const sameLane = meeting.lastDepartment && meeting.lastDepartment === person.department;
+  const crossUnit = meeting.lastUnit && meeting.lastUnit !== unit;
+  const sameLane = meeting.lastUnit && meeting.lastUnit === unit;
   const elementText = relationFor(self, person);
   const elementBoost = elementText.includes("相生") ? 4 : elementText.includes("相剋") ? -2 : 1;
+  const laneBonus = missionRequires(meeting.scenario).includes(unit) ? 3 : -8;
+  const newRequiredLane = missionRequires(meeting.scenario).includes(unit) && !meeting.coveredUnits.includes(unit);
+  const riskPenalty = fit.risk ? fit.risk.penalty : 0;
+  const offLane = fit.className === "off-lane" || fit.className === "blocker";
 
-  meeting.trust = clamp(meeting.trust + (boost.trust || 0) + (scores.communication - 62) / 9 + orgFit + (crossUnit ? 5 : 0));
-  meeting.clarity = clamp(meeting.clarity + (boost.clarity || 0) + vectorFit + (scores.work - 62) / 11 + elementBoost);
-  meeting.momentum = clamp(meeting.momentum + (boost.momentum || 0) + (scores.decision - 60) / 10 + (sameLane ? 4 : 0));
-  meeting.friction = clamp(meeting.friction + (boost.friction || 0) + (scores.stress - 52) / 10 - orgFit + (crossUnit ? -6 : 0) + (sameLane ? 4 : 0));
+  meeting.trust = clamp(meeting.trust + (boost.trust || 0) + (scores.communication - 64) / 11 + orgFit + (crossUnit ? 3 : 0) + (offLane ? -7 : 0));
+  meeting.clarity = clamp(meeting.clarity + (boost.clarity || 0) + vectorFit + (scores.work - 66) / 13 + elementBoost + laneBonus - riskPenalty / 5);
+  meeting.momentum = clamp(meeting.momentum + (boost.momentum || 0) + (scores.decision - 64) / 12 + (sameLane ? 2 : 0) + (newRequiredLane ? 5 : 0) - (offLane ? 5 : 0));
+  meeting.friction = clamp(meeting.friction + (boost.friction || 0) + (scores.stress - 50) / 8 - orgFit + (crossUnit ? -3 : 0) + (sameLane ? 8 : 0) + riskPenalty / 2 + (offLane ? 8 : 0));
 
   const profile = GAME_DATA.distillations?.[person.id];
   const solution = profile ? profile.assignment : "先補資料，再建立可交接節點。";
-  const comboText = crossUnit ? `觸發跨單位 combo：${meeting.lastDepartment} → ${person.department}` : sameLane ? "同線加壓，速度上升但摩擦也變高" : "開場佈局";
-  meeting.log.unshift(`T${meeting.turn}: ${person.name} 打出「${action.name}」。${comboText}。解法片段：${solution}`);
+  const comboText = crossUnit ? `跨單位 combo：${unitName(meeting.lastUnit)} → ${unitName(unit)}` : sameLane ? "同單位連打：速度上升，但 tunnel vision 增加" : "開場佈局";
+  const riskText = fit.risk ? `風險觸發「${fit.risk.title}」：${fit.risk.text}` : "沒有明顯錯配。";
+  meeting.log.unshift(`T${meeting.turn}: ${person.name} / ${unitName(unit)} 打出「${action.name}」〔${fit.label}〕。${comboText}。${riskText}`);
+  meeting.log.unshift(`解法碎片：${solution}`);
   meeting.played.push(person.id);
+  if (!meeting.coveredUnits.includes(unit) && missionRequires(meeting.scenario).includes(unit)) {
+    meeting.coveredUnits.push(unit);
+  }
   meeting.lastDepartment = person.department;
+  meeting.lastUnit = unit;
   meeting.turn += 1;
 
   if (meeting.turn > 5) {
-    const win = meeting.trust >= 70 && meeting.clarity >= 70 && meeting.momentum >= 70 && meeting.friction < 45;
-    meeting.log.unshift(win ? `任務完成：${meeting.scenario.goal}` : "任務卡住：solution 還沒成形，下一輪需要換單位或補一張結構牌。");
+    const missing = missingUnits();
+    const win = meeting.trust >= 70 && meeting.clarity >= 70 && meeting.momentum >= 70 && meeting.friction < 45 && missing.length === 0;
+    meeting.log.unshift(win ? `任務完成：${meeting.scenario.goal}` : `任務卡住：${missing.length ? `缺 ${missing.map(unitName).join(" / ")}` : "數值未達標或摩擦過高"}。下一輪需要換地形，不是只換人。`);
   }
   drawHand();
   renderMeeting();

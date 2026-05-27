@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>MAKACARD | Org Quest</title>
-    <link rel="stylesheet" href="styles.css?v=20260527-game5">
+    <link rel="stylesheet" href="styles.css?v=20260527-game6">
   </head>
   <body>
     <main class="app-shell">
@@ -22,6 +22,7 @@
 
       <nav class="tabs" aria-label="MAKACARD views">
         <button class="tab active" type="button" data-view="meeting">Mission Run</button>
+        <button class="tab" type="button" data-view="org">Digital Org</button>
         <button class="tab" type="button" data-view="members">成員總覽</button>
         <button class="tab" type="button" data-view="lab">Chemistry Lab</button>
       </nav>
@@ -85,6 +86,18 @@
         </div>
       </section>
 
+      <section id="org-view" class="view" aria-label="Digital Org">
+        <div class="org-shell">
+          <section class="org-command">
+            <p class="label">Digital Org</p>
+            <h2>Makalot Interaction Map</h2>
+            <p>把任務丟進組織地形裡看：哪些單位必須上場、哪裡會斷鏈、哪一張人物牌只是看起來很強但其實打錯場。</p>
+            <div id="org-legend" class="org-legend"></div>
+          </section>
+          <section id="org-map" class="org-map" aria-label="Makalot digital organization map"></section>
+        </div>
+      </section>
+
       <section id="members-view" class="view" aria-label="成員總覽">
         <div class="toolbar">
           <div>
@@ -135,7 +148,7 @@
 
     </main>
 
-    <script src="game-data.js?v=20260527-game5"></script>
-    <script src="game.js?v=20260527-game5"></script>
+    <script src="game-data.js?v=20260527-game6"></script>
+    <script src="game.js?v=20260527-game6"></script>
   </body>
 </html>
