@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>MAKACARD | Team Chemistry Deck</title>
-    <link rel="stylesheet" href="styles.css?v=20260527-distill2">
+    <link rel="stylesheet" href="styles.css?v=20260527-game3">
   </head>
   <body>
     <main class="app-shell">
@@ -12,11 +12,11 @@
         <div>
           <p class="eyebrow">MAKACARD</p>
           <h1>Team Chemistry Deck</h1>
-          <p class="intro">用組織角色、溝通偏好與生日象徵層，映射兩個人在工作情境裡的對話合拍度。</p>
+          <p class="intro">以 Makalot 組織為地圖，讓不同單位在任務壓力下出牌、協作、補位，推演可執行 solutions。</p>
         </div>
         <div class="header-metrics" aria-label="Dataset summary">
           <span><strong id="member-count">21</strong> members</span>
-          <span><strong>4</strong> chemistry scores</span>
+          <span><strong>5</strong> mission turns</span>
         </div>
       </header>
 
@@ -58,10 +58,7 @@
               <select id="scenario-select"></select>
             </label>
             <label>
-              溝通策略
-              <select id="strategy-select"></select>
-            </label>
-            <button id="analyze-pair" class="primary-button" type="button">分析合拍度</button>
+            <button id="analyze-pair" class="primary-button" type="button">推演互動</button>
           </section>
 
           <section class="panel result-panel">
@@ -111,28 +108,25 @@
                 <strong id="friction-value">25</strong>
               </article>
             </div>
+            <div id="mission-brief" class="mission-brief"></div>
             <ol id="meeting-log" class="meeting-log"></ol>
           </section>
 
           <section class="panel controls-panel">
             <p class="label">Move</p>
-            <h2>本回合行動</h2>
+            <h2>派一張人物牌</h2>
             <label>
-              找誰對話
+              由誰介入
               <select id="meeting-person"></select>
             </label>
-            <label>
-              使用策略
-              <select id="meeting-strategy"></select>
-            </label>
-            <button id="play-turn" class="primary-button" type="button">推進一回合</button>
+            <div id="action-cards" class="action-cards" aria-label="本回合可用行動"></div>
             <button id="reset-meeting" class="secondary-button" type="button">重新開局</button>
           </section>
         </div>
       </section>
     </main>
 
-    <script src="game-data.js?v=20260527-distill2"></script>
-    <script src="game.js?v=20260527-distill2"></script>
+    <script src="game-data.js?v=20260527-game3"></script>
+    <script src="game.js?v=20260527-game3"></script>
   </body>
 </html>

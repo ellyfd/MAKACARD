@@ -387,6 +387,90 @@ const GAME_DATA = {
       weights: { context: 1.15, speed: 1, data: 1.05, warmth: 1.1, clarity: .95, risk: .85 }
     }
   ],
+  orgMissions: [
+    {
+      id: "rc-lock",
+      name: "數位布料知識鎖倉",
+      prompt: "布料標準集中在少數技術核心身上，DPC、3D、數發都在等同一個人輸出。必須在五回合內把隱性知識變成可交接流程。",
+      goal: "建立文件化義務、替補路線與跨單位交接節點。",
+      pressure: { trust: 38, clarity: 34, momentum: 30, friction: 46 },
+      weights: { clarity: 1.25, data: 1.3, risk: 1.25, speed: .75, context: 1, warmth: .8 }
+    },
+    {
+      id: "debbie-gap",
+      name: "Debbie 產假缺口",
+      prompt: "台北線吸收缺口後負載升高，回歸前如果沒有重設分工，穩定的人會被默默耗損。",
+      goal: "重設承接、回歸定位與對外窗口。",
+      pressure: { trust: 42, clarity: 36, momentum: 34, friction: 38 },
+      weights: { clarity: 1.1, context: 1.2, risk: 1.15, warmth: 1, data: .9, speed: .8 }
+    },
+    {
+      id: "taipei-chiayi",
+      name: "台北視角低估嘉義",
+      prompt: "嘉義和平湖成員曝光不足，台北主視角把地理成本誤讀成態度問題，跨地資訊正在變形。",
+      goal: "讓遠端單位被看見，建立同步節奏和正式紀錄。",
+      pressure: { trust: 36, clarity: 32, momentum: 34, friction: 44 },
+      weights: { context: 1.3, warmth: 1.15, clarity: 1.1, risk: 1, data: 1, speed: .75 }
+    },
+    {
+      id: "ai-seed",
+      name: "AI 種子隊成形",
+      prompt: "AI 轉型不能只靠工具熱情，需要把研究、內容、技術標準、PM 節奏接成一條可運作的線。",
+      goal: "組出跨單位 seed team，交付一個可驗證 prototype。",
+      pressure: { trust: 44, clarity: 38, momentum: 38, friction: 28 },
+      weights: { speed: 1.15, context: 1.1, data: 1.15, clarity: 1, warmth: .9, risk: .9 }
+    }
+  ],
+  actionTypes: [
+    {
+      id: "frame",
+      name: "定義問題",
+      icon: "◇",
+      copy: "把混亂任務切成共同問題、邊界與決策點。",
+      vector: "clarity",
+      boosts: { clarity: 16, trust: 3, momentum: 4, friction: -3 }
+    },
+    {
+      id: "bridge",
+      name: "跨域翻譯",
+      icon: "↔",
+      copy: "把兩個單位的語言翻成彼此可執行的版本。",
+      vector: "context",
+      boosts: { trust: 9, clarity: 9, momentum: 3, friction: -8 }
+    },
+    {
+      id: "prototype",
+      name: "做出樣本",
+      icon: "▣",
+      copy: "用小型 prototype 取代空轉討論。",
+      vector: "speed",
+      boosts: { momentum: 17, clarity: 5, trust: 2, friction: -1 }
+    },
+    {
+      id: "gate",
+      name: "設品質閘門",
+      icon: "◆",
+      copy: "把標準、驗收和文件化義務放進流程。",
+      vector: "risk",
+      boosts: { clarity: 10, trust: 4, momentum: 2, friction: -10 }
+    },
+    {
+      id: "evidence",
+      name: "補證據鏈",
+      icon: "◎",
+      copy: "用樣本、數據、會議紀錄保護決策。",
+      vector: "data",
+      boosts: { clarity: 8, trust: 8, momentum: 5, friction: -5 }
+    },
+    {
+      id: "align",
+      name: "修復關係",
+      icon: "✦",
+      copy: "先降低誤讀和防衛，再推進任務。",
+      vector: "warmth",
+      boosts: { trust: 15, clarity: 3, momentum: 1, friction: -12 }
+    }
+  ],
   strategies: [
     {
       id: "bottom-line",
