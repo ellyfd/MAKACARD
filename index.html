@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>MAKACARD | Org Quest</title>
-    <link rel="stylesheet" href="styles.css?v=20260528-game15">
+    <link rel="stylesheet" href="styles.css?v=20260528-game16">
   </head>
   <body>
     <main class="app-shell">
@@ -23,7 +23,7 @@
       <nav class="tabs" aria-label="MAKACARD views">
         <button class="tab active" type="button" data-view="meeting">Mission Run</button>
         <button class="tab" type="button" data-view="org">Digital Org</button>
-        <button class="tab" type="button" data-view="lab">Combo Lab</button>
+        <button class="tab" type="button" data-view="lab">Draft Room</button>
       </nav>
 
       <section id="meeting-view" class="view active" aria-label="Mission Run">
@@ -107,8 +107,8 @@
       <section id="lab-view" class="view" aria-label="Chemistry Lab">
         <div class="lab-layout">
           <section class="panel controls-panel">
-            <p class="label">Team Build Arena</p>
-            <h2>管理檢定牌局</h2>
+            <p class="label">Pre-Mission Draft</p>
+            <h2>組隊草稿牌局</h2>
             <label>
               開局牌
               <select id="person-a"></select>
@@ -126,16 +126,16 @@
               <select id="scenario-select"></select>
             </label>
             <label>
-              管理檢定
+              玩法檢定
               <select id="framework-select"></select>
             </label>
-            <button id="analyze-pair" class="primary-button" type="button">測試 Combo</button>
+            <button id="analyze-pair" class="primary-button" type="button">Draft Team</button>
           </section>
 
           <section class="panel result-panel">
             <div class="result-heading">
               <div>
-                <p class="label">Management Lens</p>
+                <p class="label">Draft Result</p>
                 <h2 id="pair-title">選三張牌開始測試</h2>
               </div>
               <span id="fit-badge" class="fit-badge">--</span>
@@ -148,8 +148,8 @@
 
     </main>
 
-    <script src="game-data.js?v=20260528-game15"></script>
-    <script src="org-skill-data.js?v=20260528-game15"></script>
-    <script src="game.js?v=20260528-game15"></script>
+    <script src="game-data.js?v=20260528-game16"></script>
+    <script src="org-skill-data.js?v=20260528-game16"></script>
+    <script src="game.js?v=20260528-game16"></script>
   </body>
 </html>

@@ -180,7 +180,7 @@ function allOrgMembers() {
   const seen = new Set();
   const enriched = GAME_DATA.members.map((member) => ({
     ...member,
-    status: /^\d{4}-\d{2}-\d{2}$/.test(member.birthday) ? "已補資料" : "待補"
+    status: /^\d{4}-\d{2}-\d{2}$/.test(member.birthday) ? member.birthday : "待補"
   }));
   const merged = [];
   [...enriched, ...(GAME_DATA.orgPeople || [])].forEach((member) => {
@@ -502,15 +502,18 @@ function analyzePair() {
   els.pairTitle.textContent = `${a.name} → ${b.name} → ${c.name}`;
   els.fitBadge.textContent = `${chain} · ${chain >= 80 ? "可出任務" : chain >= 62 ? "可打但有洞" : "重抽隊形"}`;
   els.scoreGrid.innerHTML = [
-    renderScoreCard("Mission Fit", chain, "這隊能不能接下此成衣業任務"),
-    renderScoreCard("Role Balance", roleBalance, "Sponsor / Domain / Translator / Operator 的角色完整度"),
-    renderScoreCard("Decision Rights", decisionRights, "誰能拍板、誰負責交付、誰只被諮詢"),
-    renderScoreCard("Boundary Cost", 100 - boundaryLoad, "跨單位接力成本，分數越低越好")
+    renderScoreCard("Draft Score", chain, "這組隊形進任務前的可打程度"),
+    renderScoreCard("Role Spread", roleBalance, "Sponsor / Domain / Translator / Operator 的互補程度"),
+    renderScoreCard("Decision Token", decisionRights, "是否有人能拍板，不只是討論"),
+    renderScoreCard("Handoff Tax", 100 - boundaryLoad, "跨單位交接成本，分數越低越好")
   ].join("");
   const laneText = trio.map((member, index) => `${member.name}<b>${["開局", "轉接", "收束"][index]} · ${unitName(unitFor(member))} · ${teamRole(member).name}</b>`).join("<span>→</span>");
   const event = labEvent({ chain, missing, friction, lensScore, roles, units });
   els.pairInsight.innerHTML = `
     <div class="combo-line">${laneText}</div>
+    <div class="draft-slots">
+      ${trio.map((member, index) => `<span><b>${["開局", "轉接", "收束"][index]}</b>${teamRole(member).name}<i>${unitName(unitFor(member))}</i></span>`).join("")}
+    </div>
     <div class="lab-event"><strong>${event.title}</strong><span>${event.text}</span></div>
     <div class="resource-board">
       <span>Time <b>${resource.time}</b></span>
@@ -518,11 +521,10 @@ function analyzePair() {
       <span>Evidence <b>${resource.evidence}</b></span>
       <span>Trust <b>${resource.trust}</b></span>
     </div>
-    <p><strong>遊戲模式：</strong>${lens.name}。${lens.focus}</p>
-    <p><strong>命中單位：</strong>${[...covered].map(unitName).join(" / ") || "沒有命中"}。</p>
-    <p><strong>缺口：</strong>${missing.length ? missing.map(unitName).join(" / ") : "關鍵單位已覆蓋"}。</p>
-    <p><strong>框架判定：</strong>${lensScore.text}</p>
-    <p><strong>下一手：</strong>${nextDraftMove({ missing, roles, units, lens })}</p>
+    <p><strong>Draft Mode：</strong>${lens.name}。${lens.focus}</p>
+    <p><strong>任務覆蓋：</strong>${[...covered].map(unitName).join(" / ") || "沒有命中"}；${missing.length ? `缺 ${missing.map(unitName).join(" / ")}` : "關鍵單位已覆蓋"}。</p>
+    <p><strong>檢定事件：</strong>${lensScore.text}</p>
+    <p><strong>下一張牌：</strong>${nextDraftMove({ missing, roles, units, lens })}</p>
   `;
 }
 
@@ -587,11 +589,11 @@ function uniqueRoleText(roles) {
 }
 
 function labEvent({ chain, missing, friction, lensScore }) {
-  if (missing.length) return { title: "Event: Missing Stakeholder", text: `缺 ${missing.map(unitName).join(" / ")}，下一輪如果不補，方案會在交接處斷掉。` };
-  if (friction > 55) return { title: "Event: Storming Spike", text: "摩擦過高，先做權責澄清或一頁 brief，不然越討論越散。" };
-  if (lensScore.score < 55) return { title: "Event: Framework Fail", text: "組織覆蓋看似足夠，但管理檢定沒過，需要換角色或換互動模式。" };
-  if (chain >= 80) return { title: "Event: Combo Window", text: "這組隊形可以進 Mission Run，適合測一次五回合推進。" };
-  return { title: "Event: Narrow Pass", text: "可以打，但要先決定誰拍板、誰交付、誰只被諮詢。" };
+  if (missing.length) return { title: "Event Card: Stakeholder Gap", text: `缺 ${missing.map(unitName).join(" / ")}，這隊還不能進場，先補正式接口。` };
+  if (friction > 55) return { title: "Event Card: Storming Spike", text: "角色能量夠，但交接稅太高；先換轉接牌或選 Handoff Relay 模式。" };
+  if (lensScore.score < 55) return { title: "Event Card: Failed Check", text: "單位覆蓋看似足夠，但隊形沒有通過這種玩法的檢定。" };
+  if (chain >= 80) return { title: "Event Card: Combo Window", text: "Draft 成功，可以把這隊丟進 Mission Run 測五回合。" };
+  return { title: "Event Card: Narrow Pass", text: "可以進場，但只能打短任務；長任務要補授權或證據鏈。" };
 }
 
 function nextDraftMove({ missing, roles, lens }) {
@@ -719,7 +721,7 @@ function orgViewForFocus(hierarchy, focus) {
     return {
       level: "dept",
       title: focus.dept,
-      nodes: members.map((member) => ({ type: "person", unit: focus.unit, dept: focus.dept, title: member.name, subtitle: `${member.localName || "中文名待補"} · ${member.role || "職務待補"}`, count: member.birthday === "待補" ? "待補" : "已補", member })),
+      nodes: members.map((member) => ({ type: "person", unit: focus.unit, dept: focus.dept, title: member.name, subtitle: `${member.localName || "中文名待補"} · ${member.role || "職務待補"}`, count: /^\d{4}-\d{2}-\d{2}$/.test(member.birthday || "") ? member.birthday : "生日待補", member })),
       detail: `<strong>${focus.dept}</strong><p>${unit?.name || ""} / ${members.length} members</p>`
     };
   }
@@ -841,8 +843,8 @@ function renderMeeting() {
   els.meetingTitle.textContent = meeting.scenario.name;
   els.meetingScenario.textContent = meeting.scenario.prompt;
   els.missionBrief.innerHTML = `
-    <strong>Win</strong>
-    <span>五回合內讓 Trust / Clarity / Momentum 達 70，Friction 低於 45，且關鍵單位必須都上場。</span>
+    <strong>Crisis Run</strong>
+    <span>五回合內打出人物牌解任務。Trust / Clarity / Momentum 要達 70，Friction 低於 45，且關鍵單位必須都上場。</span>
     <b>${meeting.played.length} cards played</b>
     <b>${missing.length ? `missing: ${missing.map(unitName).join(" / ")}` : "coverage: complete"}</b>
     <div class="lane-strip">${requiredUnits.map((unit) => `<i class="${covered.has(unit) ? "covered" : ""}" style="--unit:${UNIT_COLORS[unit] || "#fff"}">${unitName(unit)}</i>`).join("")}</div>
@@ -915,18 +917,19 @@ function cardFit(member, action) {
   const traits = traitsFor(member);
   const profile = GAME_DATA.distillations?.[member.id];
   const vectorScore = vectorsFor(member)[action.vector] - 66;
-  const requiredBonus = required.includes(unit) ? 24 : -18;
-  const newLaneBonus = required.includes(unit) && !meeting.coveredUnits.includes(unit) ? 14 : 0;
-  const repeatPenalty = meeting.lastUnit && meeting.lastUnit === unit ? -12 : 0;
+  const actionNeed = ((meeting.scenario.weights?.[action.vector] || 1) - 1) * 42;
+  const requiredBonus = required.includes(unit) ? 18 : -24;
+  const newLaneBonus = required.includes(unit) && !meeting.coveredUnits.includes(unit) ? 11 : 0;
+  const repeatPenalty = meeting.lastUnit && meeting.lastUnit === unit ? -16 : 0;
   const profileBonus = actionProfileBonus(action, profile) / 3;
   const risk = triggeredRisk(member, action, unit);
   const riskPenalty = risk ? risk.penalty : 0;
-  const score = vectorScore + requiredBonus + newLaneBonus + repeatPenalty + profileBonus - riskPenalty;
+  const score = vectorScore + actionNeed + requiredBonus + newLaneBonus + repeatPenalty + profileBonus - riskPenalty;
 
   if (risk?.fatal) return { score, label: "BLOCKER", className: "blocker", risk };
-  if (score >= 32) return { score, label: "CORE FIT", className: "core-fit", risk };
-  if (score >= 12) return { score, label: "USEFUL", className: "useful-fit", risk };
-  if (score >= -8) return { score, label: "RISKY", className: "risky-fit", risk };
+  if (score >= 38) return { score, label: "CORE FIT", className: "core-fit", risk };
+  if (score >= 18) return { score, label: "USEFUL", className: "useful-fit", risk };
+  if (score >= 0) return { score, label: "RISKY", className: "risky-fit", risk };
   return { score, label: "OFF-LANE", className: "off-lane", risk };
 }
 
@@ -937,22 +940,22 @@ function triggeredRisk(member, action, unit) {
   if (!required.includes(unit)) {
     return { title: "打錯戰場", text: `${unitName(unit)} 不是這張任務的關鍵缺口，會製造更多交接噪音。`, penalty: 16 };
   }
-  if (member.id === "rock" && ["rc-lock", "fabric-api-78", "nunox-ip"].includes(mission.id)) {
+  if (member.id === "rock" && ["qc-rework-spike", "sustainability-traceability", "ai-plm-visibility"].includes(mission.id) && action.id !== "evidence") {
     return { title: "知識鎖倉", text: "技術真相有了，但如果不綁文件化義務，單點風險會變更大。", penalty: 18 };
   }
-  if (traits.includes("waits-for-brief") && ["ai-seed", "sttrix-gtm", "pilot-feedback"].includes(mission.id) && action.id !== "frame") {
+  if (traits.includes("waits-for-brief") && ["digital-sample-adoption", "ai-plm-visibility", "spec-version-drift"].includes(mission.id) && action.id !== "frame") {
     return { title: "等待模式", text: "需要主動定義需求的局，若沒先授權，會退回等規格。", penalty: 14 };
   }
-  if (traits.includes("over-research") && ["vivatech-booth", "sttrix-gtm", "debbie-gap"].includes(mission.id) && action.id === "prototype") {
+  if (traits.includes("over-research") && ["fabric-trim-delay", "shipment-booking-crunch", "capacity-wip-bottleneck"].includes(mission.id) && action.id === "prototype") {
     return { title: "研究過深", text: "這局缺的是取捨節奏，過度研究會讓 demo 窗口被吃掉。", penalty: 13 };
   }
-  if (traits.includes("weak-expression") && ["taipei-chiayi", "rc-lock", "fabric-api-78"].includes(mission.id) && action.id === "bridge") {
+  if (traits.includes("weak-expression") && ["spec-version-drift", "qc-rework-spike", "sustainability-traceability"].includes(mission.id) && action.id === "bridge") {
     return { title: "表達斷點", text: "細節判斷很準，但直接放到跨部門翻譯位會卡在說不清。", penalty: 15 };
   }
-  if (traits.includes("overloaded") && ["debbie-gap", "sttrix-gtm"].includes(mission.id)) {
+  if (traits.includes("overloaded") && ["fabric-trim-delay", "pp-sample-loop", "shipment-booking-crunch"].includes(mission.id)) {
     return { title: "超載", text: "可靠牌不是免洗資源，繼續加壓會讓 Trust 看似上升、Friction 暗中累積。", penalty: 12 };
   }
-  if (traits.includes("quality-gate-gap") && ["rc-lock", "sequin-qipao", "dicks-placement-print"].includes(mission.id) && action.id === "gate") {
+  if (traits.includes("quality-gate-gap") && ["qc-rework-spike", "spec-version-drift", "capacity-wip-bottleneck"].includes(mission.id) && action.id === "gate") {
     return { title: "白臉真空", text: "架構可以設，但品質 gate 需要外部標準撐住，不然現場會滑動。", penalty: 10 };
   }
   if (traits.includes("profile-thin") && state.meeting.turn <= 2) {

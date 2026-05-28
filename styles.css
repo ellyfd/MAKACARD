@@ -1499,6 +1499,39 @@ select {
   font-weight: 800;
 }
 
+.draft-slots {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.draft-slots span {
+  display: grid;
+  gap: 5px;
+  min-height: 78px;
+  padding: 10px;
+  border: 1px solid rgba(255, 255, 255, .12);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, .05);
+  color: #fff;
+}
+
+.draft-slots b {
+  width: fit-content;
+  padding: 3px 7px;
+  border-radius: 999px;
+  color: #10131b;
+  background: #ffcf5a;
+  font-size: .68rem;
+}
+
+.draft-slots i {
+  color: #a9b6c8;
+  font-style: normal;
+  font-size: .78rem;
+}
+
 .lab-event {
   display: grid;
   gap: 6px;
@@ -1574,6 +1607,11 @@ select {
 
   .org-command {
     position: static;
+  }
+
+  .draft-slots,
+  .resource-board {
+    grid-template-columns: 1fr;
   }
 }
 
