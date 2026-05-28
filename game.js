@@ -16,7 +16,9 @@ const state = {
   },
   selectedOrgUnit: "all",
   selectedOrgDept: null,
-  orgFocus: { type: "root" }
+  orgFocus: { type: "root" },
+  orgExpandedPath: [],
+  orgSelected: null
 };
 
 const els = {
@@ -653,18 +655,53 @@ function renderOrgMap() {
   els.orgTitle.textContent = view.title;
   els.orgLegend.innerHTML = renderOrgBreadcrumb(focus);
   els.orgMap.className = `org-map drill-${view.level}`;
-  els.orgMap.innerHTML = `${renderOrgParentNode(view)}<div class="org-child-row">${view.nodes.length ? view.nodes.map(renderOrgFocusNode).join("") : renderOrgEmptyState(view)}</div>`;
+  els.orgMap.innerHTML = renderOrgChart(view, hierarchy);
   els.orgMap.querySelectorAll("[data-org-action]").forEach((button) => {
     button.addEventListener("click", () => {
       const action = button.dataset.orgAction;
-      if (action === "unit") state.orgFocus = { type: "unit", unit: button.dataset.unit };
-      if (action === "dept") state.orgFocus = { type: "dept", unit: button.dataset.unit, dept: button.dataset.dept, deptId: button.dataset.deptId };
-      if (action === "person") state.orgFocus = { type: "person", unit: button.dataset.unit, dept: button.dataset.dept, deptId: button.dataset.deptId, person: button.dataset.person };
-      renderOrgMap();
+      if (action === "unit") {
+        state.orgFocus = { type: "unit", unit: button.dataset.unit };
+        state.orgExpandedPath = [];
+        state.orgSelected = null;
+        renderOrgMap();
+        return;
+      }
+      if (action === "dept") {
+        state.orgExpandedPath = orgDirectoryAncestorIds(button.dataset.deptId);
+        state.orgSelected = { type: "dept", id: button.dataset.deptId };
+        renderOrgMap();
+        renderSelectedOrgDetail(button.dataset.deptId, button.dataset.unit);
+        centerSelectedOrgNode();
+      }
+      if (action === "person") {
+        state.orgSelected = { type: "person", id: button.dataset.person };
+        els.orgMap.querySelectorAll(".org-focus-node.selected").forEach((node) => node.classList.remove("selected"));
+        button.classList.add("selected");
+        renderSelectedPersonDetail(button.dataset.person);
+        centerSelectedOrgNode();
+      }
     });
   });
   if (els.orgDetail) els.orgDetail.innerHTML = view.detail || "";
   if (els.orgBack) els.orgBack.disabled = focus.type === "root";
+}
+
+function centerSelectedOrgNode() {
+  setTimeout(() => {
+    const selected = els.orgMap?.querySelector(".org-focus-node.selected");
+    selected?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+  }, 0);
+}
+
+function renderSelectedOrgDetail(deptId, unitId) {
+  const directory = orgDirectoryById(deptId);
+  const unit = GAME_DATA.orgUnits.find((item) => item.id === unitId);
+  if (els.orgDetail && directory) els.orgDetail.innerHTML = orgDirectoryDetail(directory, unit, orgChartMembers());
+}
+
+function renderSelectedPersonDetail(personId) {
+  const member = orgChartMembers().find((item) => item.id === personId);
+  if (els.orgDetail && member) els.orgDetail.innerHTML = renderPersonDetail(member);
 }
 
 function renderOrgParentNode(view) {
@@ -675,6 +712,70 @@ function renderOrgParentNode(view) {
       <p>${view.summary || `${view.nodes.length} 個下層節點`}</p>
     </article>
   `;
+}
+
+function renderOrgChart(view, hierarchy) {
+  const expandTree = view.level !== "root";
+  return `
+    <div class="org-chart-canvas">
+      <div class="org-tree">
+        ${renderOrgParentNode(view)}
+        ${view.treeRoot ? renderOrgTreeLevel(childOrgNodes(view.treeRoot, hierarchy.people), hierarchy, 1, view, expandTree) : renderOrgTreeLevel(view.nodes, hierarchy, 1, view, expandTree)}
+      </div>
+    </div>
+  `;
+}
+
+function renderOrgTreeLevel(nodes, hierarchy, depth = 1, view = null, expandTree = true) {
+  if (!nodes.length) return renderOrgEmptyState(view || {});
+  return `
+    <div class="org-tree-level depth-${depth}">
+      ${nodes.map((node) => renderOrgTreeNode(node, hierarchy, depth, expandTree)).join("")}
+    </div>
+  `;
+}
+
+function renderOrgTreeNode(node, hierarchy, depth, expandTree) {
+  const shouldExpand = expandTree && (node.type === "unit" || state.orgExpandedPath.includes(node.deptId));
+  const children = shouldExpand ? childOrgNodes(node, hierarchy.people) : [];
+  const isBranch = children.length > 0;
+  return `
+    <div class="org-tree-branch ${isBranch ? "has-children" : ""}">
+      ${renderOrgFocusNode(node)}
+      ${isBranch ? renderOrgTreeLevel(children, hierarchy, depth + 1, null, expandTree) : ""}
+    </div>
+  `;
+}
+
+function childOrgNodes(node, people) {
+  if (node.type === "unit") {
+    return orgDirectories(node.unit).filter((dept) => !dept.parent).map((dept) => orgDirectoryNode(dept, people));
+  }
+  if (node.type !== "dept") return [];
+  const directory = orgDirectoryById(node.deptId);
+  if (!directory) return [];
+  const children = orgDirectoryChildren(directory.id);
+  if (children.length) return children.map((child) => orgDirectoryNode(child, people));
+  return orgDirectoryMembers(directory, people).map((member) => ({
+    type: "person",
+    unit: directory.unit,
+    dept: directory.name,
+    deptId: directory.id,
+    title: member.name,
+    subtitle: [member.localName, member.role].filter((item) => !isMissingValue(item)).join(" · "),
+    count: /^\d{4}-\d{2}-\d{2}$/.test(member.birthday || "") ? member.birthday : "",
+    member
+  }));
+}
+
+function orgDirectoryAncestorIds(deptId) {
+  const ids = [];
+  let cursor = orgDirectoryById(deptId);
+  while (cursor) {
+    ids.unshift(cursor.id);
+    cursor = cursor.parent ? orgDirectoryById(cursor.parent) : null;
+  }
+  return ids;
 }
 
 function renderOrgEmptyState(view) {
@@ -854,6 +955,7 @@ function orgViewForFocus(hierarchy, focus) {
       level: "unit",
       title: unit?.name || "組織群",
       nodes: source.departments.map((dept) => orgDirectoryNode(dept, hierarchy.people)),
+      treeRoot: { type: "unit", unit: unit.id, title: unit.name, subtitle: unit.tagline, count: source.people.length ? `${source.people.length} 成員` : "", departments: source.departments.length },
       summary: `${source.departments.length} 個正式下層單位`,
       detail: `<strong>${unit?.name || ""}</strong><span>下層單位：${source.departments.length}</span>${source.people.length ? `<span>已掛成員：${source.people.length}</span>` : ""}<p>${unit?.tagline || ""}</p>`
     };
@@ -868,6 +970,7 @@ function orgViewForFocus(hierarchy, focus) {
         level: "dept",
         title: directory.name,
         nodes: children.map((child) => orgDirectoryNode(child, hierarchy.people)),
+        treeRoot: orgDirectoryNode(directory, hierarchy.people),
         summary: `${children.length} 個下層單位${ownMembers.length ? `；直屬成員 ${ownMembers.length}` : ""}`,
         detail: orgDirectoryDetail(directory, unit, hierarchy.people)
       };
@@ -879,6 +982,7 @@ function orgViewForFocus(hierarchy, focus) {
       level: "dept",
       title: directory?.name || focus.dept,
       nodes: members.map((member) => ({ type: "person", unit: focus.unit, dept: directory?.name || focus.dept, deptId: directory?.id || focus.deptId, title: member.name, subtitle: [member.localName, member.role].filter((item) => !isMissingValue(item)).join(" · "), count: /^\d{4}-\d{2}-\d{2}$/.test(member.birthday || "") ? member.birthday : "", member })),
+      treeRoot: directory ? orgDirectoryNode(directory, hierarchy.people) : null,
       summary: members.length ? `${members.length} 位成員` : "沒有成員資料",
       emptyTitle: "沒有成員資料",
       emptyText: `${directory?.name || focus.dept} 目前沒有可顯示的成員資料。`,
@@ -933,8 +1037,10 @@ function renderOrgFocusNode(node) {
     `;
   }
   const action = node.type === "unit" ? "unit" : node.type === "dept" ? "dept" : "person";
+  const selected = (node.type === "dept" && state.orgSelected?.type === "dept" && state.orgSelected.id === node.deptId)
+    || (node.type === "person" && state.orgSelected?.type === "person" && state.orgSelected.id === node.member?.id);
   return `
-    <button class="org-focus-node ${node.type}" type="button" data-org-action="${action}" data-unit="${node.unit || ""}" data-dept="${node.dept || ""}" data-dept-id="${node.deptId || ""}" data-person="${node.member?.id || ""}" style="--unit:${unitColor}">
+    <button class="org-focus-node ${node.type} ${selected ? "selected" : ""}" type="button" data-org-action="${action}" data-unit="${node.unit || ""}" data-dept="${node.dept || ""}" data-dept-id="${node.deptId || ""}" data-person="${node.member?.id || ""}" style="--unit:${unitColor}">
       <span>${node.type.toUpperCase()}</span>
       <h3>${node.title}</h3>
       <p>${node.subtitle || ""}</p>
@@ -1244,6 +1350,8 @@ function bindEvents() {
   els.tabs.forEach((tab) => tab.addEventListener("click", () => switchView(tab.dataset.view)));
   els.orgSearch?.addEventListener("input", () => {
     state.orgFocus = { type: "root" };
+    state.orgExpandedPath = [];
+    state.orgSelected = null;
     renderOrgMap();
   });
   els.orgUnitFilter?.addEventListener("change", () => {
@@ -1254,6 +1362,8 @@ function bindEvents() {
   });
   els.orgHome?.addEventListener("click", () => {
     state.orgFocus = { type: "root" };
+    state.orgExpandedPath = [];
+    state.orgSelected = null;
     if (els.orgSearch) els.orgSearch.value = "";
     renderOrgMap();
   });
@@ -1262,6 +1372,8 @@ function bindEvents() {
     if (focus.type === "person") state.orgFocus = { type: "dept", unit: focus.unit, dept: focus.dept, deptId: focus.deptId };
     else if (focus.type === "dept") state.orgFocus = { type: "unit", unit: focus.unit };
     else state.orgFocus = { type: "root" };
+    state.orgExpandedPath = [];
+    state.orgSelected = null;
     renderOrgMap();
   });
   els.analyzePair.addEventListener("click", analyzePair);

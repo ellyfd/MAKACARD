@@ -1674,10 +1674,72 @@ select {
 }
 
 .org-map {
+  overflow: hidden;
+}
+
+.org-chart-canvas {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: visible;
+  padding: 0 0 18px;
+}
+
+.org-tree {
   display: grid;
-  grid-template-columns: 1fr;
+  gap: 34px;
+  min-width: max-content;
+  justify-items: center;
+  padding: 10px 18px 24px;
+}
+
+.org-tree-level {
+  position: relative;
+  display: flex;
+  flex-wrap: nowrap;
   gap: 18px;
-  align-items: stretch;
+  align-items: flex-start;
+  justify-content: center;
+  width: max-content;
+  min-width: 100%;
+}
+
+.org-tree-level::before {
+  content: "";
+  position: absolute;
+  top: -18px;
+  left: 132px;
+  right: 132px;
+  border-top: 2px solid rgba(255, 255, 255, .22);
+}
+
+.org-tree-level.depth-1::before {
+  top: -18px;
+}
+
+.org-tree-branch {
+  position: relative;
+  display: grid;
+  gap: 34px;
+  justify-items: center;
+  flex: 0 0 auto;
+}
+
+.org-tree-branch::before {
+  content: "";
+  position: absolute;
+  top: -18px;
+  left: 50%;
+  height: 18px;
+  border-left: 2px solid rgba(255, 255, 255, .22);
+}
+
+.org-tree-branch.has-children > .org-focus-node::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -35px;
+  height: 35px;
+  border-left: 2px solid rgba(255, 255, 255, .22);
 }
 
 .org-parent-node {
@@ -1722,10 +1784,11 @@ select {
 
 .org-child-row {
   position: relative;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  display: flex;
+  flex-wrap: nowrap;
   gap: 18px;
   padding-top: 26px;
+  width: max-content;
 }
 
 .org-child-row::before {
@@ -1773,6 +1836,7 @@ select {
   position: relative;
   display: grid;
   gap: 10px;
+  width: 260px;
   min-height: 178px;
   padding: 18px;
   border: 1px solid rgba(255, 255, 255, .12);
@@ -1785,6 +1849,7 @@ select {
   box-shadow: var(--shadow);
   text-align: left;
   cursor: pointer;
+  flex: 0 0 auto;
 }
 
 .org-focus-node::after {
@@ -1799,6 +1864,11 @@ select {
 .org-focus-node:hover {
   border-color: color-mix(in srgb, var(--unit), white 24%);
   transform: translateY(-3px);
+}
+
+.org-focus-node.selected {
+  border-color: color-mix(in srgb, var(--unit), white 42%);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--unit), transparent 55%), var(--shadow);
 }
 
 .org-focus-node span {
