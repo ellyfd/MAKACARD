@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>MAKACARD | Org Quest</title>
-    <link rel="stylesheet" href="styles.css?v=20260528-game11">
+    <link rel="stylesheet" href="styles.css?v=20260528-game12">
   </head>
   <body>
     <main class="app-shell">
@@ -115,8 +115,8 @@
       <section id="lab-view" class="view" aria-label="Chemistry Lab">
         <div class="lab-layout">
           <section class="panel controls-panel">
-            <p class="label">Combo Draft</p>
-            <h2>三卡隊形測試</h2>
+            <p class="label">Team Build Arena</p>
+            <h2>管理檢定牌局</h2>
             <label>
               開局牌
               <select id="person-a"></select>
@@ -133,27 +133,31 @@
               任務地形
               <select id="scenario-select"></select>
             </label>
+            <label>
+              管理檢定
+              <select id="framework-select"></select>
+            </label>
             <button id="analyze-pair" class="primary-button" type="button">測試 Combo</button>
           </section>
 
           <section class="panel result-panel">
             <div class="result-heading">
               <div>
-                <p class="label">Chemistry</p>
+                <p class="label">Management Lens</p>
                 <h2 id="pair-title">選三張牌開始測試</h2>
               </div>
               <span id="fit-badge" class="fit-badge">--</span>
             </div>
             <div id="score-grid" class="score-grid"></div>
-            <div id="pair-insight" class="insight-box"></div>
+            <div id="pair-insight" class="insight-box lab-insight"></div>
           </section>
         </div>
       </section>
 
     </main>
 
-    <script src="game-data.js?v=20260528-game11"></script>
-    <script src="org-skill-data.js?v=20260528-game11"></script>
-    <script src="game.js?v=20260528-game11"></script>
+    <script src="game-data.js?v=20260528-game12"></script>
+    <script src="org-skill-data.js?v=20260528-game12"></script>
+    <script src="game.js?v=20260528-game12"></script>
   </body>
 </html>

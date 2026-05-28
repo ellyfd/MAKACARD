@@ -14,7 +14,8 @@ const state = {
     lastUnit: null,
     log: []
   },
-  selectedOrgUnit: "all"
+  selectedOrgUnit: "all",
+  selectedOrgDept: null
 };
 
 const els = {
@@ -32,6 +33,7 @@ const els = {
   personB: document.querySelector("#person-b"),
   personC: document.querySelector("#person-c"),
   scenarioSelect: document.querySelector("#scenario-select"),
+  frameworkSelect: document.querySelector("#framework-select"),
   analyzePair: document.querySelector("#analyze-pair"),
   pairTitle: document.querySelector("#pair-title"),
   fitBadge: document.querySelector("#fit-badge"),
@@ -122,6 +124,29 @@ const UNIT_COLORS = {
   investment: "#ff8ad6",
   pending: "#d7c7a3"
 };
+
+const TEAM_LENSES = [
+  {
+    id: "tuckman",
+    name: "Tuckman Stage Check",
+    focus: "看隊伍是在 forming / storming / norming / performing 哪一段卡住。"
+  },
+  {
+    id: "belbin",
+    name: "Role Balance Draft",
+    focus: "看隊形裡有沒有協調、創意、執行、評估、收尾等互補角色。"
+  },
+  {
+    id: "topologies",
+    name: "Team Topologies Mode",
+    focus: "看跨單位應該用 collaboration、facilitating 或 X-as-a-Service，避免無限協調。"
+  },
+  {
+    id: "raci",
+    name: "RACI Decision Gate",
+    focus: "看 Responsible / Accountable / Consulted / Informed 權責有沒有長出來。"
+  }
+];
 
 function clamp(value, min = 0, max = 100) {
   return Math.max(min, Math.min(max, Math.round(value)));
@@ -386,13 +411,15 @@ function renderMember(member) {
 function renderMembers() {
   const query = (els.orgSearch?.value || "").trim().toLowerCase();
   const activeUnit = els.orgUnitFilter?.value || "all";
+  const selectedDept = state.selectedOrgDept;
   const members = allOrgMembers().filter((member) => {
     const profile = GAME_DATA.distillations?.[member.id];
     const birth = birthProfile(member);
     const haystack = `${member.name} ${member.localName || ""} ${member.department} ${member.role} ${birth.element} ${birth.zodiac} ${profile ? Object.values(profile).join(" ") : ""}`.toLowerCase();
     const matchesQuery = !query || haystack.includes(query);
     const matchesUnit = activeUnit === "all" || unitFor(member) === activeUnit;
-    return matchesQuery && matchesUnit;
+    const matchesDept = !selectedDept || member.department === selectedDept;
+    return matchesQuery && matchesUnit && matchesDept;
   });
   els.memberGrid.innerHTML = members.map(renderMember).join("");
   if (els.orgRosterCount) els.orgRosterCount.textContent = `${members.length} cards`;
@@ -414,9 +441,11 @@ function fillStaticControls() {
   fillSelect(els.personB, roster, (member) => `${member.name} · ${member.department}`);
   fillSelect(els.personC, roster, (member) => `${member.name} · ${member.department}`);
   fillSelect(els.scenarioSelect, GAME_DATA.scenarios, (scenario) => scenario.name);
+  fillSelect(els.frameworkSelect, TEAM_LENSES, (lens) => lens.name);
   els.personA.value = "elly";
   els.personB.value = "sixian";
   els.personC.value = "douglas-lu";
+  els.frameworkSelect.value = "topologies";
 }
 
 function renderScoreCard(label, value, helper) {
@@ -436,6 +465,7 @@ function analyzePair() {
   const b = memberById(els.personB.value);
   const c = memberById(els.personC.value);
   const scenario = scenarioById(els.scenarioSelect.value);
+  const lens = TEAM_LENSES.find((item) => item.id === els.frameworkSelect.value) || TEAM_LENSES[0];
   if (!a || !b || !c || new Set([a.id, b.id, c.id]).size < 3) {
     els.pairTitle.textContent = "請選三張不同人物牌";
     return;
@@ -446,27 +476,104 @@ function analyzePair() {
   const covered = new Set(units.filter((unit) => required.includes(unit)));
   const pairScores = [scorePair(a, b, scenario, bestStrategyFor(a, b, scenario)), scorePair(b, c, scenario, bestStrategyFor(b, c, scenario)), scorePair(a, c, scenario, bestStrategyFor(a, c, scenario))];
   const coverage = clamp((covered.size / required.length) * 100);
-  const chain = clamp(average(pairScores.map((score) => score.overall)) * .65 + coverage * .35);
-  const tempo = clamp(average(trio.map((member) => vectorsFor(member).speed)) + (new Set(units).size - 1) * 6);
-  const control = clamp(average(trio.map((member) => average([vectorsFor(member).clarity, vectorsFor(member).risk, vectorsFor(member).data]))) + coverage * .2);
-  const friction = clamp(average(pairScores.map((score) => score.stress)) + (required.length - covered.size) * 10);
+  const roles = trio.map(teamRole);
+  const uniqueRoles = new Set(roles.map((role) => role.id));
+  const roleBalance = clamp(uniqueRoles.size / 3 * 78 + (hasRole(roles, "sponsor") ? 10 : 0) + (hasRole(roles, "operator") ? 8 : 0) + (hasRole(roles, "translator") ? 6 : 0));
+  const decisionRights = clamp((hasRole(roles, "sponsor") ? 38 : 0) + (hasRole(roles, "operator") ? 24 : 0) + (hasRole(roles, "domain") ? 22 : 0) + coverage * .16 - duplicatePenalty(units));
+  const boundaryLoad = clamp(100 - (new Set(units).size - 1) * 14 - (required.length - covered.size) * 18 - duplicatePenalty(units) + (hasRole(roles, "translator") ? 14 : 0));
+  const pairFriction = average(pairScores.map((score) => score.stress));
+  const lensScore = lensCheck(lens.id, { trio, roles, units, scenario, coverage, roleBalance, decisionRights, boundaryLoad, pairFriction });
+  const chain = clamp(coverage * .24 + roleBalance * .24 + decisionRights * .22 + boundaryLoad * .15 + lensScore.score * .15);
+  const tempo = clamp(average(trio.map((member) => vectorsFor(member).speed)) + (hasRole(roles, "operator") ? 10 : 0) - (required.length - covered.size) * 7);
+  const friction = clamp(pairFriction + (100 - boundaryLoad) * .25 + (required.length - covered.size) * 8 - (hasRole(roles, "translator") ? 8 : 0));
   const missing = required.filter((unit) => !covered.has(unit));
   els.pairTitle.textContent = `${a.name} → ${b.name} → ${c.name}`;
-  els.fitBadge.textContent = `${chain} · ${chain >= 80 ? "Combo!" : chain >= 62 ? "可打" : "要換牌"}`;
+  els.fitBadge.textContent = `${chain} · ${chain >= 80 ? "可出任務" : chain >= 62 ? "可打但有洞" : "重抽隊形"}`;
   els.scoreGrid.innerHTML = [
-    renderScoreCard("Combo Power", chain, "三張牌接力後的任務推進力"),
-    renderScoreCard("Org Coverage", coverage, "是否打到任務需要的正式單位"),
-    renderScoreCard("Tempo", tempo, "開局速度與轉接節奏"),
-    renderScoreCard("Friction", friction, "摩擦越低越好，缺單位會升高")
+    renderScoreCard("Mission Fit", chain, "組織覆蓋、角色互補與管理檢定的總判定"),
+    renderScoreCard("Role Balance", roleBalance, "隊伍是否同時有 sponsor / domain / translator / operator"),
+    renderScoreCard("Decision Rights", decisionRights, "權責是否足以讓會議有 owner 和下一步"),
+    renderScoreCard("Boundary Cost", 100 - boundaryLoad, "跨單位協調成本，分數越低越好")
   ].join("");
-  const laneText = trio.map((member) => `${member.name}<b>${unitName(unitFor(member))}</b>`).join("<span>→</span>");
+  const laneText = trio.map((member, index) => `${member.name}<b>${["開局", "轉接", "收束"][index]} · ${unitName(unitFor(member))} · ${teamRole(member).name}</b>`).join("<span>→</span>");
+  const event = labEvent({ chain, missing, friction, lensScore, roles, units });
   els.pairInsight.innerHTML = `
     <div class="combo-line">${laneText}</div>
-    <p><strong>任務：</strong>${scenario.name}</p>
+    <div class="lab-event"><strong>${event.title}</strong><span>${event.text}</span></div>
+    <p><strong>檢定：</strong>${lens.name}。${lens.focus}</p>
     <p><strong>命中單位：</strong>${[...covered].map(unitName).join(" / ") || "沒有命中"}。</p>
     <p><strong>缺口：</strong>${missing.length ? missing.map(unitName).join(" / ") : "關鍵單位已覆蓋"}。</p>
-    <p><strong>判定：</strong>${chain >= 80 ? "這組可以直接進任務回合，適合打跨單位 combo。" : chain >= 62 ? "可以打，但需要補一張缺口單位或降低摩擦。" : "這組像是牌面很熱鬧，但地形沒吃到，建議重抽至少一張。"}</p>
+    <p><strong>框架判定：</strong>${lensScore.text}</p>
+    <p><strong>下一手：</strong>${nextDraftMove({ missing, roles, units, lens })}</p>
   `;
+}
+
+function teamRole(member) {
+  const unit = unitFor(member);
+  const roleText = `${member.role || ""} ${member.department || ""}`;
+  const vectors = vectorsFor(member);
+  if (["ceo", "general-mgmt"].includes(unit) || /總|處長|經理|主管|head|lead/i.test(roleText)) {
+    return { id: "sponsor", name: "Sponsor" };
+  }
+  if (["tech-rd", "newbiz", "sales-marketing"].includes(unit) && average([vectors.data, vectors.risk, vectors.clarity]) >= 68) {
+    return { id: "domain", name: "Domain Expert" };
+  }
+  if (vectors.context + vectors.warmth >= 130 || /行銷|專案|PM|協調|統籌/.test(roleText)) {
+    return { id: "translator", name: "Translator" };
+  }
+  if (vectors.speed + vectors.clarity >= 130) {
+    return { id: "operator", name: "Operator" };
+  }
+  return { id: "wildcard", name: "Wildcard" };
+}
+
+function hasRole(roles, id) {
+  return roles.some((role) => role.id === id);
+}
+
+function duplicatePenalty(units) {
+  return (units.length - new Set(units).size) * 14;
+}
+
+function lensCheck(id, context) {
+  const { roles, units, scenario, coverage, roleBalance, decisionRights, boundaryLoad, pairFriction } = context;
+  if (id === "tuckman") {
+    const storming = scenario.pressure.friction > 42 || pairFriction > 42;
+    const score = clamp((storming ? decisionRights * .45 + boundaryLoad * .35 + roleBalance * .2 : coverage * .45 + roleBalance * .35 + boundaryLoad * .2));
+    return { score, text: storming ? "這局像 Storming：先處理權責和摩擦，不要直接衝交付。" : "這局可進 Norming：角色和節奏若固定，就能穩定推進。" };
+  }
+  if (id === "belbin") {
+    const score = clamp(roleBalance - duplicatePenalty(units) + (hasRole(roles, "wildcard") ? -6 : 0));
+    return { score, text: uniqueRoleText(roles) };
+  }
+  if (id === "topologies") {
+    const unitSpread = new Set(units).size;
+    const score = clamp(boundaryLoad + (unitSpread === 2 ? 12 : unitSpread === 3 ? 4 : -8));
+    return { score, text: unitSpread >= 3 ? "這是 collaboration 模式，適合短期攻堅，但需要明確接口避免開成大拜拜。" : "這比較像 facilitating / X-as-a-Service，可以用一個主責單位拉另一個單位支援。" };
+  }
+  const score = clamp(decisionRights + (hasRole(roles, "sponsor") ? 8 : -12));
+  return { score, text: hasRole(roles, "sponsor") ? "RACI 有 Accountable 角色，可以進入決策；下一步要補 Responsible 的交付描述。" : "RACI 缺 Accountable，會議可能變成大家都有意見但沒有人能拍板。" };
+}
+
+function uniqueRoleText(roles) {
+  const names = [...new Set(roles.map((role) => role.name))];
+  return `目前隊形角色是 ${names.join(" / ")}。${names.length >= 3 ? "互補度夠，可以測任務。" : "角色太像，容易同溫層或同一種盲點放大。"}`;
+}
+
+function labEvent({ chain, missing, friction, lensScore }) {
+  if (missing.length) return { title: "Event: Missing Stakeholder", text: `缺 ${missing.map(unitName).join(" / ")}，下一輪如果不補，方案會在交接處斷掉。` };
+  if (friction > 55) return { title: "Event: Storming Spike", text: "摩擦過高，先做權責澄清或一頁 brief，不然越討論越散。" };
+  if (lensScore.score < 55) return { title: "Event: Framework Fail", text: "組織覆蓋看似足夠，但管理檢定沒過，需要換角色或換互動模式。" };
+  if (chain >= 80) return { title: "Event: Combo Window", text: "這組隊形可以進 Mission Run，適合測一次五回合推進。" };
+  return { title: "Event: Narrow Pass", text: "可以打，但要先決定誰拍板、誰交付、誰只被諮詢。" };
+}
+
+function nextDraftMove({ missing, roles, lens }) {
+  if (missing.length) return `補一張 ${unitName(missing[0])} 牌。`;
+  if (!hasRole(roles, "sponsor")) return "補 Sponsor / Accountable，讓會議有拍板權。";
+  if (!hasRole(roles, "translator")) return "補 Translator，降低跨單位語言成本。";
+  if (lens.id === "topologies") return "把互動模式寫清楚：collaboration 只限短衝，之後要轉成固定接口。";
+  return "進 Mission Run，測五回合內是否能把 Friction 壓下來。";
 }
 
 function bestStrategyFor(a, b, scenario) {
@@ -538,38 +645,65 @@ function renderOrgMap() {
       if (!query) return true;
       return `${member.name} ${member.localName || ""} ${member.department} ${member.role}`.toLowerCase().includes(query);
     });
-    const departments = [...new Set(members.map((member) => member.department || "待補"))];
+    const departments = [...members.reduce((map, member) => {
+      const dept = member.department || "待補";
+      if (!map.has(dept)) map.set(dept, []);
+      map.get(dept).push(member);
+      return map;
+    }, new Map()).entries()].sort((a, b) => b[1].length - a[1].length);
+    const isOpen = state.selectedOrgUnit === unit.id || activeUnit === unit.id || required.has(unit.id);
     return `
       <article class="org-node ${status} ${state.selectedOrgUnit === unit.id ? "selected" : ""}" style="--unit:${UNIT_COLORS[unit.id] || "#fff"}" data-unit="${unit.id}">
-        <div class="org-node-head">
-          <span>${status.toUpperCase()}</span>
-          <h3>${unit.name}</h3>
-        </div>
-        <p>${unit.tagline}</p>
-        <div class="node-tags">${unit.capability.map((item) => `<b>${item}</b>`).join("")}</div>
-        <small>${unit.risk}</small>
-        <button class="org-open" type="button" data-unit="${unit.id}">${members.length} members · ${departments.length} teams</button>
-        <div class="node-roster">
-          ${directoryGroups.filter((group) => group.unit === unit.id).slice(0, 5).map((group) => `
-            <section>
-              <strong>${group.name}</strong>
-              <span>${group.members.map((memberId) => memberById(memberId)).filter(Boolean).map((member) => `<i>${member.name}</i>`).join("")}</span>
-            </section>
-          `).join("")}
-        </div>
+        <details class="org-tree-unit" ${isOpen ? "open" : ""}>
+          <summary>
+            <span>${status.toUpperCase()}</span>
+            <h3>${unit.name}</h3>
+            <b>${members.length} members · ${departments.length} teams</b>
+          </summary>
+          <p>${unit.tagline}</p>
+          <div class="node-tags">${unit.capability.map((item) => `<b>${item}</b>`).join("")}</div>
+          <small>${unit.risk}</small>
+          <button class="org-open" type="button" data-unit="${unit.id}">看整個 ${unit.name}</button>
+          <div class="org-branches">
+            ${departments.map(([dept, deptMembers]) => `
+              <details class="org-branch" ${state.selectedOrgDept === dept ? "open" : ""}>
+                <summary>
+                  <button class="org-dept" type="button" data-unit="${unit.id}" data-dept="${dept}">${dept}</button>
+                  <b>${deptMembers.length}</b>
+                </summary>
+                <div class="branch-people">
+                  ${deptMembers.slice(0, 16).map((member) => `<button class="person-chip" type="button" data-unit="${unit.id}" data-dept="${dept}" data-member="${member.id}">${member.name}${member.localName ? ` / ${member.localName}` : ""}</button>`).join("")}
+                  ${deptMembers.length > 16 ? `<i>+${deptMembers.length - 16} more</i>` : ""}
+                </div>
+              </details>
+            `).join("")}
+          </div>
+        </details>
       </article>
     `;
   }).join("");
   els.orgMap.querySelectorAll(".org-open").forEach((button) => {
     button.addEventListener("click", () => {
       state.selectedOrgUnit = button.dataset.unit;
+      state.selectedOrgDept = null;
+      if (els.orgUnitFilter) els.orgUnitFilter.value = button.dataset.unit;
+      renderOrgMap();
+      renderMembers();
+    });
+  });
+  els.orgMap.querySelectorAll(".org-dept, .person-chip").forEach((button) => {
+    button.addEventListener("click", (event) => {
+      event.preventDefault();
+      state.selectedOrgUnit = button.dataset.unit;
+      state.selectedOrgDept = button.dataset.dept;
       if (els.orgUnitFilter) els.orgUnitFilter.value = button.dataset.unit;
       renderOrgMap();
       renderMembers();
     });
   });
   const selected = activeUnit !== "all" ? activeUnit : state.selectedOrgUnit;
-  const selectedMembers = selected === "all" ? allOrgMembers() : (membersByUnit[selected] || []);
+  const selectedMembers = (selected === "all" ? allOrgMembers() : (membersByUnit[selected] || []))
+    .filter((member) => !state.selectedOrgDept || member.department === state.selectedOrgDept);
   if (els.orgDetail) {
     const byDept = [...selectedMembers.reduce((map, member) => {
       const dept = member.department || "待補";
@@ -577,7 +711,7 @@ function renderOrgMap() {
       return map;
     }, new Map()).entries()].sort((a, b) => b[1] - a[1]).slice(0, 8);
     els.orgDetail.innerHTML = `
-      <strong>${selected === "all" ? "全部組織" : unitName(selected)}</strong>
+      <strong>${state.selectedOrgDept || (selected === "all" ? "全部組織" : unitName(selected))}</strong>
       ${byDept.map(([dept, count]) => `<span>${dept}<b>${count}</b></span>`).join("")}
     `;
   }
@@ -851,6 +985,7 @@ function bindEvents() {
   });
   els.orgUnitFilter?.addEventListener("change", () => {
     state.selectedOrgUnit = els.orgUnitFilter.value;
+    state.selectedOrgDept = null;
     renderOrgMap();
     renderMembers();
   });

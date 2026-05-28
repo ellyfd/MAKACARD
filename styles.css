@@ -555,6 +555,16 @@ button:disabled {
   background: #eff6ff;
 }
 
+.lab-insight {
+  border-color: rgba(86, 168, 255, .28);
+  color: #dbe8fb;
+  background: rgba(10, 16, 27, .82);
+}
+
+.lab-insight p {
+  color: #dbe8fb;
+}
+
 .insight-box p:last-child {
   margin-bottom: 0;
 }
@@ -1269,14 +1279,42 @@ select {
     rgba(16, 25, 24, .94);
 }
 
-.org-node-head {
+.org-node-head,
+.org-tree-unit summary {
   display: flex;
   justify-content: space-between;
   gap: 10px;
   align-items: start;
 }
 
-.org-node-head span {
+.org-tree-unit > summary {
+  cursor: pointer;
+  list-style: none;
+}
+
+.org-tree-unit > summary::-webkit-details-marker,
+.org-branch > summary::-webkit-details-marker {
+  display: none;
+}
+
+.org-tree-unit > summary b {
+  color: #9be96f;
+  font-size: .72rem;
+  white-space: nowrap;
+}
+
+.org-tree-unit > summary::before {
+  content: "▸";
+  color: var(--unit);
+  font-weight: 900;
+}
+
+.org-tree-unit[open] > summary::before {
+  content: "▾";
+}
+
+.org-node-head span,
+.org-tree-unit > summary span {
   padding: 4px 7px;
   border-radius: 999px;
   color: #10131b;
@@ -1286,7 +1324,8 @@ select {
   letter-spacing: .08em;
 }
 
-.org-node h3 {
+.org-node h3,
+.org-tree-unit h3 {
   color: #fff;
   font-size: 1.1rem;
   text-align: right;
@@ -1316,6 +1355,72 @@ select {
   background: var(--unit);
   cursor: pointer;
   font-weight: 800;
+}
+
+.org-branches {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.org-branch {
+  border: 1px solid rgba(255, 255, 255, .08);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, .04);
+}
+
+.org-branch > summary {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  align-items: center;
+  padding: 8px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.org-branch > summary b {
+  display: grid;
+  place-items: center;
+  min-width: 28px;
+  min-height: 24px;
+  border-radius: 999px;
+  color: #10131b;
+  background: var(--unit);
+  font-size: .74rem;
+}
+
+.org-dept {
+  border: 0;
+  color: #fff;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.branch-people {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 0 8px 10px;
+}
+
+.person-chip {
+  padding: 5px 7px;
+  border: 1px solid rgba(255, 255, 255, .1);
+  border-radius: 999px;
+  color: #edf4ff;
+  background: rgba(255, 255, 255, .08);
+  cursor: pointer;
+  font-size: .72rem;
+}
+
+.branch-people i {
+  padding: 5px 7px;
+  color: #9be96f;
+  font-size: .72rem;
+  font-style: normal;
 }
 
 .node-roster {
@@ -1392,6 +1497,25 @@ select {
 .combo-line > span {
   color: #9be96f;
   font-weight: 800;
+}
+
+.lab-event {
+  display: grid;
+  gap: 6px;
+  margin: 10px 0 14px;
+  padding: 12px;
+  border: 1px solid rgba(246, 180, 75, .35);
+  border-radius: 8px;
+  color: #fff;
+  background:
+    linear-gradient(135deg, rgba(246, 180, 75, .16), transparent 60%),
+    rgba(16, 24, 36, .92);
+}
+
+.lab-event strong {
+  color: var(--orange);
+  letter-spacing: .08em;
+  text-transform: uppercase;
 }
 
 @media (max-width: 1180px) {
