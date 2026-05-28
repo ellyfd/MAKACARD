@@ -55,20 +55,20 @@ const els = {
 };
 
 const MISSION_REQUIREMENTS = {
-  "rc-lock": ["material", "dpc", "digital-dev"],
-  "debbie-gap": ["exec", "dpc"],
-  "taipei-chiayi": ["exec", "dpc", "pending"],
-  "ai-seed": ["dpc", "digital-dev", "material", "portal"],
-  "sttrix-gtm": ["portal", "digital-dev", "dpc", "exec"],
-  "nunox-ip": ["exec", "material", "digital-dev", "portal"],
-  "vivatech-booth": ["exec", "portal", "dpc", "digital-dev"],
-  "ai-education-gap": ["portal", "digital-dev", "dpc", "exec"],
-  "pilot-feedback": ["digital-dev", "portal", "exec", "dpc"],
-  "dicks-placement-print": ["dpc", "pending", "material"],
-  "dpo-training-data": ["digital-dev", "portal", "exec"],
-  "fabric-api-78": ["material", "digital-dev", "portal"],
-  "sequin-qipao": ["dpc", "material", "digital-dev"],
-  "seoul-dev-trip": ["portal", "dpc", "pending"]
+  "rc-lock": ["tech-rd", "newbiz", "ops-mgmt"],
+  "debbie-gap": ["tech-rd", "newbiz"],
+  "taipei-chiayi": ["tech-rd", "overseas"],
+  "ai-seed": ["general-mgmt", "tech-rd", "newbiz", "ops-mgmt"],
+  "sttrix-gtm": ["newbiz", "sales-marketing", "tech-rd"],
+  "nunox-ip": ["newbiz", "tech-rd", "sales-marketing"],
+  "vivatech-booth": ["ceo", "newbiz", "tech-rd", "sales-marketing"],
+  "ai-education-gap": ["newbiz", "tech-rd", "general-mgmt"],
+  "pilot-feedback": ["newbiz", "sales-marketing", "tech-rd"],
+  "dicks-placement-print": ["sales-marketing", "tech-rd"],
+  "dpo-training-data": ["newbiz", "tech-rd"],
+  "fabric-api-78": ["tech-rd", "newbiz"],
+  "sequin-qipao": ["tech-rd", "newbiz"],
+  "seoul-dev-trip": ["sales-marketing", "newbiz"]
 };
 
 const MEMBER_TRAITS = {
@@ -77,19 +77,19 @@ const MEMBER_TRAITS = {
   alex: ["authority", "big-picture"],
   andy: ["research-depth", "deadline-needed", "over-research"],
   chieh: ["throughput", "motivation-risk"],
-  celia: ["profile-thin", "3d-weekly"],
+  "celia-hsu": ["formal-lead", "tech-rd"],
   debbie: ["presentation-candidate", "profile-thin"],
   dianne: ["market-sense", "story"],
   doris: ["coordination", "taste"],
   elly: ["org-sense", "so-what"],
   emily: ["visual-quality", "teaching"],
-  erica: ["meeting-observed", "role-pending"],
-  hazel: ["dev-trip", "market-signal"],
+  "erica-chang": ["meeting-observed", "sales-dev"],
+  "hazel-lin": ["sales-dev", "market-signal"],
   jessica: ["workshop", "audience-design"],
   jan: ["pm", "direct", "remote-owner"],
   jean: ["content-ai", "route-boundary"],
   karen: ["architect", "quality-gate-gap"],
-  lillian: ["dev-trip", "brief-builder"],
+  "lillian-lin": ["tech-design", "brief-builder"],
   maggie: ["dev-trip", "material-need"],
   rock: ["ground-truth", "knowledge-lock"],
   rou: ["quality-eye", "weak-expression"],
@@ -105,11 +105,15 @@ const MEMBER_TRAITS = {
 };
 
 const UNIT_COLORS = {
-  exec: "#f6b44b",
-  dpc: "#56a8ff",
-  "digital-dev": "#26d5d0",
-  material: "#9be96f",
-  portal: "#b78cff",
+  ceo: "#f6b44b",
+  consulting: "#d7c7a3",
+  "general-mgmt": "#ff7d66",
+  "sales-marketing": "#b78cff",
+  "ops-mgmt": "#26d5d0",
+  "tech-rd": "#56a8ff",
+  overseas: "#9be96f",
+  newbiz: "#ffcf5a",
+  investment: "#ff8ad6",
   pending: "#d7c7a3"
 };
 
@@ -142,13 +146,15 @@ function unitById(id) {
 }
 
 function unitFor(member) {
-  if (member.department === "管理層") return "exec";
-  if (member.department === "Portal:M") return "portal";
+  if (member.orgUnit) return member.orgUnit;
   if (member.department.includes("待定位")) return "pending";
-  if (["rock", "tinley", "rou"].includes(member.id)) return "material";
-  if (["alan", "andy", "yota"].includes(member.id)) return "digital-dev";
-  if (member.department === "數位產品創造處") return "exec";
-  return "dpc";
+  if (member.department.includes("數位產品發展中心") || member.department.includes("智慧紡織")) return "newbiz";
+  if (member.department.includes("3D研發中心") || member.department.includes("開發暨技術處") || member.department.includes("工務處")) return "tech-rd";
+  if (member.department.includes("業務") || member.department.includes("行銷發展處")) return "sales-marketing";
+  if (member.department.includes("資訊處") || member.department.includes("財會管理處")) return "ops-mgmt";
+  if (member.department.includes("總管理處")) return "general-mgmt";
+  if (member.department.includes("海外")) return "overseas";
+  return "pending";
 }
 
 function traitsFor(member) {
@@ -156,7 +162,7 @@ function traitsFor(member) {
 }
 
 function missionRequires(mission) {
-  return MISSION_REQUIREMENTS[mission.id] || ["dpc", "digital-dev", "exec"];
+  return MISSION_REQUIREMENTS[mission.id] || ["newbiz", "tech-rd", "sales-marketing"];
 }
 
 function missingUnits() {
@@ -416,7 +422,6 @@ function analyzePair() {
   els.pairInsight.innerHTML = `
     <p><strong>情境：</strong>${scenario.prompt}</p>
     <p><strong>象徵層：</strong>${relationFor(a, b)}</p>
-    <p><strong>蒸餾提醒：</strong>${distillHint(a)} / ${distillHint(b)}</p>
     <p><strong>最合的軸：</strong>${axisName(strongest)}。<strong>最需要翻譯：</strong>${axisName(weakest)}。</p>
     <p><strong>系統解法：</strong>${strategy.text}${fit ? " 這個解法命中目前情境。" : " 這個解法可用，但需要補一層翻譯。"}</p>
     <p><strong>開場句：</strong>${openingLine(a, b, scenario, strategy)}</p>
@@ -728,11 +733,11 @@ function playMeetingTurn(memberId) {
   meeting.friction = clamp(meeting.friction + (boost.friction || 0) + (scores.stress - 50) / 8 - orgFit + (crossUnit ? -3 : 0) + (sameLane ? 8 : 0) + riskPenalty / 2 + (offLane ? 8 : 0));
 
   const profile = GAME_DATA.distillations?.[person.id];
-  const solution = profile ? profile.assignment : "先補資料，再建立可交接節點。";
+  const solution = profile ? profile.leverage : `${unitName(unit)} 進場，補上一個正式組織視角。`;
   const comboText = crossUnit ? `跨單位 combo：${unitName(meeting.lastUnit)} → ${unitName(unit)}` : sameLane ? "同單位連打：速度上升，但 tunnel vision 增加" : "開場佈局";
   const riskText = fit.risk ? `風險觸發「${fit.risk.title}」：${fit.risk.text}` : "沒有明顯錯配。";
   meeting.log.unshift(`T${meeting.turn}: ${person.name} / ${unitName(unit)} 打出「${action.name}」〔${fit.label}〕。${comboText}。${riskText}`);
-  meeting.log.unshift(`解法碎片：${solution}`);
+  meeting.log.unshift(`組織效果：${solution}`);
   meeting.played.push(person.id);
   if (!meeting.coveredUnits.includes(unit) && missionRequires(meeting.scenario).includes(unit)) {
     meeting.coveredUnits.push(unit);
