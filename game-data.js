@@ -92,7 +92,13 @@ const GAME_DATA = {
     }
   ],
   orgDirectory: [
+    { id: "board", unit: "ceo", name: "董事會", members: [] },
+    { id: "audit-office", unit: "ceo", name: "稽核室", members: [] },
     { id: "ceo-office", unit: "ceo", name: "執行長 / 公司頂層", members: ["alex"] },
+    { id: "decision-integration-committee", unit: "ceo", name: "決策整合委員會", members: [] },
+    { id: "audit-committee", unit: "ceo", name: "審計委員會", members: [] },
+    { id: "compensation-committee", unit: "ceo", name: "薪資報酬委員會", members: [] },
+    { id: "sustainability-committee", unit: "ceo", name: "永續委員會", members: [] },
     { id: "consulting-office", unit: "consulting", name: "顧問室本部", members: ["michael-song"] },
     { id: "general-office", unit: "general-mgmt", name: "總管理處", members: ["mandy-huang"] },
     { id: "sales-group", unit: "sales-marketing", name: "業務行銷群", members: ["tiffany-sung"] },
