@@ -684,12 +684,26 @@ function renderOrgMap() {
   });
   if (els.orgDetail) els.orgDetail.innerHTML = view.detail || "";
   if (els.orgBack) els.orgBack.disabled = focus.type === "root";
+  centerOrgCanvas();
 }
 
 function centerSelectedOrgNode() {
   setTimeout(() => {
     const selected = els.orgMap?.querySelector(".org-focus-node.selected");
     selected?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+  }, 0);
+}
+
+function centerOrgCanvas() {
+  setTimeout(() => {
+    const canvas = els.orgMap?.querySelector(".org-chart-canvas");
+    if (!canvas) return;
+    const selected = canvas.querySelector(".org-focus-node.selected");
+    if (selected) {
+      selected.scrollIntoView({ behavior: "auto", inline: "center", block: "nearest" });
+      return;
+    }
+    canvas.scrollLeft = Math.max(0, (canvas.scrollWidth - canvas.clientWidth) / 2);
   }, 0);
 }
 
