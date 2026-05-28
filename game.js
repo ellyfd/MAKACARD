@@ -180,15 +180,13 @@ function allOrgMembers() {
   const seen = new Set();
   const enriched = GAME_DATA.members.map((member) => ({
     ...member,
-    status: /^\d{4}-\d{2}-\d{2}$/.test(member.birthday) ? member.birthday : "待補"
+    status: /^\d{4}-\d{2}-\d{2}$/.test(member.birthday) ? member.birthday : ""
   }));
   const merged = [];
   [...enriched, ...(GAME_DATA.orgPeople || [])].forEach((member) => {
-    const key = `${member.name}|${member.localName || ""}`.toLowerCase();
-    const looseKey = member.name.toLowerCase();
-    if (seen.has(key) || seen.has(looseKey)) return;
+    const key = member.id || `${member.name}|${member.localName || ""}`.toLowerCase();
+    if (seen.has(key)) return;
     seen.add(key);
-    seen.add(looseKey);
     merged.push(member);
   });
   return merged;
@@ -206,13 +204,14 @@ function orgChartMembers() {
 
 function unitFor(member) {
   if (member.orgUnit) return member.orgUnit;
-  if (member.department.includes("待定位")) return "pending";
-  if (member.department.includes("數位產品發展中心") || member.department.includes("智慧紡織")) return "newbiz";
-  if (member.department.includes("3D研發中心") || member.department.includes("開發暨技術處") || member.department.includes("工務處")) return "tech-rd";
-  if (member.department.includes("業務") || member.department.includes("行銷發展處")) return "sales-marketing";
-  if (member.department.includes("資訊處") || member.department.includes("財會管理處")) return "ops-mgmt";
-  if (member.department.includes("總管理處")) return "general-mgmt";
-  if (member.department.includes("海外")) return "overseas";
+  const department = member.department || "";
+  if (department.includes("待定位")) return "pending";
+  if (department.includes("數位產品發展中心") || department.includes("智慧紡織")) return "newbiz";
+  if (department.includes("3D研發中心") || department.includes("開發暨技術處") || department.includes("工務處")) return "tech-rd";
+  if (department.includes("業務") || department.includes("行銷發展處")) return "sales-marketing";
+  if (department.includes("資訊處") || department.includes("財會管理處")) return "ops-mgmt";
+  if (department.includes("總管理處")) return "general-mgmt";
+  if (department.includes("海外")) return "overseas";
   return "pending";
 }
 
@@ -392,6 +391,12 @@ function scoreLabel(score) {
 function renderMember(member) {
   const birth = birthProfile(member);
   const hasBirthday = /^\d{4}-\d{2}-\d{2}$/.test(member.birthday);
+  const roleLine = [member.localName, member.role, member.department].filter((item) => !isMissingValue(item)).join(" · ");
+  const chips = hasBirthday ? `
+    <span class="chip number">靈數 ${birth.numerology}</span>
+    <span class="chip ${elementClass(birth.element)}">${birth.element}行</span>
+    <span class="chip sign">${birth.zodiac}</span>
+  ` : "";
   return `
     <article class="member-card ${elementClass(birth.element)}" data-member="${member.id}">
       <div class="avatar" aria-hidden="true">${initials(member.name)}</div>
@@ -400,19 +405,10 @@ function renderMember(member) {
           <h3>${member.name}</h3>
           <span>${unitName(unitFor(member))}</span>
         </div>
-        <p class="role">${member.localName ? `${member.localName} · ` : ""}${member.role || "待補"} · ${member.department || "待補"}</p>
-        <div class="chips">
-          ${hasBirthday ? `
-            <span class="chip number">靈數 ${birth.numerology}</span>
-            <span class="chip ${elementClass(birth.element)}">${birth.element}行</span>
-            <span class="chip sign">${birth.zodiac}</span>
-          ` : `
-            <span class="chip pending">生日 待補</span>
-            <span class="chip pending">資料 待補</span>
-          `}
-        </div>
-        <p class="meta">${hasBirthday ? `${birth.animal}年` : "待補"}</p>
-        <p class="style-copy">${member.style || "待補"}</p>
+        ${roleLine ? `<p class="role">${roleLine}</p>` : ""}
+        ${chips ? `<div class="chips">${chips}</div>` : ""}
+        ${hasBirthday ? `<p class="meta">${birth.animal}年</p>` : ""}
+        ${isMissingValue(member.style) ? "" : `<p class="style-copy">${member.style}</p>`}
       </div>
     </article>
   `;
@@ -613,7 +609,7 @@ function bestStrategyFor(a, b, scenario) {
 
 function distillHint(member) {
   const profile = GAME_DATA.distillations?.[member.id];
-  return profile ? `${member.name}: ${profile.mode}` : `${member.name}: 深度蒸餾待補`;
+  return profile ? `${member.name}: ${profile.mode}` : `${member.name}: 尚未建立深度蒸餾`;
 }
 
 function axisName(key) {
@@ -684,8 +680,8 @@ function renderOrgParentNode(view) {
 function renderOrgEmptyState(view) {
   return `
     <article class="org-empty-state">
-      <strong>${view.emptyTitle || "成員資料待補"}</strong>
-      <p>${view.emptyText || "這個正式組織節點已建立；待匯入 PDF/VSD 內的人員名單後，這裡會展開成員卡。"}</p>
+      <strong>${view.emptyTitle || "沒有下層資料"}</strong>
+      <p>${view.emptyText || "這個正式組織節點目前沒有可下展的資料。"}</p>
     </article>
   `;
 }
@@ -709,16 +705,19 @@ function orgDirectories(unitId) {
 }
 
 function orgDirectoryById(id) {
-  return (GAME_DATA.orgDirectory || []).find((item) => item.id === id);
+  return (GAME_DATA.orgDirectory || []).find((item) => item.id === id) || generatedOrgDirectories().find((item) => item.id === id);
 }
 
 function orgDirectoryChildren(parentId) {
-  return (GAME_DATA.orgDirectory || []).filter((item) => item.parent === parentId);
+  const explicit = (GAME_DATA.orgDirectory || []).filter((item) => item.parent === parentId);
+  if (explicit.length) return explicit;
+  return generatedOrgDirectories().filter((item) => item.parent === parentId);
 }
 
 function orgDirectoryMembers(directory, people = orgChartMembers()) {
   const ids = new Set(directory?.members || []);
   const explicit = people.filter((member) => ids.has(member.id));
+  if (directory?.generated) return explicit.sort((left, right) => (left.localName || left.name).localeCompare(right.localName || right.name));
   const inferred = people.filter((member) => !ids.has(member.id) && isInferredDirectoryMember(member, directory));
   return [...explicit, ...inferred].sort((left, right) => (left.localName || left.name).localeCompare(right.localName || right.name));
 }
@@ -746,6 +745,63 @@ function orgDirectoryCount(directory, people = orgChartMembers()) {
   return own + childCount;
 }
 
+function generatedOrgDirectories() {
+  const explicitDirectories = GAME_DATA.orgDirectory || [];
+  const explicitIds = new Set(explicitDirectories.map((item) => item.id));
+  const hasExplicitChild = new Set(explicitDirectories.filter((item) => item.parent).map((item) => item.parent));
+  const generated = new Map();
+  const allPeople = orgChartMembers();
+
+  explicitDirectories.forEach((directory) => {
+    if (hasExplicitChild.has(directory.id)) return;
+    const members = orgDirectoryMembers({ ...directory, generated: true }, allPeople);
+    members.forEach((member) => {
+      const segments = departmentSegmentsAfter(directory, member.department);
+      if (!segments.length) return;
+      let parentId = directory.id;
+      segments.forEach((segment, index) => {
+        const id = `auto-${parentId}-${safeOrgId(segment)}`;
+        if (!generated.has(id)) {
+          generated.set(id, {
+            id,
+            unit: directory.unit,
+            parent: parentId,
+            name: segment,
+            members: [],
+            generated: true
+          });
+        }
+        if (index === segments.length - 1) generated.get(id).members.push(member.id);
+        parentId = id;
+      });
+    });
+  });
+
+  return [...generated.values()].filter((item) => !explicitIds.has(item.id)).map((item) => ({
+    ...item,
+    members: [...new Set(item.members)]
+  }));
+}
+
+function safeOrgId(value) {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}]+/gu, "-")
+    .replace(/^-+|-+$/g, "") || "node";
+}
+
+function departmentSegmentsAfter(directory, department = "") {
+  const parts = department.split("/").map((part) => part.trim()).filter(Boolean);
+  const index = parts.findIndex((part) => part === directory.name || part.includes(directory.name) || directory.name.includes(part));
+  if (index === -1) return [];
+  return parts.slice(index + 1).filter((part) => !isMissingValue(part));
+}
+
+function isMissingValue(value) {
+  return !value || value === "待補" || value === "資料待補" || value === "生日待補" || value === "?";
+}
+
 function orgDirectoryPath(directory) {
   if (!directory) return [];
   const parents = [];
@@ -766,11 +822,10 @@ function orgDirectoryDetail(directory, unit, people) {
   return `
     <strong>${directory.name}</strong>
     <span>路徑：${path}</span>
-    <span>${children.length ? `下層單位：${children.length}` : "下層單位：無"}</span>
-    <span>${ownCount ? `直屬成員：${ownCount}` : "直屬成員：待補"}</span>
-    ${children.length ? `<span>含下層成員：${totalCount || "待補"}</span>` : ""}
+    ${children.length ? `<span>下層單位：${children.length}</span>` : ""}
+    ${ownCount ? `<span>直屬成員：${ownCount}</span>` : ""}
+    ${children.length && totalCount ? `<span>含下層成員：${totalCount}</span>` : ""}
     ${ownMembers.length ? `<p>直屬成員：${ownMembers.map((member) => `${member.name}${member.localName ? ` / ${member.localName}` : ""}`).join("、")}</p>` : ""}
-    <p>${unit?.name || unitName(directory.unit)} 的正式節點；沒有成員時代表名單尚未從 PDF/VSD 匯入，不代表組織不存在。</p>
   `;
 }
 
@@ -784,8 +839,8 @@ function orgDirectoryNode(directory, people) {
     dept: directory.name,
     deptId: directory.id,
     title: directory.name,
-    count: children.length ? `${children.length} 下層` : count ? `${count} 成員` : "待補",
-    subtitle: children.length ? `下層單位 ${children.length}；含成員 ${count || "待補"}` : ownCount ? `成員 ${ownCount}` : "成員資料待補",
+    count: children.length ? `${children.length} 下層` : count ? `${count} 成員` : "",
+    subtitle: children.length ? `下層單位 ${children.length}${count ? `；含成員 ${count}` : ""}` : ownCount ? `成員 ${ownCount}` : "",
     departments: children.length,
     members: orgDirectoryMembers(directory, people)
   };
@@ -800,7 +855,7 @@ function orgViewForFocus(hierarchy, focus) {
       title: unit?.name || "組織群",
       nodes: source.departments.map((dept) => orgDirectoryNode(dept, hierarchy.people)),
       summary: `${source.departments.length} 個正式下層單位`,
-      detail: `<strong>${unit?.name || ""}</strong><span>下層單位：${source.departments.length}</span><span>已掛成員：${source.people.length || "待補"}</span><p>${unit?.tagline || ""}</p>`
+      detail: `<strong>${unit?.name || ""}</strong><span>下層單位：${source.departments.length}</span>${source.people.length ? `<span>已掛成員：${source.people.length}</span>` : ""}<p>${unit?.tagline || ""}</p>`
     };
   }
   if (focus.type === "dept") {
@@ -813,7 +868,7 @@ function orgViewForFocus(hierarchy, focus) {
         level: "dept",
         title: directory.name,
         nodes: children.map((child) => orgDirectoryNode(child, hierarchy.people)),
-        summary: `${children.length} 個下層單位；直屬成員 ${ownMembers.length || "待補"}`,
+        summary: `${children.length} 個下層單位${ownMembers.length ? `；直屬成員 ${ownMembers.length}` : ""}`,
         detail: orgDirectoryDetail(directory, unit, hierarchy.people)
       };
     }
@@ -823,11 +878,11 @@ function orgViewForFocus(hierarchy, focus) {
     return {
       level: "dept",
       title: directory?.name || focus.dept,
-      nodes: members.map((member) => ({ type: "person", unit: focus.unit, dept: directory?.name || focus.dept, deptId: directory?.id || focus.deptId, title: member.name, subtitle: `${member.localName || "中文名待補"} · ${member.role || "職務待補"}`, count: /^\d{4}-\d{2}-\d{2}$/.test(member.birthday || "") ? member.birthday : "生日待補", member })),
-      summary: members.length ? `${members.length} 位成員` : "成員資料待補",
-      emptyTitle: "成員資料待補",
-      emptyText: `${directory?.name || focus.dept} 是正式組織節點；目前只建立架構，待 PDF/VSD 內的人員名單匯入。`,
-      detail: directory ? orgDirectoryDetail(directory, unit, hierarchy.people) : `<strong>${focus.dept}</strong><span>路徑：${unit?.name || ""} / ${focus.dept}</span><span>成員：${members.length || "待補"}</span>`
+      nodes: members.map((member) => ({ type: "person", unit: focus.unit, dept: directory?.name || focus.dept, deptId: directory?.id || focus.deptId, title: member.name, subtitle: [member.localName, member.role].filter((item) => !isMissingValue(item)).join(" · "), count: /^\d{4}-\d{2}-\d{2}$/.test(member.birthday || "") ? member.birthday : "", member })),
+      summary: members.length ? `${members.length} 位成員` : "沒有成員資料",
+      emptyTitle: "沒有成員資料",
+      emptyText: `${directory?.name || focus.dept} 目前沒有可顯示的成員資料。`,
+      detail: directory ? orgDirectoryDetail(directory, unit, hierarchy.people) : `<strong>${focus.dept}</strong><span>路徑：${unit?.name || ""} / ${focus.dept}</span>${members.length ? `<span>成員：${members.length}</span>` : ""}`
     };
   }
   if (focus.type === "person") {
@@ -835,14 +890,14 @@ function orgViewForFocus(hierarchy, focus) {
     return {
       level: "person",
       title: member?.name || "成員",
-      nodes: member ? [{ type: "profile", title: member.name, subtitle: member.localName || "中文名待補", member }] : [],
+      nodes: member ? [{ type: "profile", title: member.name, subtitle: member.localName || "", member }] : [],
       detail: member ? renderPersonDetail(member) : ""
     };
   }
   return {
     level: "root",
     title: "Makalot 主架構",
-    nodes: hierarchy.units.map((unit) => ({ type: "unit", unit: unit.id, title: unit.name, subtitle: unit.tagline, count: `${unit.people.length || "待補"} 成員`, departments: unit.departments.length })),
+    nodes: hierarchy.units.map((unit) => ({ type: "unit", unit: unit.id, title: unit.name, subtitle: unit.tagline, count: unit.people.length ? `${unit.people.length} 成員` : "", departments: unit.departments.length })),
     summary: `${hierarchy.units.length} 個組織群`,
     detail: "<strong>主架構</strong><p>點一個組織群放大一層；再點正式部門/中心/課/團隊看下層或成員。</p>"
   };
@@ -860,16 +915,19 @@ function renderOrgFocusNode(node) {
   const unitColor = UNIT_COLORS[node.unit] || UNIT_COLORS[unitFor(node.member || {})] || "#fff";
   if (node.type === "profile") {
     const member = node.member;
+    const profileRows = [
+      ["單位", unitName(unitFor(member))],
+      ["部門", member.department],
+      ["職務", member.role],
+      ["生日", /^\d{4}-\d{2}-\d{2}$/.test(member.birthday || "") ? member.birthday : ""]
+    ].filter(([, value]) => !isMissingValue(value));
     return `
       <article class="org-focus-node profile" style="--unit:${unitColor}">
         <span>PROFILE</span>
         <h3>${member.name}</h3>
-        <p>${member.localName || "中文名 待補"}</p>
+        <p>${isMissingValue(member.localName) ? "" : member.localName}</p>
         <div class="profile-grid">
-          <b>單位</b><i>${unitName(unitFor(member))}</i>
-          <b>部門</b><i>${member.department || "待補"}</i>
-          <b>職務</b><i>${member.role || "待補"}</i>
-          <b>生日</b><i>${member.birthday || "待補"}</i>
+          ${profileRows.map(([label, value]) => `<b>${label}</b><i>${value}</i>`).join("")}
         </div>
       </article>
     `;
@@ -911,14 +969,14 @@ function renderOrgBreadcrumb(focus) {
 function renderPersonDetail(member) {
   const birth = birthProfile(member);
   const hasBirthday = /^\d{4}-\d{2}-\d{2}$/.test(member.birthday);
-  return `
-    <strong>${member.name}</strong>
-    <span>${member.localName || "中文名 待補"}</span>
-    <span>${unitName(unitFor(member))}</span>
-    <span>${member.department || "部門 待補"}</span>
-    <span>${member.role || "職務 待補"}</span>
-    <span>${hasBirthday ? `靈數 ${birth.numerology} / ${birth.element}行 / ${birth.zodiac}` : "生日資料 待補"}</span>
-  `;
+  const details = [
+    member.localName,
+    unitName(unitFor(member)),
+    member.department,
+    member.role,
+    hasBirthday ? `靈數 ${birth.numerology} / ${birth.element}行 / ${birth.zodiac}` : ""
+  ].filter((item) => !isMissingValue(item));
+  return `<strong>${member.name}</strong>${details.map((item) => `<span>${item}</span>`).join("")}`;
 }
 
 function resetMeeting() {
@@ -1004,7 +1062,7 @@ function renderActionCards() {
         <span class="sigil">${action.icon}</span>
         <i>${fit.label}</i>
         <strong>${member.name}</strong>
-        <em>${unitName(unit)} · ${member.department || "待補"}</em>
+        <em>${[unitName(unit), member.department].filter((item) => !isMissingValue(item)).join(" · ")}</em>
         <small>${action.name}: ${action.copy}</small>
         <div class="card-pips">${pips.map((pip) => `<mark>${pip}</mark>`).join("")}</div>
         <b>${fit.risk ? `Risk: ${fit.risk.title}` : comboPreview(member)}</b>
