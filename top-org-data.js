@@ -46,7 +46,7 @@
     ]),
     "decision-integration-committee": ids("決策整合委員會", "ceo", [
       ["郭良祿", "Arthur Kuo"],
-      ["周理平", "Li-Ping Chou"],
+      ["周理平", "Frank Chou"],
       ["周心鵬", "Alex Chou"]
     ]),
     "audit-committee": ids("審計委員會", "ceo", [
@@ -69,7 +69,7 @@
     "investment-companies": ids("轉投資企業", "investment", [
       ["黃宏仁", "Richard Huang"],
       ["蒲麗玉", "Puli Yu"],
-      ["周理平", "Li-Ping Chou"]
+      ["周理平", "Frank Chou"]
     ])
   };
 
