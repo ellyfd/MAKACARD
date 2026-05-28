@@ -17,6 +17,7 @@ const state = {
   selectedOrgUnit: "all",
   selectedOrgDept: null,
   orgFocus: { type: "root" },
+  orgExpandedUnit: null,
   orgExpandedPath: [],
   orgSelected: null
 };
@@ -641,6 +642,7 @@ function openingLine(a, b, scenario, strategy) {
 
 function switchView(view) {
   state.activeView = view;
+  document.body.classList.toggle("org-mode", view === "org");
   els.tabs.forEach((tab) => tab.classList.toggle("active", tab.dataset.view === view));
   els.views.forEach((viewEl) => viewEl.classList.toggle("active", viewEl.id === `${view}-view`));
   if (view === "org") renderOrgMap();
@@ -660,13 +662,17 @@ function renderOrgMap() {
     button.addEventListener("click", () => {
       const action = button.dataset.orgAction;
       if (action === "unit") {
-        state.orgFocus = { type: "unit", unit: button.dataset.unit };
+        state.orgFocus = { type: "root" };
+        state.orgExpandedUnit = state.orgExpandedUnit === button.dataset.unit ? null : button.dataset.unit;
         state.orgExpandedPath = [];
-        state.orgSelected = null;
+        state.orgSelected = state.orgExpandedUnit ? { type: "unit", id: button.dataset.unit } : null;
         renderOrgMap();
+        centerSelectedOrgNode();
         return;
       }
       if (action === "dept") {
+        const directory = orgDirectoryById(button.dataset.deptId);
+        state.orgExpandedUnit = directory?.unit || button.dataset.unit || state.orgExpandedUnit;
         state.orgExpandedPath = orgDirectoryAncestorIds(button.dataset.deptId);
         state.orgSelected = { type: "dept", id: button.dataset.deptId };
         renderOrgMap();
@@ -729,36 +735,41 @@ function renderOrgParentNode(view) {
 }
 
 function renderOrgChart(view, hierarchy) {
-  const expandTree = view.level !== "root";
   return `
     <div class="org-chart-canvas">
       <div class="org-tree">
         ${renderOrgParentNode(view)}
-        ${view.treeRoot ? renderOrgTreeLevel(childOrgNodes(view.treeRoot, hierarchy.people), hierarchy, 1, view, expandTree) : renderOrgTreeLevel(view.nodes, hierarchy, 1, view, expandTree)}
+        ${view.treeRoot ? renderOrgTreeLevel(childOrgNodes(view.treeRoot, hierarchy.people), hierarchy, 1, view) : renderOrgTreeLevel(view.nodes, hierarchy, 1, view)}
       </div>
     </div>
   `;
 }
 
-function renderOrgTreeLevel(nodes, hierarchy, depth = 1, view = null, expandTree = true) {
+function renderOrgTreeLevel(nodes, hierarchy, depth = 1, view = null) {
   if (!nodes.length) return renderOrgEmptyState(view || {});
   return `
     <div class="org-tree-level depth-${depth}">
-      ${nodes.map((node) => renderOrgTreeNode(node, hierarchy, depth, expandTree)).join("")}
+      ${nodes.map((node) => renderOrgTreeNode(node, hierarchy, depth)).join("")}
     </div>
   `;
 }
 
-function renderOrgTreeNode(node, hierarchy, depth, expandTree) {
-  const shouldExpand = expandTree && (node.type === "unit" || state.orgExpandedPath.includes(node.deptId));
+function renderOrgTreeNode(node, hierarchy, depth) {
+  const shouldExpand = shouldExpandOrgNode(node);
   const children = shouldExpand ? childOrgNodes(node, hierarchy.people) : [];
   const isBranch = children.length > 0;
   return `
     <div class="org-tree-branch ${isBranch ? "has-children" : ""}">
       ${renderOrgFocusNode(node)}
-      ${isBranch ? renderOrgTreeLevel(children, hierarchy, depth + 1, null, expandTree) : ""}
+      ${isBranch ? renderOrgTreeLevel(children, hierarchy, depth + 1) : ""}
     </div>
   `;
+}
+
+function shouldExpandOrgNode(node) {
+  if (node.type === "unit") return state.orgExpandedUnit === node.unit;
+  if (node.type === "dept") return state.orgExpandedPath.includes(node.deptId);
+  return false;
 }
 
 function childOrgNodes(node, people) {
@@ -1052,6 +1063,7 @@ function renderOrgFocusNode(node) {
   }
   const action = node.type === "unit" ? "unit" : node.type === "dept" ? "dept" : "person";
   const selected = (node.type === "dept" && state.orgSelected?.type === "dept" && state.orgSelected.id === node.deptId)
+    || (node.type === "unit" && state.orgSelected?.type === "unit" && state.orgSelected.id === node.unit)
     || (node.type === "person" && state.orgSelected?.type === "person" && state.orgSelected.id === node.member?.id);
   return `
     <button class="org-focus-node ${node.type} ${selected ? "selected" : ""}" type="button" data-org-action="${action}" data-unit="${node.unit || ""}" data-dept="${node.dept || ""}" data-dept-id="${node.deptId || ""}" data-person="${node.member?.id || ""}" style="--unit:${unitColor}">
@@ -1364,6 +1376,7 @@ function bindEvents() {
   els.tabs.forEach((tab) => tab.addEventListener("click", () => switchView(tab.dataset.view)));
   els.orgSearch?.addEventListener("input", () => {
     state.orgFocus = { type: "root" };
+    state.orgExpandedUnit = null;
     state.orgExpandedPath = [];
     state.orgSelected = null;
     renderOrgMap();
@@ -1376,18 +1389,23 @@ function bindEvents() {
   });
   els.orgHome?.addEventListener("click", () => {
     state.orgFocus = { type: "root" };
+    state.orgExpandedUnit = null;
     state.orgExpandedPath = [];
     state.orgSelected = null;
     if (els.orgSearch) els.orgSearch.value = "";
     renderOrgMap();
   });
   els.orgBack?.addEventListener("click", () => {
-    const focus = state.orgFocus || { type: "root" };
-    if (focus.type === "person") state.orgFocus = { type: "dept", unit: focus.unit, dept: focus.dept, deptId: focus.deptId };
-    else if (focus.type === "dept") state.orgFocus = { type: "unit", unit: focus.unit };
-    else state.orgFocus = { type: "root" };
-    state.orgExpandedPath = [];
-    state.orgSelected = null;
+    if (state.orgExpandedPath.length > 1) {
+      state.orgExpandedPath.pop();
+      state.orgSelected = { type: "dept", id: state.orgExpandedPath[state.orgExpandedPath.length - 1] };
+    } else if (state.orgExpandedPath.length === 1) {
+      state.orgExpandedPath = [];
+      state.orgSelected = state.orgExpandedUnit ? { type: "unit", id: state.orgExpandedUnit } : null;
+    } else {
+      state.orgExpandedUnit = null;
+      state.orgSelected = null;
+    }
     renderOrgMap();
   });
   els.analyzePair.addEventListener("click", analyzePair);

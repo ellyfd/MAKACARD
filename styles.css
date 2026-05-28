@@ -42,6 +42,36 @@ select {
   padding: 22px;
 }
 
+body.org-mode {
+  overflow: hidden;
+}
+
+body.org-mode .app-shell {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  width: 100%;
+  height: 100vh;
+  padding: 0;
+}
+
+body.org-mode .app-header {
+  display: none;
+}
+
+body.org-mode .tabs {
+  z-index: 5;
+  margin: 0;
+  border-width: 0 0 1px;
+  border-radius: 0;
+  padding: 8px 14px;
+  background: rgba(15, 20, 31, .96);
+}
+
+body.org-mode #org-view.view.active {
+  display: grid;
+  min-height: 0;
+}
+
 .app-header {
   display: flex;
   justify-content: space-between;
@@ -1621,6 +1651,12 @@ select {
   gap: 16px;
 }
 
+body.org-mode .org-stage {
+  grid-template-rows: auto 1fr auto;
+  gap: 0;
+  min-height: 0;
+}
+
 .org-toolbar,
 .org-focus-detail {
   border: 1px solid rgba(255, 255, 255, .1);
@@ -1635,6 +1671,13 @@ select {
   gap: 18px;
   align-items: end;
   padding: 18px;
+}
+
+body.org-mode .org-toolbar {
+  border-width: 0 0 1px;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 14px 18px;
 }
 
 .org-toolbar h2 {
@@ -1677,11 +1720,20 @@ select {
   overflow: hidden;
 }
 
+body.org-mode .org-map {
+  min-height: 0;
+}
+
 .org-chart-canvas {
   width: 100%;
   overflow-x: auto;
-  overflow-y: visible;
+  overflow-y: auto;
   padding: 0 0 18px;
+}
+
+body.org-mode .org-chart-canvas {
+  height: 100%;
+  padding: 24px 0 56px;
 }
 
 .org-tree {
@@ -1933,6 +1985,14 @@ select {
   flex-wrap: wrap;
   gap: 8px;
   padding: 14px;
+}
+
+body.org-mode .org-focus-detail {
+  max-height: 118px;
+  overflow: auto;
+  border-width: 1px 0 0;
+  border-radius: 0;
+  box-shadow: none;
 }
 
 .org-focus-detail strong,
