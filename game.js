@@ -759,6 +759,7 @@ function orgDirectoryPath(directory) {
 
 function orgDirectoryDetail(directory, unit, people) {
   const children = orgDirectoryChildren(directory.id);
+  const ownMembers = orgDirectoryMembers(directory, people);
   const ownCount = orgDirectoryOwnCount(directory, people);
   const totalCount = orgDirectoryCount(directory, people);
   const path = orgDirectoryPath(directory).join(" / ");
@@ -768,6 +769,7 @@ function orgDirectoryDetail(directory, unit, people) {
     <span>${children.length ? `下層單位：${children.length}` : "下層單位：無"}</span>
     <span>${ownCount ? `直屬成員：${ownCount}` : "直屬成員：待補"}</span>
     ${children.length ? `<span>含下層成員：${totalCount || "待補"}</span>` : ""}
+    ${ownMembers.length ? `<p>直屬成員：${ownMembers.map((member) => `${member.name}${member.localName ? ` / ${member.localName}` : ""}`).join("、")}</p>` : ""}
     <p>${unit?.name || unitName(directory.unit)} 的正式節點；沒有成員時代表名單尚未從 PDF/VSD 匯入，不代表組織不存在。</p>
   `;
 }
@@ -810,11 +812,8 @@ function orgViewForFocus(hierarchy, focus) {
       return {
         level: "dept",
         title: directory.name,
-        nodes: [
-          ...children.map((child) => orgDirectoryNode(child, hierarchy.people)),
-          ...ownMembers.map((member) => ({ type: "person", unit: focus.unit, dept: directory.name, deptId: directory.id, title: member.name, subtitle: `${member.localName || "中文名待補"} · ${member.role || "職務待補"}`, count: /^\d{4}-\d{2}-\d{2}$/.test(member.birthday || "") ? member.birthday : "生日待補", member }))
-        ],
-        summary: `${children.length} 個下層單位；${ownMembers.length || "待補"} 位本層成員`,
+        nodes: children.map((child) => orgDirectoryNode(child, hierarchy.people)),
+        summary: `${children.length} 個下層單位；直屬成員 ${ownMembers.length || "待補"}`,
         detail: orgDirectoryDetail(directory, unit, hierarchy.people)
       };
     }
