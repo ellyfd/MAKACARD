@@ -67,20 +67,16 @@ const els = {
 };
 
 const MISSION_REQUIREMENTS = {
-  "rc-lock": ["tech-rd", "newbiz", "ops-mgmt"],
-  "debbie-gap": ["tech-rd", "newbiz"],
-  "taipei-chiayi": ["tech-rd", "overseas"],
-  "ai-seed": ["general-mgmt", "tech-rd", "newbiz", "ops-mgmt"],
-  "sttrix-gtm": ["newbiz", "sales-marketing", "tech-rd"],
-  "nunox-ip": ["newbiz", "tech-rd", "sales-marketing"],
-  "vivatech-booth": ["ceo", "newbiz", "tech-rd", "sales-marketing"],
-  "ai-education-gap": ["newbiz", "tech-rd", "general-mgmt"],
-  "pilot-feedback": ["newbiz", "sales-marketing", "tech-rd"],
-  "dicks-placement-print": ["sales-marketing", "tech-rd"],
-  "dpo-training-data": ["newbiz", "tech-rd"],
-  "fabric-api-78": ["tech-rd", "newbiz"],
-  "sequin-qipao": ["tech-rd", "newbiz"],
-  "seoul-dev-trip": ["sales-marketing", "newbiz"]
+  "fabric-trim-delay": ["sales-marketing", "tech-rd", "overseas", "ops-mgmt"],
+  "pp-sample-loop": ["sales-marketing", "tech-rd", "overseas"],
+  "spec-version-drift": ["sales-marketing", "tech-rd", "ops-mgmt"],
+  "qc-rework-spike": ["tech-rd", "overseas", "sales-marketing"],
+  "capacity-wip-bottleneck": ["sales-marketing", "tech-rd", "overseas", "ops-mgmt"],
+  "digital-sample-adoption": ["newbiz", "tech-rd", "sales-marketing"],
+  "shipment-booking-crunch": ["sales-marketing", "tech-rd", "overseas"],
+  "costing-margin-squeeze": ["sales-marketing", "tech-rd", "ops-mgmt"],
+  "sustainability-traceability": ["general-mgmt", "sales-marketing", "tech-rd", "overseas"],
+  "ai-plm-visibility": ["newbiz", "ops-mgmt", "sales-marketing", "tech-rd"]
 };
 
 const MEMBER_TRAITS = {
@@ -131,24 +127,24 @@ const UNIT_COLORS = {
 
 const TEAM_LENSES = [
   {
-    id: "tuckman",
-    name: "Tuckman Stage Check",
-    focus: "看隊伍是在 forming / storming / norming / performing 哪一段卡住。"
+    id: "war-room",
+    name: "War Room Sprint",
+    focus: "限時救火局：先補缺口單位，再用事件卡測 owner、deadline、risk。"
   },
   {
-    id: "belbin",
+    id: "role-draft",
     name: "Role Balance Draft",
-    focus: "看隊形裡有沒有協調、創意、執行、評估、收尾等互補角色。"
+    focus: "像 team-building 桌遊一樣組隊：Sponsor、Domain、Translator、Operator 不能缺太多。"
   },
   {
-    id: "topologies",
-    name: "Team Topologies Mode",
-    focus: "看跨單位應該用 collaboration、facilitating 或 X-as-a-Service，避免無限協調。"
+    id: "handoff-relay",
+    name: "Handoff Relay",
+    focus: "接力賽局：每張牌都要把輸入轉成下一張牌能執行的輸出。"
   },
   {
     id: "raci",
-    name: "RACI Decision Gate",
-    focus: "看 Responsible / Accountable / Consulted / Informed 權責有沒有長出來。"
+    name: "RACI Gate",
+    focus: "決策閘門局：沒有 Accountable 就不能過關，Consulted 太多會加摩擦。"
   }
 ];
 
@@ -165,7 +161,7 @@ function memberById(id) {
 }
 
 function scenarioById(id) {
-  return GAME_DATA.scenarios.find((scenario) => scenario.id === id);
+  return [...GAME_DATA.scenarios, ...GAME_DATA.orgMissions].find((scenario) => scenario.id === id);
 }
 
 function strategyById(id) {
@@ -455,12 +451,12 @@ function fillStaticControls() {
   fillSelect(els.personA, roster, (member) => `${member.name} · ${member.department}`);
   fillSelect(els.personB, roster, (member) => `${member.name} · ${member.department}`);
   fillSelect(els.personC, roster, (member) => `${member.name} · ${member.department}`);
-  fillSelect(els.scenarioSelect, GAME_DATA.scenarios, (scenario) => scenario.name);
+  fillSelect(els.scenarioSelect, GAME_DATA.orgMissions, (scenario) => scenario.name);
   fillSelect(els.frameworkSelect, TEAM_LENSES, (lens) => lens.name);
   els.personA.value = "elly";
   els.personB.value = "sixian";
   els.personC.value = "douglas-lu";
-  els.frameworkSelect.value = "topologies";
+  els.frameworkSelect.value = "war-room";
 }
 
 function renderScoreCard(label, value, helper) {
@@ -498,6 +494,7 @@ function analyzePair() {
   const boundaryLoad = clamp(100 - (new Set(units).size - 1) * 14 - (required.length - covered.size) * 18 - duplicatePenalty(units) + (hasRole(roles, "translator") ? 14 : 0));
   const pairFriction = average(pairScores.map((score) => score.stress));
   const lensScore = lensCheck(lens.id, { trio, roles, units, scenario, coverage, roleBalance, decisionRights, boundaryLoad, pairFriction });
+  const resource = teamResources({ trio, roles, units, scenario, coverage, roleBalance, decisionRights, boundaryLoad, pairFriction });
   const chain = clamp(coverage * .24 + roleBalance * .24 + decisionRights * .22 + boundaryLoad * .15 + lensScore.score * .15);
   const tempo = clamp(average(trio.map((member) => vectorsFor(member).speed)) + (hasRole(roles, "operator") ? 10 : 0) - (required.length - covered.size) * 7);
   const friction = clamp(pairFriction + (100 - boundaryLoad) * .25 + (required.length - covered.size) * 8 - (hasRole(roles, "translator") ? 8 : 0));
@@ -505,22 +502,37 @@ function analyzePair() {
   els.pairTitle.textContent = `${a.name} → ${b.name} → ${c.name}`;
   els.fitBadge.textContent = `${chain} · ${chain >= 80 ? "可出任務" : chain >= 62 ? "可打但有洞" : "重抽隊形"}`;
   els.scoreGrid.innerHTML = [
-    renderScoreCard("Mission Fit", chain, "組織覆蓋、角色互補與管理檢定的總判定"),
-    renderScoreCard("Role Balance", roleBalance, "隊伍是否同時有 sponsor / domain / translator / operator"),
-    renderScoreCard("Decision Rights", decisionRights, "權責是否足以讓會議有 owner 和下一步"),
-    renderScoreCard("Boundary Cost", 100 - boundaryLoad, "跨單位協調成本，分數越低越好")
+    renderScoreCard("Mission Fit", chain, "這隊能不能接下此成衣業任務"),
+    renderScoreCard("Role Balance", roleBalance, "Sponsor / Domain / Translator / Operator 的角色完整度"),
+    renderScoreCard("Decision Rights", decisionRights, "誰能拍板、誰負責交付、誰只被諮詢"),
+    renderScoreCard("Boundary Cost", 100 - boundaryLoad, "跨單位接力成本，分數越低越好")
   ].join("");
   const laneText = trio.map((member, index) => `${member.name}<b>${["開局", "轉接", "收束"][index]} · ${unitName(unitFor(member))} · ${teamRole(member).name}</b>`).join("<span>→</span>");
   const event = labEvent({ chain, missing, friction, lensScore, roles, units });
   els.pairInsight.innerHTML = `
     <div class="combo-line">${laneText}</div>
     <div class="lab-event"><strong>${event.title}</strong><span>${event.text}</span></div>
-    <p><strong>檢定：</strong>${lens.name}。${lens.focus}</p>
+    <div class="resource-board">
+      <span>Time <b>${resource.time}</b></span>
+      <span>Authority <b>${resource.authority}</b></span>
+      <span>Evidence <b>${resource.evidence}</b></span>
+      <span>Trust <b>${resource.trust}</b></span>
+    </div>
+    <p><strong>遊戲模式：</strong>${lens.name}。${lens.focus}</p>
     <p><strong>命中單位：</strong>${[...covered].map(unitName).join(" / ") || "沒有命中"}。</p>
     <p><strong>缺口：</strong>${missing.length ? missing.map(unitName).join(" / ") : "關鍵單位已覆蓋"}。</p>
     <p><strong>框架判定：</strong>${lensScore.text}</p>
     <p><strong>下一手：</strong>${nextDraftMove({ missing, roles, units, lens })}</p>
   `;
+}
+
+function teamResources({ roles, coverage, decisionRights, boundaryLoad, pairFriction }) {
+  return {
+    time: clamp(50 + (hasRole(roles, "operator") ? 18 : 0) + coverage * .18 - pairFriction * .2),
+    authority: clamp(decisionRights + (hasRole(roles, "sponsor") ? 12 : -18)),
+    evidence: clamp(48 + (hasRole(roles, "domain") ? 22 : 0) + coverage * .18),
+    trust: clamp(42 + (hasRole(roles, "translator") ? 22 : 0) + boundaryLoad * .18 - pairFriction * .15)
+  };
 }
 
 function teamRole(member) {
@@ -552,19 +564,18 @@ function duplicatePenalty(units) {
 
 function lensCheck(id, context) {
   const { roles, units, scenario, coverage, roleBalance, decisionRights, boundaryLoad, pairFriction } = context;
-  if (id === "tuckman") {
-    const storming = scenario.pressure.friction > 42 || pairFriction > 42;
-    const score = clamp((storming ? decisionRights * .45 + boundaryLoad * .35 + roleBalance * .2 : coverage * .45 + roleBalance * .35 + boundaryLoad * .2));
-    return { score, text: storming ? "這局像 Storming：先處理權責和摩擦，不要直接衝交付。" : "這局可進 Norming：角色和節奏若固定，就能穩定推進。" };
+  if (id === "war-room") {
+    const score = clamp(coverage * .38 + decisionRights * .28 + (100 - pairFriction) * .22 + (hasRole(roles, "operator") ? 12 : -8));
+    return { score, text: score >= 70 ? "War Room 成立：先開 30 分鐘決策會，產出 owner / deadline / escalation path。" : "救火隊不完整：先補缺口單位或拍板角色，否則只會把問題轉寄給下一個人。" };
   }
-  if (id === "belbin") {
+  if (id === "role-draft") {
     const score = clamp(roleBalance - duplicatePenalty(units) + (hasRole(roles, "wildcard") ? -6 : 0));
     return { score, text: uniqueRoleText(roles) };
   }
-  if (id === "topologies") {
+  if (id === "handoff-relay") {
     const unitSpread = new Set(units).size;
     const score = clamp(boundaryLoad + (unitSpread === 2 ? 12 : unitSpread === 3 ? 4 : -8));
-    return { score, text: unitSpread >= 3 ? "這是 collaboration 模式，適合短期攻堅，但需要明確接口避免開成大拜拜。" : "這比較像 facilitating / X-as-a-Service，可以用一個主責單位拉另一個單位支援。" };
+    return { score, text: unitSpread >= 3 ? "這是跨單位接力：每棒都要交付明確輸入/輸出，不然會變成同步會議地獄。" : "隊形偏單一路線，適合快速處理局部問題，但不一定能覆蓋整條成衣流程。" };
   }
   const score = clamp(decisionRights + (hasRole(roles, "sponsor") ? 8 : -12));
   return { score, text: hasRole(roles, "sponsor") ? "RACI 有 Accountable 角色，可以進入決策；下一步要補 Responsible 的交付描述。" : "RACI 缺 Accountable，會議可能變成大家都有意見但沒有人能拍板。" };
@@ -587,7 +598,8 @@ function nextDraftMove({ missing, roles, lens }) {
   if (missing.length) return `補一張 ${unitName(missing[0])} 牌。`;
   if (!hasRole(roles, "sponsor")) return "補 Sponsor / Accountable，讓會議有拍板權。";
   if (!hasRole(roles, "translator")) return "補 Translator，降低跨單位語言成本。";
-  if (lens.id === "topologies") return "把互動模式寫清楚：collaboration 只限短衝，之後要轉成固定接口。";
+  if (lens.id === "handoff-relay") return "把每棒輸入/輸出寫清楚，避免跨單位只同步不交付。";
+  if (lens.id === "war-room") return "開 30 分鐘 war room，只決定 owner、deadline、升級條件。";
   return "進 Mission Run，測五回合內是否能把 Friction 壓下來。";
 }
 
@@ -643,7 +655,7 @@ function renderOrgMap() {
   els.orgTitle.textContent = view.title;
   els.orgLegend.innerHTML = renderOrgBreadcrumb(focus);
   els.orgMap.className = `org-map drill-${view.level}`;
-  els.orgMap.innerHTML = view.nodes.map(renderOrgFocusNode).join("");
+  els.orgMap.innerHTML = `${renderOrgParentNode(view)}<div class="org-child-row">${view.nodes.map(renderOrgFocusNode).join("")}</div>`;
   els.orgMap.querySelectorAll("[data-org-action]").forEach((button) => {
     button.addEventListener("click", () => {
       const action = button.dataset.orgAction;
@@ -655,6 +667,16 @@ function renderOrgMap() {
   });
   if (els.orgDetail) els.orgDetail.innerHTML = view.detail || "";
   if (els.orgBack) els.orgBack.disabled = focus.type === "root";
+}
+
+function renderOrgParentNode(view) {
+  return `
+    <article class="org-parent-node">
+      <span>${view.level === "root" ? "ROOT" : "FOCUS"}</span>
+      <h3>${view.title}</h3>
+      <p>${view.nodes.length} next nodes</p>
+    </article>
+  `;
 }
 
 function orgHierarchy(query = "") {

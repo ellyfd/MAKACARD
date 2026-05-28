@@ -1518,6 +1518,30 @@ select {
   text-transform: uppercase;
 }
 
+.resource-board {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.resource-board span {
+  display: grid;
+  gap: 4px;
+  padding: 10px;
+  border: 1px solid rgba(255, 255, 255, .1);
+  border-radius: 8px;
+  color: #a9b6c8;
+  background: rgba(255, 255, 255, .05);
+  font-size: .78rem;
+  text-transform: uppercase;
+}
+
+.resource-board b {
+  color: #fff;
+  font-size: 1.2rem;
+}
+
 @media (max-width: 1180px) {
   .action-cards {
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1613,21 +1637,66 @@ select {
 
 .org-map {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  grid-template-columns: 1fr;
   gap: 18px;
   align-items: stretch;
 }
 
-.org-map.drill-root {
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+.org-parent-node {
+  position: relative;
+  justify-self: center;
+  display: grid;
+  gap: 8px;
+  min-width: min(360px, 100%);
+  padding: 18px 22px;
+  border: 3px double rgba(255, 255, 255, .72);
+  border-radius: 8px;
+  color: #fff;
+  background: rgba(18, 24, 36, .96);
+  text-align: center;
 }
 
-.org-map.drill-unit {
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+.org-parent-node::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -26px;
+  height: 26px;
+  border-left: 2px solid rgba(255, 255, 255, .32);
 }
 
-.org-map.drill-dept {
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+.org-parent-node span {
+  width: fit-content;
+  margin: 0 auto;
+  padding: 4px 8px;
+  border-radius: 999px;
+  color: #10131b;
+  background: #9be96f;
+  font-size: .68rem;
+  font-weight: 900;
+  letter-spacing: .08em;
+}
+
+.org-parent-node h3,
+.org-parent-node p {
+  margin: 0;
+}
+
+.org-child-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 18px;
+  padding-top: 26px;
+}
+
+.org-child-row::before {
+  content: "";
+  position: absolute;
+  top: 25px;
+  left: 8%;
+  right: 8%;
+  border-top: 2px solid rgba(255, 255, 255, .22);
 }
 
 .org-focus-node {
@@ -1651,10 +1720,10 @@ select {
 .org-focus-node::after {
   content: "";
   position: absolute;
-  top: 50%;
-  right: -18px;
-  width: 18px;
-  border-top: 2px solid rgba(255, 255, 255, .18);
+  top: -26px;
+  left: 50%;
+  height: 26px;
+  border-left: 2px solid rgba(255, 255, 255, .22);
 }
 
 .org-focus-node:hover {

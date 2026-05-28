@@ -966,164 +966,132 @@ const GAME_DATA = {
   ],
   orgMissions: [
     {
-      id: "rc-lock",
-      name: "數位布料知識鎖倉",
-      prompt: "布料標準集中在少數技術核心身上，DPC、3D、數發都在等同一個人輸出。必須在五回合內把隱性知識變成可交接流程。",
-      goal: "建立文件化義務、替補路線與跨單位交接節點。",
-      pressure: { trust: 38, clarity: 34, momentum: 30, friction: 46 },
-      weights: { clarity: 1.25, data: 1.3, risk: 1.25, speed: .75, context: 1, warmth: .8 }
+      id: "fabric-trim-delay",
+      name: "Fabric / Trim Lead Time Slip",
+      prompt: "主布或副料交期延遲，PP sample、排產和出貨窗口全部被壓縮。玩家必須在五回合內建立替代料、客戶 approval 和產區排程的共同節奏。",
+      goal: "鎖定替代料路線、approval owner、產區排程重算與客戶溝通口徑。",
+      pressure: { trust: 36, clarity: 30, momentum: 34, friction: 48 },
+      weights: { data: 1.25, risk: 1.25, clarity: 1.15, speed: 1.05, context: 1, warmth: .8 }
     },
     {
-      id: "debbie-gap",
-      name: "Debbie 產假缺口",
-      prompt: "台北線吸收缺口後負載升高，回歸前如果沒有重設分工，穩定的人會被默默耗損。",
-      goal: "重設承接、回歸定位與對外窗口。",
-      pressure: { trust: 42, clarity: 36, momentum: 34, friction: 38 },
-      weights: { clarity: 1.1, context: 1.2, risk: 1.15, warmth: 1, data: .9, speed: .8 }
+      id: "pp-sample-loop",
+      name: "PP Sample Approval Loop",
+      prompt: "PP sample 被退回多輪，fit、construction、material handfeel 和客戶 comment 版本混在一起，bulk production 不能再等。",
+      goal: "把退樣原因拆成 fit / construction / material / customer sign-off，決定下一版樣衣的唯一責任人。",
+      pressure: { trust: 38, clarity: 27, momentum: 32, friction: 50 },
+      weights: { clarity: 1.35, context: 1.15, risk: 1.2, data: 1.15, speed: .9, warmth: .85 }
     },
     {
-      id: "taipei-chiayi",
-      name: "台北視角低估嘉義",
-      prompt: "嘉義和平湖成員曝光不足，台北主視角把地理成本誤讀成態度問題，跨地資訊正在變形。",
-      goal: "讓遠端單位被看見，建立同步節奏和正式紀錄。",
-      pressure: { trust: 36, clarity: 32, momentum: 34, friction: 44 },
-      weights: { context: 1.3, warmth: 1.15, clarity: 1.1, risk: 1, data: 1, speed: .75 }
+      id: "spec-version-drift",
+      name: "Spec Version Drift",
+      prompt: "業務、技術、工廠各自拿到不同版本 spec，QC 判定和現場做法不一致，rework 正在累積。",
+      goal: "建立 single source of truth、版本凍結點、變更通知與工廠 access 規則。",
+      pressure: { trust: 34, clarity: 24, momentum: 30, friction: 56 },
+      weights: { clarity: 1.4, data: 1.35, risk: 1.2, context: 1.1, speed: .8, warmth: .75 }
     },
     {
-      id: "ai-seed",
-      name: "AI 種子隊成形",
-      prompt: "AI 轉型不能只靠工具熱情，需要把研究、內容、技術標準、PM 節奏接成一條可運作的線。",
-      goal: "組出跨單位 seed team，交付一個可驗證 prototype。",
-      pressure: { trust: 44, clarity: 38, momentum: 38, friction: 28 },
-      weights: { speed: 1.15, context: 1.1, data: 1.15, clarity: 1, warmth: .9, risk: .9 }
+      id: "qc-rework-spike",
+      name: "QC Rework Spike",
+      prompt: "inline inspection 發現縫製、裁片、印繡或尺寸問題，返工量上升，on-time delivery 開始危險。",
+      goal: "找到 defect root cause、建立 containment、重排檢驗節點並回報客戶風險。",
+      pressure: { trust: 33, clarity: 31, momentum: 32, friction: 58 },
+      weights: { risk: 1.4, data: 1.25, clarity: 1.15, speed: 1.1, context: .9, warmth: .75 }
     },
     {
-      id: "sttrix-gtm",
-      name: "StyTrix Soft Launch",
-      prompt: "Notion: StyTrix GTM。五月底前要問卷，六月中 VivaTech 要能 demo，六月底收內部回饋，七月底收外部回饋；同時還有 tutorial、FAQ、LinkedIn outreach、誘因機制和付款功能要接起來。",
-      goal: "在時間壓力下打出 launch loop：Demo -> Feedback -> Tutorial -> Outreach -> Conversion。",
-      pressure: { trust: 39, clarity: 31, momentum: 42, friction: 41 },
-      weights: { clarity: 1.25, speed: 1.25, context: 1.15, data: 1.1, warmth: .9, risk: 1.05 }
+      id: "capacity-wip-bottleneck",
+      name: "Capacity / WIP Bottleneck",
+      prompt: "某條產線 WIP 暴增，瓶頸卡在 sewing、finishing 或 packing；業務仍在追出貨，現場需要取捨。",
+      goal: "用 shared timeline 找瓶頸、重排產能、決定是否拆單或改交期。",
+      pressure: { trust: 35, clarity: 33, momentum: 28, friction: 52 },
+      weights: { speed: 1.25, data: 1.2, risk: 1.2, clarity: 1.1, context: 1, warmth: .8 }
     },
     {
-      id: "nunox-ip",
-      name: "NunoX IP 權益迷霧",
-      prompt: "Notion: StyTrix GTM。AI 物料模型到底共有、獨有，還是自行開發？合作方技術進度不透明，但可能主張 50% 權益。",
-      goal: "釐清權利義務、貢獻比例與替代方案，避免被不確定合作綁住。",
-      pressure: { trust: 34, clarity: 28, momentum: 30, friction: 52 },
-      weights: { risk: 1.35, data: 1.25, clarity: 1.25, context: 1, speed: .75, warmth: .8 }
+      id: "digital-sample-adoption",
+      name: "Digital Sample Adoption",
+      prompt: "品牌想縮短 sample loop，但設計、業務、3D、產區對 digital sample 的信任程度不同，必須定義哪些款能用數位樣核准。",
+      goal: "建立 digital sample 適用條件、驗收標準、例外處理和客戶教育路徑。",
+      pressure: { trust: 40, clarity: 32, momentum: 38, friction: 42 },
+      weights: { context: 1.25, clarity: 1.2, data: 1.15, risk: 1.05, speed: 1, warmth: 1 }
     },
     {
-      id: "vivatech-booth",
-      name: "VivaTech Booth Crisis",
-      prompt: "Notion: Vivatech 和群創的互動。攤位費 60-70 萬來源被誤解，合作方可能退出，三台螢幕與展示內容要重排，UI 延遲已壓縮測試時間。",
-      goal: "在成本、硬體、展示內容和合作關係之間做出可執行展位配置。",
-      pressure: { trust: 32, clarity: 30, momentum: 36, friction: 55 },
-      weights: { clarity: 1.2, risk: 1.3, speed: 1.15, data: 1.15, context: 1.05, warmth: .95 }
+      id: "shipment-booking-crunch",
+      name: "Shipment Booking Crunch",
+      prompt: "Final inspection、packing、booking 和文件節點互相擠壓，船期或空運成本風險升高。",
+      goal: "把 inspection pass、packing readiness、booking cut-off 和客戶承諾放進同一張決策表。",
+      pressure: { trust: 37, clarity: 32, momentum: 36, friction: 49 },
+      weights: { speed: 1.3, risk: 1.2, data: 1.15, clarity: 1.1, context: .9, warmth: .75 }
     },
     {
-      id: "ai-education-gap",
-      name: "AI Education Gap",
-      prompt: "Notion: Close-Door AI Meeting。產業和教育端都想用 AI，但設計師、學生、小品牌卡在工具門檻、成本、標準化和信任問題。",
-      goal: "把 AI 能力轉成可教、可試、可標準化的培訓與 mentor loop。",
-      pressure: { trust: 40, clarity: 33, momentum: 35, friction: 44 },
-      weights: { context: 1.3, warmth: 1.15, clarity: 1.15, data: 1, risk: 1, speed: .9 }
+      id: "costing-margin-squeeze",
+      name: "Costing / Margin Squeeze",
+      prompt: "客戶 target cost 壓低，但 fabric、labor、freight 或 MOQ 條件不配合；團隊要在報價、設計調整與供應替代間決策。",
+      goal: "拆出 cost driver、替代方案、客戶可接受 trade-off 與 margin guardrail。",
+      pressure: { trust: 39, clarity: 34, momentum: 34, friction: 44 },
+      weights: { data: 1.3, clarity: 1.2, risk: 1.2, context: 1, speed: .9, warmth: .8 }
     },
     {
-      id: "pilot-feedback",
-      name: "Startup Pilot Feedback Loop",
-      prompt: "Notion: Close-Door AI Meeting。大公司有場域與供應鏈，小團隊有技術和彈性；如果沒有真實問題 brief 和 early feedback，pilot 會做成沒人要的東西。",
-      goal: "建立 pilot brief、回饋節奏與成功指標，讓合作從展示變成迭代。",
-      pressure: { trust: 37, clarity: 35, momentum: 40, friction: 39 },
-      weights: { data: 1.25, context: 1.2, clarity: 1.15, warmth: 1, speed: 1, risk: .95 }
+      id: "sustainability-traceability",
+      name: "Traceability Request",
+      prompt: "品牌要求供應鏈透明度、材料來源或永續文件，但資料散在採購、工廠、品管和客戶文件裡。",
+      goal: "定義資料責任、文件證據鏈、供應商回覆 SLA 與客戶揭露格式。",
+      pressure: { trust: 38, clarity: 29, momentum: 31, friction: 46 },
+      weights: { data: 1.4, risk: 1.2, context: 1.15, clarity: 1.15, speed: .8, warmth: .85 }
     },
     {
-      id: "dicks-placement-print",
-      name: "DICKS 定位裁印花",
-      prompt: "TXT: DICKS SPORTING GOODS MAX156P_Q227。客人只給小彩圖，前片要定位，後片袖子領子口袋要宿舍處理；若先全套出圖，可能最後才發現花位、斜度、工差錯誤。",
-      goal: "先用小圖鎖定前片定位，再讓 2D、布廠、3D 依序驗證，避免全碼展開後返工。",
-      pressure: { trust: 43, clarity: 29, momentum: 37, friction: 48 },
-      weights: { clarity: 1.25, risk: 1.35, data: 1.1, speed: 1, context: 1, warmth: .75 }
-    },
-    {
-      id: "dpo-training-data",
-      name: "台科 DPO 資料標註迷宮",
-      prompt: "TXT: 聚陽 X 台科大雙週會。要做 DPO / LoRA 前，必須先定義品牌風格、人種、光線、構圖、驗收標準，還要處理好圖/壞圖標註和 prompt 定位不準。",
-      goal: "把抽象風格需求變成可標註資料、訓練流程和驗收規則。",
-      pressure: { trust: 38, clarity: 27, momentum: 31, friction: 46 },
-      weights: { clarity: 1.35, data: 1.35, context: 1.15, risk: 1.1, speed: .7, warmth: .8 }
-    },
-    {
-      id: "fabric-api-78",
-      name: "Jack API 只有 78 筆",
-      prompt: "TXT: Meeting Transcription。期待的是完整布料資料庫，但 API 測到只有 78 筆，關鍵字不知道怎麼下，marketplace、AI 生成、3D 成像、物性資料又分成不同階段。",
-      goal: "把 API 測試站、資料欄位、階段切分和上線範圍釐清，先求可用再談商業包裝。",
-      pressure: { trust: 35, clarity: 30, momentum: 39, friction: 50 },
-      weights: { data: 1.35, clarity: 1.25, risk: 1.2, speed: 1.1, context: 1, warmth: .75 }
-    },
-    {
-      id: "sequin-qipao",
-      name: "3D 亮片旗袍失真",
-      prompt: "TXT: 3D 周會。亮片材質在 Clo / Substance / AI 流程間反覆測試，Gemini 可能太誇張，自家流程比較真但花會變形；資料夾裡 map 和最終 3D 版本也需要整理。",
-      goal: "在材質真實度、AI 修圖、3D 效能和檔案版本之間找到可展示方案。",
-      pressure: { trust: 41, clarity: 33, momentum: 34, friction: 47 },
-      weights: { risk: 1.25, data: 1.2, clarity: 1.15, speed: 1.05, context: .9, warmth: .85 }
-    },
-    {
-      id: "seoul-dev-trip",
-      name: "SP27 Seoul Dev Trip",
-      prompt: "TXT: Seoul Dev trip / workshop 類會議。出差回來有客戶方向、款式開發、樣布/版型/影像素材要同步，如果沒有快速整理，市場訊號會散掉。",
-      goal: "把 trip insight 轉成款式方向、素材需求和下一輪開發 brief。",
-      pressure: { trust: 44, clarity: 35, momentum: 42, friction: 34 },
-      weights: { context: 1.25, speed: 1.15, clarity: 1.1, warmth: 1, data: 1, risk: .85 }
+      id: "ai-plm-visibility",
+      name: "PLM / AI Visibility Pilot",
+      prompt: "公司想用 PLM、portal 或 AI dashboard 改善 lead time visibility，但如果只做工具，不改資料 owner 和例外流程，pilot 會空轉。",
+      goal: "定義 pilot scope、資料 owner、例外訊號、成功指標與上線後維運責任。",
+      pressure: { trust: 42, clarity: 31, momentum: 40, friction: 38 },
+      weights: { clarity: 1.25, data: 1.25, context: 1.2, speed: 1, risk: 1, warmth: .9 }
     }
   ],
   actionTypes: [
     {
       id: "frame",
-      name: "定義問題",
+      name: "Freeze Spec",
       icon: "◇",
-      copy: "把混亂任務切成共同問題、邊界與決策點。",
+      copy: "凍結目前版次、變更點和客戶 approval 條件。",
       vector: "clarity",
       boosts: { clarity: 16, trust: 3, momentum: 4, friction: -3 }
     },
     {
       id: "bridge",
-      name: "跨域翻譯",
+      name: "Handoff Relay",
       icon: "↔",
-      copy: "把兩個單位的語言翻成彼此可執行的版本。",
+      copy: "把上一棒輸入翻成下一棒可執行輸出。",
       vector: "context",
       boosts: { trust: 9, clarity: 9, momentum: 3, friction: -8 }
     },
     {
       id: "prototype",
-      name: "做出樣本",
+      name: "Make Sample",
       icon: "▣",
-      copy: "用小型 prototype 取代空轉討論。",
+      copy: "做一個可驗證樣本或數位樣，縮短抽象討論。",
       vector: "speed",
       boosts: { momentum: 17, clarity: 5, trust: 2, friction: -1 }
     },
     {
       id: "gate",
-      name: "設品質閘門",
+      name: "Quality Gate",
       icon: "◆",
-      copy: "把標準、驗收和文件化義務放進流程。",
+      copy: "設 inspection、defect、rework 和放行標準。",
       vector: "risk",
       boosts: { clarity: 10, trust: 4, momentum: 2, friction: -10 }
     },
     {
       id: "evidence",
-      name: "補證據鏈",
+      name: "Evidence Chain",
       icon: "◎",
-      copy: "用樣本、數據、會議紀錄保護決策。",
+      copy: "補齊 spec、sample、照片、測試與供應商回覆證據。",
       vector: "data",
       boosts: { clarity: 8, trust: 8, momentum: 5, friction: -5 }
     },
     {
       id: "align",
-      name: "修復關係",
+      name: "Customer Sync",
       icon: "✦",
-      copy: "先降低誤讀和防衛，再推進任務。",
+      copy: "對齊客戶口徑、風險揭露和可接受 trade-off。",
       vector: "warmth",
       boosts: { trust: 15, clarity: 3, momentum: 1, friction: -12 }
     }
