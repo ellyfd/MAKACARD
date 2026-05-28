@@ -198,6 +198,16 @@ function allOrgMembers() {
   return merged;
 }
 
+function orgChartMembers() {
+  const members = allOrgMembers();
+  const alex = members.find((member) => member.id === "alex");
+  const aliases = alex ? [
+    { ...alex, id: "alex-newbiz-digital-product", role: "執行長（兼）", department: "數位產品發展中心", orgUnit: "newbiz" },
+    { ...alex, id: "alex-newbiz-smart-textile", role: "執行長（兼）", department: "智慧紡織發展中心", orgUnit: "newbiz" }
+  ] : [];
+  return [...members, ...aliases];
+}
+
 function unitFor(member) {
   if (member.orgUnit) return member.orgUnit;
   if (member.department.includes("待定位")) return "pending";
@@ -649,7 +659,7 @@ function renderOrgMap() {
 
 function orgHierarchy(query = "") {
   const normalized = query.trim().toLowerCase();
-  const people = allOrgMembers().filter((member) => {
+  const people = orgChartMembers().filter((member) => {
     if (!normalized) return true;
     return `${member.name} ${member.localName || ""} ${member.department || ""} ${member.role || ""} ${unitName(unitFor(member))}`.toLowerCase().includes(normalized);
   });
@@ -681,7 +691,9 @@ function orgViewForFocus(hierarchy, focus) {
   }
   if (focus.type === "dept") {
     const unit = GAME_DATA.orgUnits.find((item) => item.id === focus.unit);
-    const members = hierarchy.people.filter((member) => unitFor(member) === focus.unit && member.department === focus.dept);
+    const members = hierarchy.people
+      .filter((member) => unitFor(member) === focus.unit && member.department === focus.dept)
+      .sort((left, right) => orgChartRank(focus.dept, left) - orgChartRank(focus.dept, right) || left.name.localeCompare(right.name));
     return {
       level: "dept",
       title: focus.dept,
@@ -690,7 +702,7 @@ function orgViewForFocus(hierarchy, focus) {
     };
   }
   if (focus.type === "person") {
-    const member = allOrgMembers().find((item) => item.id === focus.person);
+    const member = orgChartMembers().find((item) => item.id === focus.person);
     return {
       level: "person",
       title: member?.name || "成員",
@@ -704,6 +716,14 @@ function orgViewForFocus(hierarchy, focus) {
     nodes: hierarchy.units.map((unit) => ({ type: "unit", unit: unit.id, title: unit.name, subtitle: unit.tagline, count: `${unit.people.length} members`, departments: unit.departments.length })),
     detail: "<strong>主架構</strong><p>點一個組織群放大一層；再點部門看成員。</p>"
   };
+}
+
+function orgChartRank(dept, member) {
+  const digitalProduct = ["Alex Chou", "Elly Cheng", "Vanessa Chou", "Alan Liu", "Andy Liu", "Doris Lin", "Emily Shen", "Dianne Chen"];
+  const smartTextile = ["Alex Chou", "Wayi Tsai", "Shirley Sun", "Evan Sheu", "Jimmy Chou", "Tanis Lee", "Jonathan Wu", "Gary Yen", "Dean Lo", "Ian Tseng", "Sunny Shih"];
+  const list = dept === "數位產品發展中心" ? digitalProduct : dept === "智慧紡織發展中心" ? smartTextile : [];
+  const index = list.indexOf(member.name);
+  return index === -1 ? 999 : index;
 }
 
 function renderOrgFocusNode(node) {
@@ -741,7 +761,7 @@ function renderOrgBreadcrumb(focus) {
   if (focus.unit) parts.push(`<button type="button" data-crumb="unit">${unitName(focus.unit)}</button>`);
   if (focus.dept) parts.push(`<button type="button" data-crumb="dept">${focus.dept}</button>`);
   if (focus.person) {
-    const member = allOrgMembers().find((item) => item.id === focus.person);
+    const member = orgChartMembers().find((item) => item.id === focus.person);
     parts.push(`<button type="button" data-crumb="person">${member?.name || "成員"}</button>`);
   }
   setTimeout(() => {
