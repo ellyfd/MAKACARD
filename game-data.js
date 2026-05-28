@@ -120,6 +120,8 @@ const GAME_DATA = {
     { id: "quality-management", unit: "tech-rd", parent: "engineering-office", name: "品質管理部", members: [] },
     { id: "logistics-office", unit: "tech-rd", name: "運籌處", members: [] },
     { id: "logistics-management", unit: "tech-rd", parent: "logistics-office", name: "物流管理部", members: [] },
+    { id: "export-management", unit: "tech-rd", parent: "logistics-management", name: "出口管理課", members: [] },
+    { id: "import-docs", unit: "tech-rd", parent: "logistics-management", name: "進口文件課", members: [] },
     { id: "production-sales-management", unit: "tech-rd", parent: "logistics-office", name: "產銷管理部", members: [] },
     { id: "digital-product", unit: "newbiz", name: "數位產品發展中心", members: ["alex", "elly", "alan", "andy", "vanessa", "doris", "emily", "dianne"] },
     { id: "smart-textile", unit: "newbiz", name: "智慧紡織發展中心", members: ["wayi-tsai"] },
