@@ -657,7 +657,7 @@ function renderOrgMap() {
   els.orgTitle.textContent = view.title;
   els.orgLegend.innerHTML = renderOrgBreadcrumb(focus);
   els.orgMap.className = `org-map drill-${view.level}`;
-  els.orgMap.innerHTML = `${renderOrgParentNode(view)}<div class="org-child-row">${view.nodes.map(renderOrgFocusNode).join("")}</div>`;
+  els.orgMap.innerHTML = `${renderOrgParentNode(view)}<div class="org-child-row">${view.nodes.length ? view.nodes.map(renderOrgFocusNode).join("") : renderOrgEmptyState(view)}</div>`;
   els.orgMap.querySelectorAll("[data-org-action]").forEach((button) => {
     button.addEventListener("click", () => {
       const action = button.dataset.orgAction;
@@ -676,7 +676,16 @@ function renderOrgParentNode(view) {
     <article class="org-parent-node">
       <span>${view.level === "root" ? "ROOT" : "FOCUS"}</span>
       <h3>${view.title}</h3>
-      <p>${view.nodes.length} next nodes</p>
+      <p>${view.summary || `${view.nodes.length} 個下層節點`}</p>
+    </article>
+  `;
+}
+
+function renderOrgEmptyState(view) {
+  return `
+    <article class="org-empty-state">
+      <strong>${view.emptyTitle || "成員資料待補"}</strong>
+      <p>${view.emptyText || "這個正式組織節點已建立；待匯入 PDF/VSD 內的人員名單後，這裡會展開成員卡。"}</p>
     </article>
   `;
 }
@@ -712,23 +721,54 @@ function orgDirectoryMembers(directory, people = orgChartMembers()) {
   return people.filter((member) => ids.has(member.id));
 }
 
+function orgDirectoryOwnCount(directory, people = orgChartMembers()) {
+  return orgDirectoryMembers(directory, people).length;
+}
+
 function orgDirectoryCount(directory, people = orgChartMembers()) {
-  const own = orgDirectoryMembers(directory, people).length;
+  const own = orgDirectoryOwnCount(directory, people);
   const childCount = orgDirectoryChildren(directory.id).reduce((sum, child) => sum + orgDirectoryCount(child, people), 0);
   return own + childCount;
+}
+
+function orgDirectoryPath(directory) {
+  if (!directory) return [];
+  const parents = [];
+  let cursor = directory;
+  while (cursor?.parent) {
+    cursor = orgDirectoryById(cursor.parent);
+    if (cursor) parents.unshift(cursor.name);
+  }
+  return [unitName(directory.unit), ...parents, directory.name];
+}
+
+function orgDirectoryDetail(directory, unit, people) {
+  const children = orgDirectoryChildren(directory.id);
+  const ownCount = orgDirectoryOwnCount(directory, people);
+  const totalCount = orgDirectoryCount(directory, people);
+  const path = orgDirectoryPath(directory).join(" / ");
+  return `
+    <strong>${directory.name}</strong>
+    <span>路徑：${path}</span>
+    <span>${children.length ? `下層單位：${children.length}` : "下層單位：無"}</span>
+    <span>${ownCount ? `直屬成員：${ownCount}` : "直屬成員：待補"}</span>
+    ${children.length ? `<span>含下層成員：${totalCount || "待補"}</span>` : ""}
+    <p>${unit?.name || unitName(directory.unit)} 的正式節點；沒有成員時代表名單尚未從 PDF/VSD 匯入，不代表組織不存在。</p>
+  `;
 }
 
 function orgDirectoryNode(directory, people) {
   const children = orgDirectoryChildren(directory.id);
   const count = orgDirectoryCount(directory, people);
+  const ownCount = orgDirectoryOwnCount(directory, people);
   return {
     type: "dept",
     unit: directory.unit,
     dept: directory.name,
     deptId: directory.id,
     title: directory.name,
-    count,
-    subtitle: children.length ? `${children.length} next nodes` : `${count} members`,
+    count: children.length ? `${children.length} 下層` : count ? `${count} 成員` : "待補",
+    subtitle: children.length ? `下層單位 ${children.length}；含成員 ${count || "待補"}` : ownCount ? `成員 ${ownCount}` : "成員資料待補",
     departments: children.length,
     members: orgDirectoryMembers(directory, people)
   };
@@ -742,7 +782,8 @@ function orgViewForFocus(hierarchy, focus) {
       level: "unit",
       title: unit?.name || "組織群",
       nodes: source.departments.map((dept) => orgDirectoryNode(dept, hierarchy.people)),
-      detail: `<strong>${unit?.name || ""}</strong><p>${unit?.tagline || ""}</p>`
+      summary: `${source.departments.length} 個正式下層單位`,
+      detail: `<strong>${unit?.name || ""}</strong><span>下層單位：${source.departments.length}</span><span>已掛成員：${source.people.length || "待補"}</span><p>${unit?.tagline || ""}</p>`
     };
   }
   if (focus.type === "dept") {
@@ -754,7 +795,8 @@ function orgViewForFocus(hierarchy, focus) {
         level: "dept",
         title: directory.name,
         nodes: children.map((child) => orgDirectoryNode(child, hierarchy.people)),
-        detail: `<strong>${directory.name}</strong><p>${unit?.name || ""} / ${children.length} next nodes</p>`
+        summary: `${children.length} 個下層單位`,
+        detail: orgDirectoryDetail(directory, unit, hierarchy.people)
       };
     }
     const members = directory ? orgDirectoryMembers(directory, hierarchy.people) : hierarchy.people
@@ -764,7 +806,10 @@ function orgViewForFocus(hierarchy, focus) {
       level: "dept",
       title: directory?.name || focus.dept,
       nodes: members.map((member) => ({ type: "person", unit: focus.unit, dept: directory?.name || focus.dept, deptId: directory?.id || focus.deptId, title: member.name, subtitle: `${member.localName || "中文名待補"} · ${member.role || "職務待補"}`, count: /^\d{4}-\d{2}-\d{2}$/.test(member.birthday || "") ? member.birthday : "生日待補", member })),
-      detail: `<strong>${directory?.name || focus.dept}</strong><p>${unit?.name || ""} / ${members.length} members</p>`
+      summary: members.length ? `${members.length} 位成員` : "成員資料待補",
+      emptyTitle: "成員資料待補",
+      emptyText: `${directory?.name || focus.dept} 是正式組織節點；目前只建立架構，待 PDF/VSD 內的人員名單匯入。`,
+      detail: directory ? orgDirectoryDetail(directory, unit, hierarchy.people) : `<strong>${focus.dept}</strong><span>路徑：${unit?.name || ""} / ${focus.dept}</span><span>成員：${members.length || "待補"}</span>`
     };
   }
   if (focus.type === "person") {
@@ -779,8 +824,9 @@ function orgViewForFocus(hierarchy, focus) {
   return {
     level: "root",
     title: "Makalot 主架構",
-    nodes: hierarchy.units.map((unit) => ({ type: "unit", unit: unit.id, title: unit.name, subtitle: unit.tagline, count: `${unit.people.length} members`, departments: unit.departments.length })),
-    detail: "<strong>主架構</strong><p>點一個組織群放大一層；再點部門看成員。</p>"
+    nodes: hierarchy.units.map((unit) => ({ type: "unit", unit: unit.id, title: unit.name, subtitle: unit.tagline, count: `${unit.people.length || "待補"} 成員`, departments: unit.departments.length })),
+    summary: `${hierarchy.units.length} 個組織群`,
+    detail: "<strong>主架構</strong><p>點一個組織群放大一層；再點正式部門/中心/課/團隊看下層或成員。</p>"
   };
 }
 

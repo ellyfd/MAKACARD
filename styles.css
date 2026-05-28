@@ -1737,6 +1737,38 @@ select {
   border-top: 2px solid rgba(255, 255, 255, .22);
 }
 
+.org-empty-state {
+  position: relative;
+  display: grid;
+  gap: 8px;
+  max-width: 620px;
+  margin: 0 auto;
+  padding: 18px 20px;
+  border: 1px dashed rgba(255, 255, 255, .24);
+  border-radius: 8px;
+  color: #dbe8fb;
+  background: rgba(18, 24, 36, .82);
+  text-align: center;
+}
+
+.org-empty-state::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: -26px;
+  height: 26px;
+  border-left: 2px solid rgba(255, 255, 255, .22);
+}
+
+.org-empty-state strong {
+  color: #9be96f;
+}
+
+.org-empty-state p {
+  margin: 0;
+  color: #a9b6c8;
+}
+
 .org-focus-node {
   position: relative;
   display: grid;
