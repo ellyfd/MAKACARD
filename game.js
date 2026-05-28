@@ -15,7 +15,8 @@ const state = {
     log: []
   },
   selectedOrgUnit: "all",
-  selectedOrgDept: null
+  selectedOrgDept: null,
+  orgFocus: { type: "root" }
 };
 
 const els = {
@@ -29,6 +30,9 @@ const els = {
   orgUnitFilter: document.querySelector("#org-unit-filter"),
   orgRosterCount: document.querySelector("#org-roster-count"),
   orgDetail: document.querySelector("#org-detail"),
+  orgTitle: document.querySelector("#org-title"),
+  orgBack: document.querySelector("#org-back"),
+  orgHome: document.querySelector("#org-home"),
   personA: document.querySelector("#person-a"),
   personB: document.querySelector("#person-b"),
   personC: document.querySelector("#person-c"),
@@ -409,6 +413,7 @@ function renderMember(member) {
 }
 
 function renderMembers() {
+  if (!els.memberGrid) return;
   const query = (els.orgSearch?.value || "").trim().toLowerCase();
   const activeUnit = els.orgUnitFilter?.value || "all";
   const selectedDept = state.selectedOrgDept;
@@ -621,100 +626,149 @@ function switchView(view) {
 
 function renderOrgMap() {
   if (!els.orgMap) return;
-  const mission = state.meeting.scenario;
-  const required = new Set(missionRequires(mission));
-  const covered = new Set(state.meeting.coveredUnits);
   const query = (els.orgSearch?.value || "").trim().toLowerCase();
-  const activeUnit = els.orgUnitFilter?.value || "all";
-  const membersByUnit = GAME_DATA.orgUnits.reduce((acc, unit) => ({ ...acc, [unit.id]: [] }), {});
-  allOrgMembers().forEach((member) => {
-    const unit = unitFor(member);
-    if (!membersByUnit[unit]) membersByUnit[unit] = [];
-    membersByUnit[unit].push(member);
-  });
-  const directoryGroups = GAME_DATA.orgDirectory || [];
-
-  els.orgLegend.innerHTML = `
-    <span><b>${mission.name}</b></span>
-    <span>Required lanes: ${missionRequires(mission).map(unitName).join(" / ")}</span>
-  `;
-  const visibleUnits = GAME_DATA.orgUnits.filter((unit) => activeUnit === "all" || unit.id === activeUnit);
-  els.orgMap.innerHTML = visibleUnits.map((unit) => {
-    const status = covered.has(unit.id) ? "covered" : required.has(unit.id) ? "required" : "optional";
-    const members = (membersByUnit[unit.id] || []).filter((member) => {
-      if (!query) return true;
-      return `${member.name} ${member.localName || ""} ${member.department} ${member.role}`.toLowerCase().includes(query);
+  const hierarchy = orgHierarchy(query);
+  const focus = state.orgFocus || { type: "root" };
+  const view = orgViewForFocus(hierarchy, focus);
+  els.orgTitle.textContent = view.title;
+  els.orgLegend.innerHTML = renderOrgBreadcrumb(focus);
+  els.orgMap.className = `org-map drill-${view.level}`;
+  els.orgMap.innerHTML = view.nodes.map(renderOrgFocusNode).join("");
+  els.orgMap.querySelectorAll("[data-org-action]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const action = button.dataset.orgAction;
+      if (action === "unit") state.orgFocus = { type: "unit", unit: button.dataset.unit };
+      if (action === "dept") state.orgFocus = { type: "dept", unit: button.dataset.unit, dept: button.dataset.dept };
+      if (action === "person") state.orgFocus = { type: "person", unit: button.dataset.unit, dept: button.dataset.dept, person: button.dataset.person };
+      renderOrgMap();
     });
-    const departments = [...members.reduce((map, member) => {
+  });
+  if (els.orgDetail) els.orgDetail.innerHTML = view.detail || "";
+  if (els.orgBack) els.orgBack.disabled = focus.type === "root";
+}
+
+function orgHierarchy(query = "") {
+  const normalized = query.trim().toLowerCase();
+  const people = allOrgMembers().filter((member) => {
+    if (!normalized) return true;
+    return `${member.name} ${member.localName || ""} ${member.department || ""} ${member.role || ""} ${unitName(unitFor(member))}`.toLowerCase().includes(normalized);
+  });
+  const units = GAME_DATA.orgUnits.map((unit) => {
+    const unitPeople = people.filter((member) => unitFor(member) === unit.id);
+    const departments = [...unitPeople.reduce((map, member) => {
       const dept = member.department || "待補";
       if (!map.has(dept)) map.set(dept, []);
       map.get(dept).push(member);
       return map;
-    }, new Map()).entries()].sort((a, b) => b[1].length - a[1].length);
-    const isOpen = state.selectedOrgUnit === unit.id || activeUnit === unit.id || required.has(unit.id);
+    }, new Map()).entries()]
+      .map(([name, members]) => ({ name, members }))
+      .sort((left, right) => right.members.length - left.members.length || left.name.localeCompare(right.name));
+    return { ...unit, people: unitPeople, departments };
+  }).filter((unit) => unit.people.length || !normalized);
+  return { units, people };
+}
+
+function orgViewForFocus(hierarchy, focus) {
+  if (focus.type === "unit") {
+    const unit = hierarchy.units.find((item) => item.id === focus.unit) || GAME_DATA.orgUnits.find((item) => item.id === focus.unit);
+    const source = hierarchy.units.find((item) => item.id === focus.unit) || { ...unit, departments: [], people: [] };
+    return {
+      level: "unit",
+      title: unit?.name || "組織群",
+      nodes: source.departments.map((dept) => ({ type: "dept", unit: unit.id, dept: dept.name, title: dept.name, count: dept.members.length, subtitle: `${dept.members.length} members`, members: dept.members })),
+      detail: `<strong>${unit?.name || ""}</strong><p>${unit?.tagline || ""}</p>`
+    };
+  }
+  if (focus.type === "dept") {
+    const unit = GAME_DATA.orgUnits.find((item) => item.id === focus.unit);
+    const members = hierarchy.people.filter((member) => unitFor(member) === focus.unit && member.department === focus.dept);
+    return {
+      level: "dept",
+      title: focus.dept,
+      nodes: members.map((member) => ({ type: "person", unit: focus.unit, dept: focus.dept, title: member.name, subtitle: `${member.localName || "中文名待補"} · ${member.role || "職務待補"}`, count: member.birthday === "待補" ? "待補" : "已補", member })),
+      detail: `<strong>${focus.dept}</strong><p>${unit?.name || ""} / ${members.length} members</p>`
+    };
+  }
+  if (focus.type === "person") {
+    const member = allOrgMembers().find((item) => item.id === focus.person);
+    return {
+      level: "person",
+      title: member?.name || "成員",
+      nodes: member ? [{ type: "profile", title: member.name, subtitle: member.localName || "中文名待補", member }] : [],
+      detail: member ? renderPersonDetail(member) : ""
+    };
+  }
+  return {
+    level: "root",
+    title: "Makalot 主架構",
+    nodes: hierarchy.units.map((unit) => ({ type: "unit", unit: unit.id, title: unit.name, subtitle: unit.tagline, count: `${unit.people.length} members`, departments: unit.departments.length })),
+    detail: "<strong>主架構</strong><p>點一個組織群放大一層；再點部門看成員。</p>"
+  };
+}
+
+function renderOrgFocusNode(node) {
+  const unitColor = UNIT_COLORS[node.unit] || UNIT_COLORS[unitFor(node.member || {})] || "#fff";
+  if (node.type === "profile") {
+    const member = node.member;
     return `
-      <article class="org-node ${status} ${state.selectedOrgUnit === unit.id ? "selected" : ""}" style="--unit:${UNIT_COLORS[unit.id] || "#fff"}" data-unit="${unit.id}">
-        <details class="org-tree-unit" ${isOpen ? "open" : ""}>
-          <summary>
-            <span>${status.toUpperCase()}</span>
-            <h3>${unit.name}</h3>
-            <b>${members.length} members · ${departments.length} teams</b>
-          </summary>
-          <p>${unit.tagline}</p>
-          <div class="node-tags">${unit.capability.map((item) => `<b>${item}</b>`).join("")}</div>
-          <small>${unit.risk}</small>
-          <button class="org-open" type="button" data-unit="${unit.id}">看整個 ${unit.name}</button>
-          <div class="org-branches">
-            ${departments.map(([dept, deptMembers]) => `
-              <details class="org-branch" ${state.selectedOrgDept === dept ? "open" : ""}>
-                <summary>
-                  <button class="org-dept" type="button" data-unit="${unit.id}" data-dept="${dept}">${dept}</button>
-                  <b>${deptMembers.length}</b>
-                </summary>
-                <div class="branch-people">
-                  ${deptMembers.slice(0, 16).map((member) => `<button class="person-chip" type="button" data-unit="${unit.id}" data-dept="${dept}" data-member="${member.id}">${member.name}${member.localName ? ` / ${member.localName}` : ""}</button>`).join("")}
-                  ${deptMembers.length > 16 ? `<i>+${deptMembers.length - 16} more</i>` : ""}
-                </div>
-              </details>
-            `).join("")}
-          </div>
-        </details>
+      <article class="org-focus-node profile" style="--unit:${unitColor}">
+        <span>PROFILE</span>
+        <h3>${member.name}</h3>
+        <p>${member.localName || "中文名 待補"}</p>
+        <div class="profile-grid">
+          <b>單位</b><i>${unitName(unitFor(member))}</i>
+          <b>部門</b><i>${member.department || "待補"}</i>
+          <b>職務</b><i>${member.role || "待補"}</i>
+          <b>生日</b><i>${member.birthday || "待補"}</i>
+        </div>
       </article>
     `;
-  }).join("");
-  els.orgMap.querySelectorAll(".org-open").forEach((button) => {
-    button.addEventListener("click", () => {
-      state.selectedOrgUnit = button.dataset.unit;
-      state.selectedOrgDept = null;
-      if (els.orgUnitFilter) els.orgUnitFilter.value = button.dataset.unit;
-      renderOrgMap();
-      renderMembers();
-    });
-  });
-  els.orgMap.querySelectorAll(".org-dept, .person-chip").forEach((button) => {
-    button.addEventListener("click", (event) => {
-      event.preventDefault();
-      state.selectedOrgUnit = button.dataset.unit;
-      state.selectedOrgDept = button.dataset.dept;
-      if (els.orgUnitFilter) els.orgUnitFilter.value = button.dataset.unit;
-      renderOrgMap();
-      renderMembers();
-    });
-  });
-  const selected = activeUnit !== "all" ? activeUnit : state.selectedOrgUnit;
-  const selectedMembers = (selected === "all" ? allOrgMembers() : (membersByUnit[selected] || []))
-    .filter((member) => !state.selectedOrgDept || member.department === state.selectedOrgDept);
-  if (els.orgDetail) {
-    const byDept = [...selectedMembers.reduce((map, member) => {
-      const dept = member.department || "待補";
-      map.set(dept, (map.get(dept) || 0) + 1);
-      return map;
-    }, new Map()).entries()].sort((a, b) => b[1] - a[1]).slice(0, 8);
-    els.orgDetail.innerHTML = `
-      <strong>${state.selectedOrgDept || (selected === "all" ? "全部組織" : unitName(selected))}</strong>
-      ${byDept.map(([dept, count]) => `<span>${dept}<b>${count}</b></span>`).join("")}
-    `;
   }
+  const action = node.type === "unit" ? "unit" : node.type === "dept" ? "dept" : "person";
+  return `
+    <button class="org-focus-node ${node.type}" type="button" data-org-action="${action}" data-unit="${node.unit || ""}" data-dept="${node.dept || ""}" data-person="${node.member?.id || ""}" style="--unit:${unitColor}">
+      <span>${node.type.toUpperCase()}</span>
+      <h3>${node.title}</h3>
+      <p>${node.subtitle || ""}</p>
+      <strong>${node.count || ""}</strong>
+      ${node.departments ? `<em>${node.departments} departments</em>` : ""}
+    </button>
+  `;
+}
+
+function renderOrgBreadcrumb(focus) {
+  const parts = [`<button type="button" data-crumb="root">Makalot</button>`];
+  if (focus.unit) parts.push(`<button type="button" data-crumb="unit">${unitName(focus.unit)}</button>`);
+  if (focus.dept) parts.push(`<button type="button" data-crumb="dept">${focus.dept}</button>`);
+  if (focus.person) {
+    const member = allOrgMembers().find((item) => item.id === focus.person);
+    parts.push(`<button type="button" data-crumb="person">${member?.name || "成員"}</button>`);
+  }
+  setTimeout(() => {
+    els.orgLegend?.querySelectorAll("[data-crumb]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const crumb = button.dataset.crumb;
+        if (crumb === "root") state.orgFocus = { type: "root" };
+        if (crumb === "unit") state.orgFocus = { type: "unit", unit: focus.unit };
+        if (crumb === "dept") state.orgFocus = { type: "dept", unit: focus.unit, dept: focus.dept };
+        renderOrgMap();
+      });
+    });
+  }, 0);
+  return parts.join("<span>/</span>");
+}
+
+function renderPersonDetail(member) {
+  const birth = birthProfile(member);
+  const hasBirthday = /^\d{4}-\d{2}-\d{2}$/.test(member.birthday);
+  return `
+    <strong>${member.name}</strong>
+    <span>${member.localName || "中文名 待補"}</span>
+    <span>${unitName(unitFor(member))}</span>
+    <span>${member.department || "部門 待補"}</span>
+    <span>${member.role || "職務 待補"}</span>
+    <span>${hasBirthday ? `靈數 ${birth.numerology} / ${birth.element}行 / ${birth.zodiac}` : "生日資料 待補"}</span>
+  `;
 }
 
 function resetMeeting() {
@@ -980,14 +1034,26 @@ function strategyFromAction(action) {
 function bindEvents() {
   els.tabs.forEach((tab) => tab.addEventListener("click", () => switchView(tab.dataset.view)));
   els.orgSearch?.addEventListener("input", () => {
+    state.orgFocus = { type: "root" };
     renderOrgMap();
-    renderMembers();
   });
   els.orgUnitFilter?.addEventListener("change", () => {
     state.selectedOrgUnit = els.orgUnitFilter.value;
     state.selectedOrgDept = null;
     renderOrgMap();
     renderMembers();
+  });
+  els.orgHome?.addEventListener("click", () => {
+    state.orgFocus = { type: "root" };
+    if (els.orgSearch) els.orgSearch.value = "";
+    renderOrgMap();
+  });
+  els.orgBack?.addEventListener("click", () => {
+    const focus = state.orgFocus || { type: "root" };
+    if (focus.type === "person") state.orgFocus = { type: "dept", unit: focus.unit, dept: focus.dept };
+    else if (focus.type === "dept") state.orgFocus = { type: "unit", unit: focus.unit };
+    else state.orgFocus = { type: "root" };
+    renderOrgMap();
   });
   els.analyzePair.addEventListener("click", analyzePair);
   els.resetMeeting.addEventListener("click", resetMeeting);

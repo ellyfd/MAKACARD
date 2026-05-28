@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>MAKACARD | Org Quest</title>
-    <link rel="stylesheet" href="styles.css?v=20260528-game12">
+    <link rel="stylesheet" href="styles.css?v=20260528-game13">
   </head>
   <body>
     <main class="app-shell">
@@ -86,29 +86,21 @@
       </section>
 
       <section id="org-view" class="view" aria-label="Digital Org">
-        <div class="org-shell">
-          <section class="org-command">
-            <p class="label">Digital Org</p>
-            <h2>Makalot Interaction Map</h2>
-            <p>用 makalot-org.skill 的正式結構當地圖。點單位看成員，沒有生日或人格資料的欄位顯示待補。</p>
-            <div class="org-tools">
-              <input id="org-search" type="search" placeholder="搜尋姓名 / 部門 / 單位" aria-label="搜尋 Digital Org">
-              <select id="org-unit-filter" aria-label="依組織群篩選"></select>
+        <div class="org-stage">
+          <section class="org-toolbar">
+            <div>
+              <p class="label">Digital Org</p>
+              <h2 id="org-title">Makalot 主架構</h2>
+              <div id="org-legend" class="org-breadcrumb"></div>
             </div>
-            <div id="org-legend" class="org-legend"></div>
-            <div id="org-detail" class="org-detail"></div>
+            <div class="org-actions">
+              <input id="org-search" type="search" placeholder="搜尋姓名 / 部門 / 單位" aria-label="搜尋 Digital Org">
+              <button id="org-back" class="secondary-button compact" type="button">上一層</button>
+              <button id="org-home" class="secondary-button compact" type="button">回主架構</button>
+            </div>
           </section>
           <section id="org-map" class="org-map" aria-label="Makalot digital organization map"></section>
-          <section class="org-roster-panel">
-            <div class="lane-heading">
-              <div>
-                <p class="label">Roster</p>
-                <h2>成員總覽</h2>
-              </div>
-              <span id="org-roster-count" class="fit-badge">--</span>
-            </div>
-            <div id="member-grid" class="member-grid org-member-grid"></div>
-          </section>
+          <div id="org-detail" class="org-focus-detail"></div>
         </div>
       </section>
 
@@ -156,8 +148,8 @@
 
     </main>
 
-    <script src="game-data.js?v=20260528-game12"></script>
-    <script src="org-skill-data.js?v=20260528-game12"></script>
-    <script src="game.js?v=20260528-game12"></script>
+    <script src="game-data.js?v=20260528-game13"></script>
+    <script src="org-skill-data.js?v=20260528-game13"></script>
+    <script src="game.js?v=20260528-game13"></script>
   </body>
 </html>
