@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>MAKACARD | Org Quest</title>
-    <link rel="stylesheet" href="styles.css?v=20260528-game10">
+    <link rel="stylesheet" href="styles.css?v=20260528-game11">
   </head>
   <body>
     <main class="app-shell">
@@ -12,7 +12,7 @@
         <div>
           <p class="eyebrow">MAKACARD</p>
           <h1>Org Quest</h1>
-          <p class="intro">抽人物牌、打跨單位 combo，在五回合內把組織問題轉成可執行 solution。</p>
+          <p class="intro">把 makalot-org 變成可互動的 Digital Org，再用人物牌測試跨單位任務隊形。</p>
         </div>
         <div class="header-metrics" aria-label="Dataset summary">
           <span><strong id="member-count">21</strong> members</span>
@@ -23,8 +23,7 @@
       <nav class="tabs" aria-label="MAKACARD views">
         <button class="tab active" type="button" data-view="meeting">Mission Run</button>
         <button class="tab" type="button" data-view="org">Digital Org</button>
-        <button class="tab" type="button" data-view="members">成員總覽</button>
-        <button class="tab" type="button" data-view="lab">Chemistry Lab</button>
+        <button class="tab" type="button" data-view="lab">Combo Lab</button>
       </nav>
 
       <section id="meeting-view" class="view active" aria-label="Mission Run">
@@ -91,52 +90,57 @@
           <section class="org-command">
             <p class="label">Digital Org</p>
             <h2>Makalot Interaction Map</h2>
-            <p>把任務丟進組織地形裡看：哪些單位必須上場、哪裡會斷鏈、哪一張人物牌只是看起來很強但其實打錯場。</p>
+            <p>用 makalot-org.skill 的正式結構當地圖。點單位看成員，沒有生日或人格資料的欄位顯示待補。</p>
+            <div class="org-tools">
+              <input id="org-search" type="search" placeholder="搜尋姓名 / 部門 / 單位" aria-label="搜尋 Digital Org">
+              <select id="org-unit-filter" aria-label="依組織群篩選"></select>
+            </div>
             <div id="org-legend" class="org-legend"></div>
+            <div id="org-detail" class="org-detail"></div>
           </section>
           <section id="org-map" class="org-map" aria-label="Makalot digital organization map"></section>
+          <section class="org-roster-panel">
+            <div class="lane-heading">
+              <div>
+                <p class="label">Roster</p>
+                <h2>成員總覽</h2>
+              </div>
+              <span id="org-roster-count" class="fit-badge">--</span>
+            </div>
+            <div id="member-grid" class="member-grid org-member-grid"></div>
+          </section>
         </div>
-      </section>
-
-      <section id="members-view" class="view" aria-label="成員總覽">
-        <div class="toolbar">
-          <div>
-            <p class="label">Roster</p>
-            <h2>成員總覽</h2>
-          </div>
-          <div class="toolbar-controls">
-            <input id="member-search" type="search" placeholder="搜尋姓名 / 部門 / 原型" aria-label="搜尋成員">
-            <select id="department-filter" aria-label="依部門篩選"></select>
-          </div>
-        </div>
-        <div id="member-grid" class="member-grid"></div>
       </section>
 
       <section id="lab-view" class="view" aria-label="Chemistry Lab">
         <div class="lab-layout">
           <section class="panel controls-panel">
-            <p class="label">Pairing</p>
-            <h2>雙人合拍分析</h2>
+            <p class="label">Combo Draft</p>
+            <h2>三卡隊形測試</h2>
             <label>
-              成員 A
+              開局牌
               <select id="person-a"></select>
             </label>
             <label>
-              成員 B
+              轉接牌
               <select id="person-b"></select>
             </label>
             <label>
-              工作情境
+              收束牌
+              <select id="person-c"></select>
+            </label>
+            <label>
+              任務地形
               <select id="scenario-select"></select>
             </label>
-            <button id="analyze-pair" class="primary-button" type="button">推演互動</button>
+            <button id="analyze-pair" class="primary-button" type="button">測試 Combo</button>
           </section>
 
           <section class="panel result-panel">
             <div class="result-heading">
               <div>
                 <p class="label">Chemistry</p>
-                <h2 id="pair-title">選兩個人開始分析</h2>
+                <h2 id="pair-title">選三張牌開始測試</h2>
               </div>
               <span id="fit-badge" class="fit-badge">--</span>
             </div>
@@ -148,7 +152,8 @@
 
     </main>
 
-    <script src="game-data.js?v=20260528-game10"></script>
-    <script src="game.js?v=20260528-game10"></script>
+    <script src="game-data.js?v=20260528-game11"></script>
+    <script src="org-skill-data.js?v=20260528-game11"></script>
+    <script src="game.js?v=20260528-game11"></script>
   </body>
 </html>

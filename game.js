@@ -13,7 +13,8 @@ const state = {
     lastDepartment: null,
     lastUnit: null,
     log: []
-  }
+  },
+  selectedOrgUnit: "all"
 };
 
 const els = {
@@ -23,8 +24,13 @@ const els = {
   memberGrid: document.querySelector("#member-grid"),
   memberSearch: document.querySelector("#member-search"),
   departmentFilter: document.querySelector("#department-filter"),
+  orgSearch: document.querySelector("#org-search"),
+  orgUnitFilter: document.querySelector("#org-unit-filter"),
+  orgRosterCount: document.querySelector("#org-roster-count"),
+  orgDetail: document.querySelector("#org-detail"),
   personA: document.querySelector("#person-a"),
   personB: document.querySelector("#person-b"),
+  personC: document.querySelector("#person-c"),
   scenarioSelect: document.querySelector("#scenario-select"),
   analyzePair: document.querySelector("#analyze-pair"),
   pairTitle: document.querySelector("#pair-title"),
@@ -126,7 +132,7 @@ function average(values) {
 }
 
 function memberById(id) {
-  return GAME_DATA.members.find((member) => member.id === id);
+  return allOrgMembers().find((member) => member.id === id);
 }
 
 function scenarioById(id) {
@@ -143,6 +149,24 @@ function actionById(id) {
 
 function unitById(id) {
   return GAME_DATA.orgUnits.find((unit) => unit.id === id);
+}
+
+function allOrgMembers() {
+  const seen = new Set();
+  const enriched = GAME_DATA.members.map((member) => ({
+    ...member,
+    status: /^\d{4}-\d{2}-\d{2}$/.test(member.birthday) ? "已補資料" : "待補"
+  }));
+  const merged = [];
+  [...enriched, ...(GAME_DATA.orgPeople || [])].forEach((member) => {
+    const key = `${member.name}|${member.localName || ""}`.toLowerCase();
+    const looseKey = member.name.toLowerCase();
+    if (seen.has(key) || seen.has(looseKey)) return;
+    seen.add(key);
+    seen.add(looseKey);
+    merged.push(member);
+  });
+  return merged;
 }
 
 function unitFor(member) {
@@ -332,39 +356,46 @@ function scoreLabel(score) {
 
 function renderMember(member) {
   const birth = birthProfile(member);
+  const hasBirthday = /^\d{4}-\d{2}-\d{2}$/.test(member.birthday);
   return `
     <article class="member-card ${elementClass(birth.element)}" data-member="${member.id}">
       <div class="avatar" aria-hidden="true">${initials(member.name)}</div>
       <div class="member-main">
         <div class="member-topline">
           <h3>${member.name}</h3>
-          <span>${member.department}</span>
+          <span>${unitName(unitFor(member))}</span>
         </div>
-        <p class="role">${member.role} · ${member.birthday}</p>
+        <p class="role">${member.localName ? `${member.localName} · ` : ""}${member.role || "待補"} · ${member.department || "待補"}</p>
         <div class="chips">
-          <span class="chip number">靈數 ${birth.numerology}</span>
-          <span class="chip ${elementClass(birth.element)}">${birth.element}行</span>
-          <span class="chip sign">${birth.zodiac}</span>
+          ${hasBirthday ? `
+            <span class="chip number">靈數 ${birth.numerology}</span>
+            <span class="chip ${elementClass(birth.element)}">${birth.element}行</span>
+            <span class="chip sign">${birth.zodiac}</span>
+          ` : `
+            <span class="chip pending">生日 待補</span>
+            <span class="chip pending">資料 待補</span>
+          `}
         </div>
-        <p class="meta">${birth.archetype} · ${birth.animal}年</p>
-        <p class="style-copy">${member.style}</p>
+        <p class="meta">${hasBirthday ? `${birth.animal}年` : "待補"}</p>
+        <p class="style-copy">${member.style || "待補"}</p>
       </div>
     </article>
   `;
 }
 
 function renderMembers() {
-  const query = els.memberSearch.value.trim().toLowerCase();
-  const department = els.departmentFilter.value;
-  const members = GAME_DATA.members.filter((member) => {
+  const query = (els.orgSearch?.value || "").trim().toLowerCase();
+  const activeUnit = els.orgUnitFilter?.value || "all";
+  const members = allOrgMembers().filter((member) => {
     const profile = GAME_DATA.distillations?.[member.id];
     const birth = birthProfile(member);
-    const haystack = `${member.name} ${member.department} ${member.role} ${birth.archetype} ${birth.element} ${birth.zodiac} ${profile ? Object.values(profile).join(" ") : ""}`.toLowerCase();
+    const haystack = `${member.name} ${member.localName || ""} ${member.department} ${member.role} ${birth.element} ${birth.zodiac} ${profile ? Object.values(profile).join(" ") : ""}`.toLowerCase();
     const matchesQuery = !query || haystack.includes(query);
-    const matchesDept = department === "all" || member.department === department;
-    return matchesQuery && matchesDept;
+    const matchesUnit = activeUnit === "all" || unitFor(member) === activeUnit;
+    return matchesQuery && matchesUnit;
   });
   els.memberGrid.innerHTML = members.map(renderMember).join("");
+  if (els.orgRosterCount) els.orgRosterCount.textContent = `${members.length} cards`;
 }
 
 function fillSelect(select, items, label) {
@@ -372,16 +403,20 @@ function fillSelect(select, items, label) {
 }
 
 function fillStaticControls() {
-  els.memberCount.textContent = GAME_DATA.members.length;
-  const departments = ["all", ...new Set(GAME_DATA.members.map((member) => member.department))];
-  els.departmentFilter.innerHTML = departments
-    .map((department) => `<option value="${department}">${department === "all" ? "全部部門" : department}</option>`)
-    .join("");
-  fillSelect(els.personA, GAME_DATA.members, (member) => `${member.name} · ${member.department}`);
-  fillSelect(els.personB, GAME_DATA.members, (member) => `${member.name} · ${member.department}`);
+  const roster = allOrgMembers();
+  els.memberCount.textContent = roster.length;
+  if (els.orgUnitFilter) {
+    els.orgUnitFilter.innerHTML = ["all", ...GAME_DATA.orgUnits.map((unit) => unit.id)]
+      .map((unitId) => `<option value="${unitId}">${unitId === "all" ? "全部組織" : unitName(unitId)}</option>`)
+      .join("");
+  }
+  fillSelect(els.personA, roster, (member) => `${member.name} · ${member.department}`);
+  fillSelect(els.personB, roster, (member) => `${member.name} · ${member.department}`);
+  fillSelect(els.personC, roster, (member) => `${member.name} · ${member.department}`);
   fillSelect(els.scenarioSelect, GAME_DATA.scenarios, (scenario) => scenario.name);
   els.personA.value = "elly";
   els.personB.value = "sixian";
+  els.personC.value = "douglas-lu";
 }
 
 function renderScoreCard(label, value, helper) {
@@ -399,32 +434,38 @@ function renderScoreCard(label, value, helper) {
 function analyzePair() {
   const a = memberById(els.personA.value);
   const b = memberById(els.personB.value);
+  const c = memberById(els.personC.value);
   const scenario = scenarioById(els.scenarioSelect.value);
-  const strategy = bestStrategyFor(a, b, scenario);
-  if (!a || !b || a.id === b.id) {
-    els.pairTitle.textContent = "請選兩位不同成員";
+  if (!a || !b || !c || new Set([a.id, b.id, c.id]).size < 3) {
+    els.pairTitle.textContent = "請選三張不同人物牌";
     return;
   }
-
-  const scores = scorePair(a, b, scenario, strategy);
-  els.pairTitle.textContent = `${a.name} × ${b.name}`;
-  els.fitBadge.textContent = `${scores.overall} · ${scoreLabel(scores.overall)}`;
+  const trio = [a, b, c];
+  const required = missionRequires(scenario);
+  const units = trio.map(unitFor);
+  const covered = new Set(units.filter((unit) => required.includes(unit)));
+  const pairScores = [scorePair(a, b, scenario, bestStrategyFor(a, b, scenario)), scorePair(b, c, scenario, bestStrategyFor(b, c, scenario)), scorePair(a, c, scenario, bestStrategyFor(a, c, scenario))];
+  const coverage = clamp((covered.size / required.length) * 100);
+  const chain = clamp(average(pairScores.map((score) => score.overall)) * .65 + coverage * .35);
+  const tempo = clamp(average(trio.map((member) => vectorsFor(member).speed)) + (new Set(units).size - 1) * 6);
+  const control = clamp(average(trio.map((member) => average([vectorsFor(member).clarity, vectorsFor(member).risk, vectorsFor(member).data]))) + coverage * .2);
+  const friction = clamp(average(pairScores.map((score) => score.stress)) + (required.length - covered.size) * 10);
+  const missing = required.filter((unit) => !covered.has(unit));
+  els.pairTitle.textContent = `${a.name} → ${b.name} → ${c.name}`;
+  els.fitBadge.textContent = `${chain} · ${chain >= 80 ? "Combo!" : chain >= 62 ? "可打" : "要換牌"}`;
   els.scoreGrid.innerHTML = [
-    renderScoreCard("Work Fit", scores.work, "工作任務與組織角色的配合度"),
-    renderScoreCard("Communication", scores.communication, "語氣、脈絡與資訊密度是否合拍"),
-    renderScoreCard("Decision", scores.decision, "速度、風險與資料證據的決策節奏"),
-    renderScoreCard("Stress Friction", scores.stress, "壓力下互卡機率，分數越低越好")
+    renderScoreCard("Combo Power", chain, "三張牌接力後的任務推進力"),
+    renderScoreCard("Org Coverage", coverage, "是否打到任務需要的正式單位"),
+    renderScoreCard("Tempo", tempo, "開局速度與轉接節奏"),
+    renderScoreCard("Friction", friction, "摩擦越低越好，缺單位會升高")
   ].join("");
-
-  const strongest = Object.entries(scores.closeness).sort((left, right) => right[1] - left[1])[0][0];
-  const weakest = Object.entries(scores.closeness).sort((left, right) => left[1] - right[1])[0][0];
-  const fit = strategy.fits.includes(scenario.id);
+  const laneText = trio.map((member) => `${member.name}<b>${unitName(unitFor(member))}</b>`).join("<span>→</span>");
   els.pairInsight.innerHTML = `
-    <p><strong>情境：</strong>${scenario.prompt}</p>
-    <p><strong>象徵層：</strong>${relationFor(a, b)}</p>
-    <p><strong>最合的軸：</strong>${axisName(strongest)}。<strong>最需要翻譯：</strong>${axisName(weakest)}。</p>
-    <p><strong>系統解法：</strong>${strategy.text}${fit ? " 這個解法命中目前情境。" : " 這個解法可用，但需要補一層翻譯。"}</p>
-    <p><strong>開場句：</strong>${openingLine(a, b, scenario, strategy)}</p>
+    <div class="combo-line">${laneText}</div>
+    <p><strong>任務：</strong>${scenario.name}</p>
+    <p><strong>命中單位：</strong>${[...covered].map(unitName).join(" / ") || "沒有命中"}。</p>
+    <p><strong>缺口：</strong>${missing.length ? missing.map(unitName).join(" / ") : "關鍵單位已覆蓋"}。</p>
+    <p><strong>判定：</strong>${chain >= 80 ? "這組可以直接進任務回合，適合打跨單位 combo。" : chain >= 62 ? "可以打，但需要補一張缺口單位或降低摩擦。" : "這組像是牌面很熱鬧，但地形沒吃到，建議重抽至少一張。"}</p>
   `;
 }
 
@@ -476,8 +517,10 @@ function renderOrgMap() {
   const mission = state.meeting.scenario;
   const required = new Set(missionRequires(mission));
   const covered = new Set(state.meeting.coveredUnits);
+  const query = (els.orgSearch?.value || "").trim().toLowerCase();
+  const activeUnit = els.orgUnitFilter?.value || "all";
   const membersByUnit = GAME_DATA.orgUnits.reduce((acc, unit) => ({ ...acc, [unit.id]: [] }), {});
-  GAME_DATA.members.forEach((member) => {
+  allOrgMembers().forEach((member) => {
     const unit = unitFor(member);
     if (!membersByUnit[unit]) membersByUnit[unit] = [];
     membersByUnit[unit].push(member);
@@ -488,11 +531,16 @@ function renderOrgMap() {
     <span><b>${mission.name}</b></span>
     <span>Required lanes: ${missionRequires(mission).map(unitName).join(" / ")}</span>
   `;
-  els.orgMap.innerHTML = GAME_DATA.orgUnits.map((unit) => {
+  const visibleUnits = GAME_DATA.orgUnits.filter((unit) => activeUnit === "all" || unit.id === activeUnit);
+  els.orgMap.innerHTML = visibleUnits.map((unit) => {
     const status = covered.has(unit.id) ? "covered" : required.has(unit.id) ? "required" : "optional";
-    const members = membersByUnit[unit.id] || [];
+    const members = (membersByUnit[unit.id] || []).filter((member) => {
+      if (!query) return true;
+      return `${member.name} ${member.localName || ""} ${member.department} ${member.role}`.toLowerCase().includes(query);
+    });
+    const departments = [...new Set(members.map((member) => member.department || "待補"))];
     return `
-      <article class="org-node ${status}" style="--unit:${UNIT_COLORS[unit.id] || "#fff"}">
+      <article class="org-node ${status} ${state.selectedOrgUnit === unit.id ? "selected" : ""}" style="--unit:${UNIT_COLORS[unit.id] || "#fff"}" data-unit="${unit.id}">
         <div class="org-node-head">
           <span>${status.toUpperCase()}</span>
           <h3>${unit.name}</h3>
@@ -500,17 +548,39 @@ function renderOrgMap() {
         <p>${unit.tagline}</p>
         <div class="node-tags">${unit.capability.map((item) => `<b>${item}</b>`).join("")}</div>
         <small>${unit.risk}</small>
+        <button class="org-open" type="button" data-unit="${unit.id}">${members.length} members · ${departments.length} teams</button>
         <div class="node-roster">
-          ${directoryGroups.filter((group) => group.unit === unit.id).map((group) => `
+          ${directoryGroups.filter((group) => group.unit === unit.id).slice(0, 5).map((group) => `
             <section>
               <strong>${group.name}</strong>
               <span>${group.members.map((memberId) => memberById(memberId)).filter(Boolean).map((member) => `<i>${member.name}</i>`).join("")}</span>
             </section>
-          `).join("") || members.map((member) => `<i>${member.name}</i>`).join("")}
+          `).join("")}
         </div>
       </article>
     `;
   }).join("");
+  els.orgMap.querySelectorAll(".org-open").forEach((button) => {
+    button.addEventListener("click", () => {
+      state.selectedOrgUnit = button.dataset.unit;
+      if (els.orgUnitFilter) els.orgUnitFilter.value = button.dataset.unit;
+      renderOrgMap();
+      renderMembers();
+    });
+  });
+  const selected = activeUnit !== "all" ? activeUnit : state.selectedOrgUnit;
+  const selectedMembers = selected === "all" ? allOrgMembers() : (membersByUnit[selected] || []);
+  if (els.orgDetail) {
+    const byDept = [...selectedMembers.reduce((map, member) => {
+      const dept = member.department || "待補";
+      map.set(dept, (map.get(dept) || 0) + 1);
+      return map;
+    }, new Map()).entries()].sort((a, b) => b[1] - a[1]).slice(0, 8);
+    els.orgDetail.innerHTML = `
+      <strong>${selected === "all" ? "全部組織" : unitName(selected)}</strong>
+      ${byDept.map(([dept, count]) => `<span>${dept}<b>${count}</b></span>`).join("")}
+    `;
+  }
 }
 
 function resetMeeting() {
@@ -596,7 +666,7 @@ function renderActionCards() {
         <span class="sigil">${action.icon}</span>
         <i>${fit.label}</i>
         <strong>${member.name}</strong>
-        <em>${unitName(unit)} · ${birth.archetype}</em>
+        <em>${unitName(unit)} · ${member.department || "待補"}</em>
         <small>${action.name}: ${action.copy}</small>
         <div class="card-pips">${pips.map((pip) => `<mark>${pip}</mark>`).join("")}</div>
         <b>${fit.risk ? `Risk: ${fit.risk.title}` : comboPreview(member)}</b>
@@ -775,8 +845,15 @@ function strategyFromAction(action) {
 
 function bindEvents() {
   els.tabs.forEach((tab) => tab.addEventListener("click", () => switchView(tab.dataset.view)));
-  els.memberSearch.addEventListener("input", renderMembers);
-  els.departmentFilter.addEventListener("change", renderMembers);
+  els.orgSearch?.addEventListener("input", () => {
+    renderOrgMap();
+    renderMembers();
+  });
+  els.orgUnitFilter?.addEventListener("change", () => {
+    state.selectedOrgUnit = els.orgUnitFilter.value;
+    renderOrgMap();
+    renderMembers();
+  });
   els.analyzePair.addEventListener("click", analyzePair);
   els.resetMeeting.addEventListener("click", resetMeeting);
 }

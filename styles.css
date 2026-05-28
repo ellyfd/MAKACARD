@@ -385,6 +385,11 @@ select {
   background: #ffe4e6;
 }
 
+.chip.pending {
+  color: #64748b;
+  background: #e2e8f0;
+}
+
 .lab-layout,
 .meeting-layout {
   display: grid;
@@ -1157,13 +1162,14 @@ select {
 
 .org-shell {
   display: grid;
-  grid-template-columns: 310px 1fr;
+  grid-template-columns: 320px 1fr;
   gap: 16px;
   align-items: start;
 }
 
 .org-command,
-.org-node {
+.org-node,
+.org-roster-panel {
   border: 1px solid rgba(255, 255, 255, .1);
   border-radius: 8px;
   background: rgba(18, 24, 36, .9);
@@ -1185,6 +1191,12 @@ select {
   line-height: 1.65;
 }
 
+.org-tools {
+  display: grid;
+  gap: 8px;
+  margin: 16px 0;
+}
+
 .org-legend {
   display: grid;
   gap: 8px;
@@ -1201,9 +1213,35 @@ select {
   line-height: 1.45;
 }
 
+.org-detail {
+  display: grid;
+  gap: 7px;
+  margin-top: 14px;
+}
+
+.org-detail strong {
+  color: #fff;
+}
+
+.org-detail span {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 9px;
+  border: 1px solid rgba(255, 255, 255, .08);
+  border-radius: 8px;
+  color: #dbe8fb;
+  background: rgba(255, 255, 255, .04);
+  font-size: .8rem;
+}
+
+.org-detail b {
+  color: #9be96f;
+}
+
 .org-map {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
 }
 
@@ -1218,6 +1256,11 @@ select {
 
 .org-node.required {
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--unit), transparent 38%), 0 22px 60px rgba(0, 0, 0, .34);
+}
+
+.org-node.selected {
+  outline: 2px solid var(--unit);
+  outline-offset: 2px;
 }
 
 .org-node.covered {
@@ -1263,6 +1306,18 @@ select {
   margin: 12px 0;
 }
 
+.org-open {
+  width: 100%;
+  min-height: 38px;
+  margin: 12px 0 2px;
+  border: 1px solid color-mix(in srgb, var(--unit), transparent 38%);
+  border-radius: 8px;
+  color: #10131b;
+  background: var(--unit);
+  cursor: pointer;
+  font-weight: 800;
+}
+
 .node-roster {
   display: grid;
   gap: 9px;
@@ -1303,12 +1358,52 @@ select {
   background: var(--unit);
 }
 
+.org-roster-panel {
+  grid-column: 1 / -1;
+  padding: 18px;
+}
+
+.org-member-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  max-height: 680px;
+  overflow: auto;
+  padding-right: 4px;
+}
+
+.org-member-grid .member-card {
+  min-height: 168px;
+}
+
+.combo-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.combo-line b {
+  display: block;
+  margin-top: 5px;
+  color: #9be96f;
+  font-size: .72rem;
+}
+
+.combo-line > span {
+  color: #9be96f;
+  font-weight: 800;
+}
+
 @media (max-width: 1180px) {
   .action-cards {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .org-map {
+    grid-template-columns: 1fr;
+  }
+
+  .org-member-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
@@ -1324,7 +1419,8 @@ select {
   }
 
   .org-shell,
-  .org-map {
+  .org-map,
+  .org-member-grid {
     grid-template-columns: 1fr;
   }
 
