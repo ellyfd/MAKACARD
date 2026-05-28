@@ -718,7 +718,22 @@ function orgDirectoryChildren(parentId) {
 
 function orgDirectoryMembers(directory, people = orgChartMembers()) {
   const ids = new Set(directory?.members || []);
-  return people.filter((member) => ids.has(member.id));
+  const explicit = people.filter((member) => ids.has(member.id));
+  const inferred = people.filter((member) => !ids.has(member.id) && isInferredDirectoryMember(member, directory));
+  return [...explicit, ...inferred].sort((left, right) => (left.localName || left.name).localeCompare(right.localName || right.name));
+}
+
+function isInferredDirectoryMember(member, directory) {
+  if (!directory?.name || unitFor(member) !== directory.unit) return false;
+  const dept = member.department || "";
+  if (dept === directory.name) return true;
+  if (directory.id === "rd-3d" && dept.includes("3D研發中心")) return true;
+  if (directory.id === "technical-design" && dept.includes("技術設計部")) return true;
+  if (directory.id === "special-rd" && dept.includes("特工研發中心")) return true;
+  if (directory.id === "costing-center" && dept.includes("估碼中心")) return true;
+  if (directory.id === "sample-rd" && dept.includes("樣品研發部")) return true;
+  if (directory.id === "engineering-hq" && dept.includes("工務管理課")) return true;
+  return false;
 }
 
 function orgDirectoryOwnCount(directory, people = orgChartMembers()) {
@@ -790,12 +805,16 @@ function orgViewForFocus(hierarchy, focus) {
     const unit = GAME_DATA.orgUnits.find((item) => item.id === focus.unit);
     const directory = orgDirectoryById(focus.deptId) || (GAME_DATA.orgDirectory || []).find((item) => item.unit === focus.unit && item.name === focus.dept);
     const children = directory ? orgDirectoryChildren(directory.id) : [];
+    const ownMembers = directory ? orgDirectoryMembers(directory, hierarchy.people) : [];
     if (children.length) {
       return {
         level: "dept",
         title: directory.name,
-        nodes: children.map((child) => orgDirectoryNode(child, hierarchy.people)),
-        summary: `${children.length} 個下層單位`,
+        nodes: [
+          ...children.map((child) => orgDirectoryNode(child, hierarchy.people)),
+          ...ownMembers.map((member) => ({ type: "person", unit: focus.unit, dept: directory.name, deptId: directory.id, title: member.name, subtitle: `${member.localName || "中文名待補"} · ${member.role || "職務待補"}`, count: /^\d{4}-\d{2}-\d{2}$/.test(member.birthday || "") ? member.birthday : "生日待補", member }))
+        ],
+        summary: `${children.length} 個下層單位；${ownMembers.length || "待補"} 位本層成員`,
         detail: orgDirectoryDetail(directory, unit, hierarchy.people)
       };
     }
