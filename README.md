@@ -1,12 +1,12 @@
 # MAKACARD
 
-一個可直接放上 GitHub Pages 的靜態 Team Chemistry Deck。玩法把 Makalot 團隊成員做成平等人物卡，結合組織角色、溝通偏好、生日象徵層，分析兩個人在不同工作情境下的對話合拍度。
+一個可直接放上 GitHub Pages 的靜態 Team Chemistry Deck。玩法把 Makalot 團隊成員做成平等人物卡，結合組織角色、溝通偏好與任務情境，分析跨單位隊形在工作事件中的合拍度。
 
 ## 遊戲概念
 
 MAKACARD 目前有三個頁面：
 
-- `成員總覽`：21 位成員的人物卡，含部門、角色、生日、星座、五行、生命靈數、人格原型。
+- `成員總覽`：成員人物卡，含部門、角色與生日。
 - `Chemistry Lab`：選兩個人 + 一個工作情境 + 一張溝通策略卡，計算 Work Fit、Communication、Decision、Stress Friction。
 - `Meeting Game`：用 5 回合推進一個專案，透過選人與溝通策略提高 Trust、Clarity、Momentum 並降低 Friction。
 
@@ -16,7 +16,7 @@ MAKACARD 目前有三個頁面：
 
 - `組織層`：部門、職務、專案位置。
 - `行為層`：結論需求、脈絡需求、節奏、風險敏感度、資料依賴、情緒溫度。
-- `象徵層`：生日、星座、生肖、五行、生命靈數、人格原型。
+- `基本資料`：生日只保留月日；遊戲判斷以 org、職等、決策權、直屬關係與任務情境為主。
 
 第一版先以 DPC、數發、Portal:M 相關成員作為 MVP。行為層是可調整的推論值，之後可以用會議紀錄、Teams、Email、Notion 摘要或 Elly 的人工標註校準。
 

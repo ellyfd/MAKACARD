@@ -243,16 +243,6 @@ function initials(name) {
   return name.slice(0, 2);
 }
 
-function elementClass(element) {
-  return {
-    木: "wood",
-    火: "fire",
-    土: "earth",
-    金: "metal",
-    水: "water"
-  }[element] || "wood";
-}
-
 function isFullBirthday(value) {
   return /^\d{4}-\d{2}-\d{2}$/.test(value || "");
 }
@@ -275,70 +265,6 @@ function birthdayLabel(member) {
   return monthDay ? `${monthDay.month}月${monthDay.day}日` : "";
 }
 
-function birthProfile(member) {
-  const birthday = member.birthday;
-  if (!isFullBirthday(birthday)) {
-    const monthDay = monthDayFromBirthday(member.birthdayText || birthday);
-    return {
-      birthday: birthdayLabel(member),
-      numerology: "",
-      element: "",
-      zodiac: monthDay ? westernZodiac(monthDay.month, monthDay.day) : "",
-      animal: "",
-      archetype: ""
-    };
-  }
-  const [year, month, day] = birthday.split("-").map(Number);
-  const sum = String(year).split("").concat(String(month).padStart(2, "0").split(""), String(day).padStart(2, "0").split(""))
-    .reduce((total, digit) => total + Number(digit), 0);
-  const reduced = [11, 22, 33].includes(sum) ? sum : reduceNumber(sum);
-  const elementsByStem = ["金", "金", "水", "水", "木", "木", "火", "火", "土", "土"];
-  const animals = ["猴", "雞", "狗", "豬", "鼠", "牛", "虎", "兔", "龍", "蛇", "馬", "羊"];
-  return {
-    birthday,
-    numerology: reduced,
-    element: elementsByStem[year % 10],
-    zodiac: westernZodiac(month, day),
-    animal: animals[year % 12],
-    archetype: numerologyArchetype(reduced)
-  };
-}
-
-function reduceNumber(value) {
-  let current = value;
-  while (current > 9 && ![11, 22, 33].includes(current)) {
-    current = String(current).split("").reduce((sum, digit) => sum + Number(digit), 0);
-  }
-  return current;
-}
-
-function westernZodiac(month, day) {
-  const signs = [
-    ["摩羯座", 1, 20], ["水瓶座", 2, 19], ["雙魚座", 3, 21], ["牡羊座", 4, 20],
-    ["金牛座", 5, 21], ["雙子座", 6, 22], ["巨蟹座", 7, 23], ["獅子座", 8, 23],
-    ["處女座", 9, 23], ["天秤座", 10, 24], ["天蠍座", 11, 23], ["射手座", 12, 22],
-    ["摩羯座", 13, 1]
-  ];
-  return signs.find(([, endMonth, endDay]) => month < endMonth || (month === endMonth && day < endDay))[0];
-}
-
-function numerologyArchetype(number) {
-  return {
-    1: "領導者",
-    2: "協調者",
-    3: "表達者",
-    4: "建設者",
-    5: "自由者",
-    6: "照護者",
-    7: "探索者",
-    8: "成就者",
-    9: "人道者",
-    11: "啟示者",
-    22: "建構者",
-    33: "引導者"
-  }[number] || "待觀察";
-}
-
 function deepDistillationMarkup(member) {
   const profile = GAME_DATA.distillations?.[member.id];
   if (!profile) return "";
@@ -359,16 +285,6 @@ function deepDistillationMarkup(member) {
       <div>${blocks.map(([label, text]) => `<p><b>${label}</b>${text}</p>`).join("")}</div>
     </details>
   `;
-}
-
-function relationFor(a, b) {
-  const aElement = birthProfile(a).element;
-  const bElement = birthProfile(b).element;
-  if (!aElement || !bElement) return "生日年份不足：只使用工作情境與組織角色判斷合拍度。";
-  if (aElement === bElement) return `同元素：兩人都是${aElement}行，起手默契高，但盲點可能相似。`;
-  return GAME_DATA.elementRelations[`${aElement}-${bElement}`]
-    || GAME_DATA.elementRelations[`${bElement}-${aElement}`]
-    || "元素關係中性：需要靠情境和策略決定合作手感。";
 }
 
 function vectorDistance(a, b, key) {
@@ -398,14 +314,10 @@ function scorePair(a, b, scenario, strategy) {
   const crossUnitNeed = ["handoff", "innovation", "conflict"].includes(scenario.id);
   const tunnelPenalty = sameUnit && crossUnitNeed ? 10 : sameUnit ? 4 : 0;
   const mismatchPenalty = Object.values(closeness).filter((value) => value < 48).length * 6;
-  const aElement = birthProfile(a).element;
-  const bElement = birthProfile(b).element;
-  const elementText = relationFor(a, b);
-  const elementBonus = aElement && bElement && aElement === bElement ? 4 : elementText.includes("相生") ? 6 : elementText.includes("相剋") ? -3 : 0;
   const strategyBonus = strategy.fits.includes(scenario.id) ? 8 : -2;
 
   const work = clamp(weightedAverage + sameDept + roleSpread + strategyBonus * .35 - tunnelPenalty - mismatchPenalty);
-  const communication = clamp(average([closeness.clarity, closeness.context, closeness.warmth]) + elementBonus + strategyBonus - mismatchPenalty);
+  const communication = clamp(average([closeness.clarity, closeness.context, closeness.warmth]) + strategyBonus - mismatchPenalty);
   const decision = clamp(average([closeness.risk, closeness.data, closeness.speed]) + roleSpread + strategyBonus * .5 - tunnelPenalty * .5);
   const stress = clamp(100 - average([closeness.risk, closeness.speed, closeness.warmth]) + (strategy.fits.includes(scenario.id) ? -4 : 10) + tunnelPenalty + mismatchPenalty);
   const overall = clamp(average([work, communication, decision, 100 - stress]));
@@ -421,20 +333,11 @@ function scoreLabel(score) {
 }
 
 function renderMember(member) {
-  const birth = birthProfile(member);
-  const hasBirthday = isFullBirthday(member.birthday);
-  const hasBirthLabel = Boolean(birthdayLabel(member));
+  const birth = birthdayLabel(member);
   const roleLine = [member.localName, member.role, member.department].filter((item) => !isMissingValue(item)).join(" · ");
-  const chips = hasBirthday ? `
-    <span class="chip number">靈數 ${birth.numerology}</span>
-    <span class="chip ${elementClass(birth.element)}">${birth.element}行</span>
-    <span class="chip sign">${birth.zodiac}</span>
-  ` : hasBirthLabel ? `
-    <span class="chip birthday">${birth.birthday}</span>
-    ${birth.zodiac ? `<span class="chip sign">${birth.zodiac}</span>` : ""}
-  ` : "";
+  const chips = birth ? `<span class="chip birthday">${birth}</span>` : "";
   return `
-    <article class="member-card ${elementClass(birth.element)}" data-member="${member.id}">
+    <article class="member-card" data-member="${member.id}">
       <div class="avatar" aria-hidden="true">${initials(member.name)}</div>
       <div class="member-main">
         <div class="member-topline">
@@ -443,7 +346,6 @@ function renderMember(member) {
         </div>
         ${roleLine ? `<p class="role">${roleLine}</p>` : ""}
         ${chips ? `<div class="chips">${chips}</div>` : ""}
-        ${hasBirthday ? `<p class="meta">${birth.animal}年</p>` : ""}
         ${isMissingValue(member.style) ? "" : `<p class="style-copy">${member.style}</p>`}
       </div>
     </article>
@@ -457,8 +359,7 @@ function renderMembers() {
   const selectedDept = state.selectedOrgDept;
   const members = allOrgMembers().filter((member) => {
     const profile = GAME_DATA.distillations?.[member.id];
-    const birth = birthProfile(member);
-    const haystack = `${member.name} ${member.localName || ""} ${member.department} ${member.role} ${birth.birthday} ${birth.element} ${birth.zodiac} ${profile ? Object.values(profile).join(" ") : ""}`.toLowerCase();
+    const haystack = `${member.name} ${member.localName || ""} ${member.department} ${member.role} ${birthdayLabel(member)} ${profile ? Object.values(profile).join(" ") : ""}`.toLowerCase();
     const matchesQuery = !query || haystack.includes(query);
     const matchesUnit = activeUnit === "all" || unitFor(member) === activeUnit;
     const matchesDept = !selectedDept || member.department === selectedDept;
@@ -1171,15 +1072,12 @@ function renderOrgBreadcrumb(focus) {
 }
 
 function renderPersonDetail(member) {
-  const birth = birthProfile(member);
-  const hasBirthday = isFullBirthday(member.birthday);
   const details = [
     member.localName,
     unitName(unitFor(member)),
     member.department,
     member.role,
-    birthdayLabel(member),
-    hasBirthday ? `靈數 ${birth.numerology} / ${birth.element}行 / ${birth.zodiac}` : ""
+    birthdayLabel(member)
   ].filter((item) => !isMissingValue(item));
   return `<strong>${member.name}</strong>${details.map((item) => `<span>${item}</span>`).join("")}`;
 }
@@ -1257,13 +1155,12 @@ function renderActionCards() {
   els.actionCards.innerHTML = state.meeting.hand.map((memberId) => {
     const member = memberById(memberId);
     const action = bestActionForMember(member);
-    const birth = birthProfile(member);
     const fit = cardFit(member, action);
     const rarity = cardRarity(member, action);
     const pips = cardPips(member, action, fit);
     const unit = unitFor(member);
     return `
-      <button class="action-card play-card ${elementClass(birth.element)} ${rarity} ${fit.className}" type="button" data-member="${member.id}" ${disabled}>
+      <button class="action-card play-card ${rarity} ${fit.className}" type="button" data-member="${member.id}" ${disabled}>
         <span class="sigil">${action.icon}</span>
         <i>${fit.label}</i>
         <strong>${member.name}</strong>
@@ -1392,15 +1289,13 @@ function playMeetingTurn(memberId) {
   const orgFit = actionProfileBonus(action, GAME_DATA.distillations?.[person.id]) / 4;
   const crossUnit = meeting.lastUnit && meeting.lastUnit !== unit;
   const sameLane = meeting.lastUnit && meeting.lastUnit === unit;
-  const elementText = relationFor(self, person);
-  const elementBoost = elementText.includes("相生") ? 4 : elementText.includes("相剋") ? -2 : 1;
   const laneBonus = missionRequires(meeting.scenario).includes(unit) ? 3 : -8;
   const newRequiredLane = missionRequires(meeting.scenario).includes(unit) && !meeting.coveredUnits.includes(unit);
   const riskPenalty = fit.risk ? fit.risk.penalty : 0;
   const offLane = fit.className === "off-lane" || fit.className === "blocker";
 
   meeting.trust = clamp(meeting.trust + (boost.trust || 0) + (scores.communication - 64) / 11 + orgFit + (crossUnit ? 3 : 0) + (offLane ? -7 : 0));
-  meeting.clarity = clamp(meeting.clarity + (boost.clarity || 0) + vectorFit + (scores.work - 66) / 13 + elementBoost + laneBonus - riskPenalty / 5);
+  meeting.clarity = clamp(meeting.clarity + (boost.clarity || 0) + vectorFit + (scores.work - 66) / 13 + laneBonus - riskPenalty / 5);
   meeting.momentum = clamp(meeting.momentum + (boost.momentum || 0) + (scores.decision - 64) / 12 + (sameLane ? 2 : 0) + (newRequiredLane ? 5 : 0) - (offLane ? 5 : 0));
   meeting.friction = clamp(meeting.friction + (boost.friction || 0) + (scores.stress - 50) / 8 - orgFit + (crossUnit ? -3 : 0) + (sameLane ? 8 : 0) + riskPenalty / 2 + (offLane ? 8 : 0));
 
