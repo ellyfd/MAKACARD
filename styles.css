@@ -1654,6 +1654,7 @@ select {
 body.org-mode .org-stage {
   grid-template-rows: auto 1fr auto;
   gap: 0;
+  width: 100vw;
   min-height: 0;
 }
 
@@ -1721,6 +1722,7 @@ body.org-mode .org-toolbar {
 }
 
 body.org-mode .org-map {
+  width: 100vw;
   min-height: 0;
 }
 
@@ -1732,8 +1734,14 @@ body.org-mode .org-map {
 }
 
 body.org-mode .org-chart-canvas {
+  width: 100vw;
+  max-width: 100vw;
   height: 100%;
   padding: 24px 0 56px;
+}
+
+body.org-mode .org-tree {
+  min-width: max(100vw, max-content);
 }
 
 .org-tree {
