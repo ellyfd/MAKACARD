@@ -734,20 +734,34 @@ function centerSelectedOrgNode() {
   }, 0);
 }
 
-function setOrgZoom(nextZoom) {
+function setOrgZoom(nextZoom, anchor = null) {
   const canvas = els.orgMap?.querySelector(".org-chart-canvas");
+  const rect = canvas?.getBoundingClientRect();
+  const anchorX = rect && anchor ? anchor.x - rect.left : canvas ? canvas.clientWidth / 2 : 0;
+  const anchorY = rect && anchor ? anchor.y - rect.top : canvas ? canvas.clientHeight / 2 : 0;
   const before = canvas ? {
-    left: (canvas.scrollLeft + canvas.clientWidth / 2) / Math.max(1, canvas.scrollWidth),
-    top: (canvas.scrollTop + canvas.clientHeight / 2) / Math.max(1, canvas.scrollHeight)
+    left: (canvas.scrollLeft + anchorX) / Math.max(1, canvas.scrollWidth),
+    top: (canvas.scrollTop + anchorY) / Math.max(1, canvas.scrollHeight),
+    anchorX,
+    anchorY
   } : null;
   state.orgZoom = clamp(nextZoom * 100, 55, 150) / 100;
   applyOrgZoom();
   if (canvas && before) {
     requestAnimationFrame(() => {
-      canvas.scrollLeft = Math.max(0, canvas.scrollWidth * before.left - canvas.clientWidth / 2);
-      canvas.scrollTop = Math.max(0, canvas.scrollHeight * before.top - canvas.clientHeight / 2);
+      canvas.scrollLeft = Math.max(0, canvas.scrollWidth * before.left - before.anchorX);
+      canvas.scrollTop = Math.max(0, canvas.scrollHeight * before.top - before.anchorY);
     });
   }
+}
+
+function handleOrgWheelZoom(event) {
+  if (state.activeView !== "org") return;
+  const canvas = event.target.closest(".org-chart-canvas");
+  if (!canvas) return;
+  event.preventDefault();
+  const step = event.deltaY > 0 ? -.08 : .08;
+  setOrgZoom((state.orgZoom || 1) + step, { x: event.clientX, y: event.clientY });
 }
 
 function applyOrgZoom() {
@@ -1457,6 +1471,7 @@ function bindEvents() {
   els.orgZoomOut?.addEventListener("click", () => setOrgZoom((state.orgZoom || 1) - .1));
   els.orgZoomIn?.addEventListener("click", () => setOrgZoom((state.orgZoom || 1) + .1));
   els.orgZoomReset?.addEventListener("click", () => setOrgZoom(1));
+  els.orgMap?.addEventListener("wheel", handleOrgWheelZoom, { passive: false });
   els.orgBack?.addEventListener("click", () => {
     if (state.orgExpandedPath.length > 1) {
       state.orgExpandedPath.pop();

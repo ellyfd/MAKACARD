@@ -1782,6 +1782,7 @@ body.org-mode .org-map {
   overflow-x: auto;
   overflow-y: auto;
   padding: 0 0 18px;
+  overscroll-behavior: contain;
 }
 
 body.org-mode .org-chart-canvas {
