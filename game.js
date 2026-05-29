@@ -19,7 +19,8 @@ const state = {
   orgFocus: { type: "root" },
   orgExpandedUnit: null,
   orgExpandedPath: [],
-  orgSelected: null
+  orgSelected: null,
+  orgZoom: 1
 };
 
 const els = {
@@ -36,6 +37,9 @@ const els = {
   orgTitle: document.querySelector("#org-title"),
   orgBack: document.querySelector("#org-back"),
   orgHome: document.querySelector("#org-home"),
+  orgZoomIn: document.querySelector("#org-zoom-in"),
+  orgZoomOut: document.querySelector("#org-zoom-out"),
+  orgZoomReset: document.querySelector("#org-zoom-reset"),
   personA: document.querySelector("#person-a"),
   personB: document.querySelector("#person-b"),
   personC: document.querySelector("#person-c"),
@@ -687,6 +691,7 @@ function renderOrgMap() {
   els.orgLegend.innerHTML = renderOrgBreadcrumb(focus);
   els.orgMap.className = `org-map drill-${view.level}`;
   els.orgMap.innerHTML = renderOrgChart(view, hierarchy);
+  applyOrgZoom();
   els.orgMap.querySelectorAll("[data-org-action]").forEach((button) => {
     button.addEventListener("click", () => {
       const action = button.dataset.orgAction;
@@ -727,6 +732,30 @@ function centerSelectedOrgNode() {
     const selected = els.orgMap?.querySelector(".org-focus-node.selected");
     selected?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
   }, 0);
+}
+
+function setOrgZoom(nextZoom) {
+  const canvas = els.orgMap?.querySelector(".org-chart-canvas");
+  const before = canvas ? {
+    left: (canvas.scrollLeft + canvas.clientWidth / 2) / Math.max(1, canvas.scrollWidth),
+    top: (canvas.scrollTop + canvas.clientHeight / 2) / Math.max(1, canvas.scrollHeight)
+  } : null;
+  state.orgZoom = clamp(nextZoom * 100, 55, 150) / 100;
+  applyOrgZoom();
+  if (canvas && before) {
+    requestAnimationFrame(() => {
+      canvas.scrollLeft = Math.max(0, canvas.scrollWidth * before.left - canvas.clientWidth / 2);
+      canvas.scrollTop = Math.max(0, canvas.scrollHeight * before.top - canvas.clientHeight / 2);
+    });
+  }
+}
+
+function applyOrgZoom() {
+  const zoom = state.orgZoom || 1;
+  els.orgMap?.style.setProperty("--org-zoom", zoom);
+  if (els.orgZoomReset) els.orgZoomReset.textContent = `${Math.round(zoom * 100)}%`;
+  if (els.orgZoomOut) els.orgZoomOut.disabled = zoom <= .55;
+  if (els.orgZoomIn) els.orgZoomIn.disabled = zoom >= 1.5;
 }
 
 function centerOrgCanvas() {
@@ -1425,6 +1454,9 @@ function bindEvents() {
     if (els.orgSearch) els.orgSearch.value = "";
     renderOrgMap();
   });
+  els.orgZoomOut?.addEventListener("click", () => setOrgZoom((state.orgZoom || 1) - .1));
+  els.orgZoomIn?.addEventListener("click", () => setOrgZoom((state.orgZoom || 1) + .1));
+  els.orgZoomReset?.addEventListener("click", () => setOrgZoom(1));
   els.orgBack?.addEventListener("click", () => {
     if (state.orgExpandedPath.length > 1) {
       state.orgExpandedPath.pop();
