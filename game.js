@@ -183,7 +183,7 @@ function allOrgMembers() {
   const seen = new Set();
   const enriched = GAME_DATA.members.map((member) => ({
     ...member,
-    status: /^\d{4}-\d{2}-\d{2}$/.test(member.birthday) ? member.birthday : ""
+    status: birthdayLabel(member)
   }));
   const merged = [];
   [...enriched, ...(GAME_DATA.orgPeople || [])].forEach((member) => {
@@ -249,16 +249,39 @@ function elementClass(element) {
   }[element] || "wood";
 }
 
+function isFullBirthday(value) {
+  return /^\d{4}-\d{2}-\d{2}$/.test(value || "");
+}
+
+function monthDayFromBirthday(value) {
+  if (!value) return null;
+  const full = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (full) return { month: Number(full[2]), day: Number(full[3]) };
+  const short = /^(\d{1,2})-(\d{1,2})$/.exec(value);
+  if (short) return { month: Number(short[1]), day: Number(short[2]) };
+  const zh = /^(\d{1,2})月(\d{1,2})日$/.exec(value);
+  if (zh) return { month: Number(zh[1]), day: Number(zh[2]) };
+  return null;
+}
+
+function birthdayLabel(member) {
+  const value = member?.birthdayText || member?.birthday || "";
+  if (isFullBirthday(value)) return value;
+  const monthDay = monthDayFromBirthday(value);
+  return monthDay ? `${monthDay.month}月${monthDay.day}日` : "";
+}
+
 function birthProfile(member) {
   const birthday = member.birthday;
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(birthday)) {
+  if (!isFullBirthday(birthday)) {
+    const monthDay = monthDayFromBirthday(member.birthdayText || birthday);
     return {
-      birthday,
-      numerology: "待補",
-      element: "土",
-      zodiac: "待補",
-      animal: "待補",
-      archetype: "待觀察"
+      birthday: birthdayLabel(member),
+      numerology: "",
+      element: "",
+      zodiac: monthDay ? westernZodiac(monthDay.month, monthDay.day) : "",
+      animal: "",
+      archetype: ""
     };
   }
   const [year, month, day] = birthday.split("-").map(Number);
@@ -337,6 +360,7 @@ function deepDistillationMarkup(member) {
 function relationFor(a, b) {
   const aElement = birthProfile(a).element;
   const bElement = birthProfile(b).element;
+  if (!aElement || !bElement) return "生日年份不足：只使用工作情境與組織角色判斷合拍度。";
   if (aElement === bElement) return `同元素：兩人都是${aElement}行，起手默契高，但盲點可能相似。`;
   return GAME_DATA.elementRelations[`${aElement}-${bElement}`]
     || GAME_DATA.elementRelations[`${bElement}-${aElement}`]
@@ -372,7 +396,8 @@ function scorePair(a, b, scenario, strategy) {
   const mismatchPenalty = Object.values(closeness).filter((value) => value < 48).length * 6;
   const aElement = birthProfile(a).element;
   const bElement = birthProfile(b).element;
-  const elementBonus = aElement === bElement ? 4 : relationFor(a, b).includes("相生") ? 6 : relationFor(a, b).includes("相剋") ? -3 : 0;
+  const elementText = relationFor(a, b);
+  const elementBonus = aElement && bElement && aElement === bElement ? 4 : elementText.includes("相生") ? 6 : elementText.includes("相剋") ? -3 : 0;
   const strategyBonus = strategy.fits.includes(scenario.id) ? 8 : -2;
 
   const work = clamp(weightedAverage + sameDept + roleSpread + strategyBonus * .35 - tunnelPenalty - mismatchPenalty);
@@ -393,12 +418,16 @@ function scoreLabel(score) {
 
 function renderMember(member) {
   const birth = birthProfile(member);
-  const hasBirthday = /^\d{4}-\d{2}-\d{2}$/.test(member.birthday);
+  const hasBirthday = isFullBirthday(member.birthday);
+  const hasBirthLabel = Boolean(birthdayLabel(member));
   const roleLine = [member.localName, member.role, member.department].filter((item) => !isMissingValue(item)).join(" · ");
   const chips = hasBirthday ? `
     <span class="chip number">靈數 ${birth.numerology}</span>
     <span class="chip ${elementClass(birth.element)}">${birth.element}行</span>
     <span class="chip sign">${birth.zodiac}</span>
+  ` : hasBirthLabel ? `
+    <span class="chip birthday">${birth.birthday}</span>
+    ${birth.zodiac ? `<span class="chip sign">${birth.zodiac}</span>` : ""}
   ` : "";
   return `
     <article class="member-card ${elementClass(birth.element)}" data-member="${member.id}">
@@ -425,7 +454,7 @@ function renderMembers() {
   const members = allOrgMembers().filter((member) => {
     const profile = GAME_DATA.distillations?.[member.id];
     const birth = birthProfile(member);
-    const haystack = `${member.name} ${member.localName || ""} ${member.department} ${member.role} ${birth.element} ${birth.zodiac} ${profile ? Object.values(profile).join(" ") : ""}`.toLowerCase();
+    const haystack = `${member.name} ${member.localName || ""} ${member.department} ${member.role} ${birth.birthday} ${birth.element} ${birth.zodiac} ${profile ? Object.values(profile).join(" ") : ""}`.toLowerCase();
     const matchesQuery = !query || haystack.includes(query);
     const matchesUnit = activeUnit === "all" || unitFor(member) === activeUnit;
     const matchesDept = !selectedDept || member.department === selectedDept;
@@ -788,7 +817,7 @@ function childOrgNodes(node, people) {
     deptId: directory.id,
     title: member.name,
     subtitle: [member.localName, member.role].filter((item) => !isMissingValue(item)).join(" · "),
-    count: /^\d{4}-\d{2}-\d{2}$/.test(member.birthday || "") ? member.birthday : "",
+    count: birthdayLabel(member),
     member
   }));
 }
@@ -1006,7 +1035,7 @@ function orgViewForFocus(hierarchy, focus) {
     return {
       level: "dept",
       title: directory?.name || focus.dept,
-      nodes: members.map((member) => ({ type: "person", unit: focus.unit, dept: directory?.name || focus.dept, deptId: directory?.id || focus.deptId, title: member.name, subtitle: [member.localName, member.role].filter((item) => !isMissingValue(item)).join(" · "), count: /^\d{4}-\d{2}-\d{2}$/.test(member.birthday || "") ? member.birthday : "", member })),
+      nodes: members.map((member) => ({ type: "person", unit: focus.unit, dept: directory?.name || focus.dept, deptId: directory?.id || focus.deptId, title: member.name, subtitle: [member.localName, member.role].filter((item) => !isMissingValue(item)).join(" · "), count: birthdayLabel(member), member })),
       treeRoot: directory ? orgDirectoryNode(directory, hierarchy.people) : null,
       summary: members.length ? `${members.length} 位成員` : "沒有成員資料",
       emptyTitle: "沒有成員資料",
@@ -1048,7 +1077,7 @@ function renderOrgFocusNode(node) {
       ["單位", unitName(unitFor(member))],
       ["部門", member.department],
       ["職務", member.role],
-      ["生日", /^\d{4}-\d{2}-\d{2}$/.test(member.birthday || "") ? member.birthday : ""]
+      ["生日", birthdayLabel(member)]
     ].filter(([, value]) => !isMissingValue(value));
     return `
       <article class="org-focus-node profile" style="--unit:${unitColor}">
@@ -1100,12 +1129,13 @@ function renderOrgBreadcrumb(focus) {
 
 function renderPersonDetail(member) {
   const birth = birthProfile(member);
-  const hasBirthday = /^\d{4}-\d{2}-\d{2}$/.test(member.birthday);
+  const hasBirthday = isFullBirthday(member.birthday);
   const details = [
     member.localName,
     unitName(unitFor(member)),
     member.department,
     member.role,
+    birthdayLabel(member),
     hasBirthday ? `靈數 ${birth.numerology} / ${birth.element}行 / ${birth.zodiac}` : ""
   ].filter((item) => !isMissingValue(item));
   return `<strong>${member.name}</strong>${details.map((item) => `<span>${item}</span>`).join("")}`;
