@@ -616,8 +616,12 @@ function renderOrgMap() {
       }
       if (action === "person") {
         state.orgSelected = { type: "person", id: button.dataset.person };
-        els.orgMap.querySelectorAll(".org-focus-node.selected").forEach((node) => node.classList.remove("selected"));
-        button.classList.add("selected");
+        if (directReportsFor(button.dataset.person, hierarchy.people).length) {
+          renderOrgMap();
+        } else {
+          els.orgMap.querySelectorAll(".org-focus-node.selected").forEach((node) => node.classList.remove("selected"));
+          button.classList.add("selected");
+        }
         renderSelectedPersonDetail(button.dataset.person);
         centerSelectedOrgNode();
       }
@@ -742,6 +746,7 @@ function renderOrgTreeNode(node, hierarchy, depth) {
 function shouldExpandOrgNode(node) {
   if (node.type === "unit") return state.orgExpandedUnit === node.unit;
   if (node.type === "dept") return state.orgExpandedPath.includes(node.deptId);
+  if (node.type === "person") return state.orgSelected?.type === "person" && state.orgSelected.id === node.member?.id;
   return false;
 }
 
@@ -749,21 +754,44 @@ function childOrgNodes(node, people) {
   if (node.type === "unit") {
     return orgDirectories(node.unit).filter((dept) => !dept.parent).map((dept) => orgDirectoryNode(dept, people));
   }
+  if (node.type === "person") return directReportsFor(node.member?.id, people).map((member) => personOrgNode(member, node));
   if (node.type !== "dept") return [];
   const directory = orgDirectoryById(node.deptId);
   if (!directory) return [];
   const children = orgDirectoryChildren(directory.id);
   if (children.length) return children.map((child) => orgDirectoryNode(child, people));
-  return orgDirectoryMembers(directory, people).map((member) => ({
-    type: "person",
+  return topLevelDirectoryMembers(directory, people).map((member) => personOrgNode(member, {
     unit: directory.unit,
     dept: directory.name,
-    deptId: directory.id,
+    deptId: directory.id
+  }));
+}
+
+function personOrgNode(member, context = {}) {
+  const reportCount = directReportsFor(member.id).length;
+  return {
+    type: "person",
+    unit: context.unit || unitFor(member),
+    dept: context.dept || member.department,
+    deptId: context.deptId || "",
     title: member.name,
     subtitle: [member.localName, member.role].filter((item) => !isMissingValue(item)).join(" · "),
-    count: birthdayLabel(member),
+    count: reportCount ? `${reportCount} 直屬` : birthdayLabel(member),
     member
-  }));
+  };
+}
+
+function directReportsFor(managerId, people = orgChartMembers()) {
+  if (!managerId) return [];
+  return people
+    .filter((member) => member.reportsTo === managerId)
+    .sort((left, right) => orgChartRank("", left) - orgChartRank("", right) || (left.localName || left.name).localeCompare(right.localName || right.name));
+}
+
+function topLevelDirectoryMembers(directory, people = orgChartMembers()) {
+  const members = orgDirectoryMembers(directory, people);
+  const memberIds = new Set(members.map((member) => member.id));
+  return members.filter((member) => !member.reportsTo || !memberIds.has(member.reportsTo));
 }
 
 function orgDirectoryAncestorIds(deptId) {
@@ -1072,12 +1100,17 @@ function renderOrgBreadcrumb(focus) {
 }
 
 function renderPersonDetail(member) {
+  const manager = member.reportsTo ? orgChartMembers().find((person) => person.id === member.reportsTo) : null;
+  const reports = directReportsFor(member.id);
   const details = [
     member.localName,
     unitName(unitFor(member)),
     member.department,
     member.role,
-    birthdayLabel(member)
+    birthdayLabel(member),
+    manager ? `直屬主管：${manager.name}` : "",
+    reports.length ? `直屬成員：${reports.length}` : "",
+    member.reportingSource ? `來源：${member.reportingSource}` : ""
   ].filter((item) => !isMissingValue(item));
   return `<strong>${member.name}</strong>${details.map((item) => `<span>${item}</span>`).join("")}`;
 }
