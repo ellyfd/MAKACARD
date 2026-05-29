@@ -2,9 +2,47 @@
 // Source: 2026/05 Makalot org chart PDFs and makalot-org extracted references.
 (function addReportingData() {
   const people = [...(GAME_DATA.members || []), ...(GAME_DATA.orgPeople || [])];
+  const aliases = {
+    "簡伯容": "adia",
+    "劉俊毅": "alan",
+    "柳宥良": "andy",
+    "洪捷": "chieh",
+    "朱家霈": "debbie",
+    "程麗如": "elly",
+    "顧惠": "huihui",
+    "涂雅珍": "jan",
+    "黃韋蓁": "jean",
+    "經國媛": "karen",
+    "朱英石": "rock",
+    "林芓葇": "ruochen",
+    "吳思嫻": "sixian",
+    "王元亭": "tinley",
+    "葉馨憶": "yoko",
+    "宋妍蓉": "yota",
+    "周調萱": "vanessa",
+    "林佳盈": "lillian-lin",
+    "薛菀之": "teresa-hsueh",
+    "游怡專": "artie-yu",
+    "周育君": "sylvia-chou",
+    "蔡昀潔": "devtech-tsai-yun-chieh",
+    "張萱": "devtech-chang-hsuan",
+    "黃秀琪": "devtech-huang-hsiu-chi",
+    "黃宇翔": "devtech-huang-yu-hsiang",
+    "王雁學": "devtech-wang-li-hsueh",
+    "顏哲慧": "devtech-yen-che-hui",
+    "王宛慈": "devtech-wang-wan-tzu",
+    "楊曉琳": "楊曦琳",
+  };
 
   function findPerson(name) {
-    return people.find((person) => person.id === name || person.localName === name || person.name === name);
+    const alias = aliases[name];
+    return people.find(
+      (person) =>
+        person.id === name ||
+        person.localName === name ||
+        person.name === name ||
+        (alias && (person.id === alias || person.localName === alias || person.name === alias))
+    );
   }
 
   function setReports(managerName, reportNames, source) {
@@ -29,8 +67,8 @@
   setReports("胡怡靜", ["林健閔", "林欣煇", "曾冠人", "鄭志聰", "朱玉燕", "余翊寧", "蔡立群"], "工務處組織圖202605.pdf");
   setReports("朱玉燕", ["蔡佩芸", "陳吟函", "邱瀞儀"], "工務處工業工程部組織圖202605.pdf");
   setReports("陳吟函", ["陳柔蒨", "林詩盈", "陳舒涵"], "工務處工業工程部組織圖202605.pdf");
-  setReports("蔡立群", ["黃天佑", "王葦勝"], "工務處品質管理部組織圖202605.pdf");
-  setReports("王葦勝", ["翁培志", "許建邦", "顏岱怡"], "工務處品質管理部組織圖202605.pdf");
+  setReports("蔡立群", ["黃天佑", "黃文健", "古育倫", "王葦勝"], "工務處品質管理部組織圖202605.pdf");
+  setReports("王葦勝", ["周依庭", "康芳榕", "沈冰琳", "葉婷"], "工務處品質管理部組織圖202605.pdf");
   setReports("陳明慧", ["賴梅華", "盧彥橋"], "運籌處組織圖202605.pdf");
 
   setReports("宋佩芳", ["周心皓", "劉雅如", "傅亞寧", "賴曉瑄", "郭良祿", "陳瑋今", "呂少傑", "周襄"], "業務行銷群組織圖202605.pdf");
@@ -128,6 +166,37 @@
   setReports("巫敏惠", ["陳慧蓉", "馮以萱"], "財會管理處財務部組織圖202605.pdf");
   setReports("陳思琦", ["楊家懿"], "財會管理處財務部組織圖202605.pdf");
   setReports("王怡心", ["廖敏伶", "王凰凰"], "財會管理處股務暨專案組組織圖202605.pdf");
+
+  setReports("林倩如", ["許鳳英", "陳玫娟", "李怡蓓", "廖怡瑩", "何佩琪", "簡瑞澤"], "嘉義樣品中心202605.pdf");
+  setReports("薛菀之", ["許鳳英", "陳玫娟"], "開發暨技術處樣品研發部202605.pdf");
+  setReports("張嘉芸", ["楊雅雯", "寇惠卿", "金冠廷", "洪明慧", "蔡邵勳"], "開發暨技術處估碼中心202605.pdf");
+  setReports("黃姿華", ["洪珮慈", "陶真雅", "蔡昀潔"], "開發暨技術處技術設計一部202605.pdf");
+  setReports("賴昱婷", ["卓婉禎", "吳阿秀", "姚玲玲", "黃秀琪", "徐曉虹"], "開發暨技術處技術設計二部202605.pdf");
+
+  setReports("林欣煇", ["黃財源", "蔡長特", "薛永和", "廖柔黌", "張景翔", "楊東龍"], "工務處處本部組織圖202605.pdf");
+  setReports("余翊寧", ["陳信福", "黃琮楫", "陳柏均", "陳咨姍"], "工務處品質管理部組織圖202605.pdf");
+  setReports("黃天佑", ["王逢茂", "吳育騰", "石振華", "王勇"], "工務處驗布團隊組織圖202605.pdf");
+  setReports("石振華", ["李勇", "王國安", "張建高", "李年華", "陳強", "鄧堯"], "工務處驗布團隊組織圖202605.pdf");
+  setReports("王勇", ["黃錫金", "張俊德", "王昌智", "何緒君", "孔祥松", "嚴君"], "工務處驗布團隊組織圖202605.pdf");
+  setReports("黃文健", ["Dani Ngocbich"], "工務處驗布團隊組織圖202605.pdf");
+  setReports("古育倫", ["HoaNguyen"], "工務處驗布團隊組織圖202605.pdf");
+  setReports("周依庭", ["馮欣欣", "蔡東儒"], "工務處品質管理部組織圖202605.pdf");
+  setReports("康芳榕", ["陳巧妤", "鄭茵"], "工務處品質管理部組織圖202605.pdf");
+  setReports("蔡佩芸", ["林栢賢", "林敏榮", "吳祥銘", "陳暐凱"], "工務處工業工程部組織圖202605.pdf");
+  setReports("邱瀞儀", ["李欣薇", "李佩珊", "廖盈芊"], "工務處工業工程部組織圖202605.pdf");
+  setReports("許博鈞", ["王思晴", "施冠宏", "閔容欣", "張嘉妤"], "工務處工業工程部組織圖202605.pdf");
+  setReports("賴梅華", ["黃雅婷", "吳佳蓉"], "運籌處物流管理部組織圖202605.pdf");
+  setReports("盧彥橋", ["曾冠人", "鄭志聰"], "運籌處產銷管理部組織圖202605.pdf");
+
+  setReports("黃渝晴", ["謝孔超", "溫玉岑", "蔡一駖", "汪宜嫻", "林政祐", "張育誠", "葉辰涓", "林健生", "鄭俐俐"], "營運管理群/總管理處組織圖202605.pdf");
+  setReports("楊宗憲", ["林彥輝", "林嘉慧", "沈郁欣", "陳詠君"], "資訊處應用開發部組織圖202605.pdf");
+  setReports("詹祥麟", ["蔡佳君", "朱心怡"], "資訊處軟體架構委員會202605.pdf");
+  setReports("陳忍", ["林瓊琪", "許翠紋"], "財會管理處會計部組織圖202605.pdf");
+  setReports("楊曉琳", ["黃曉婷", "林依潔"], "財會管理處會計部組織圖202605.pdf");
+  setReports("陳宣蓓", ["黃詩涵", "林勝偉"], "財會管理處會計部組織圖202605.pdf");
+
+  setReports("孫雪", ["李利翔"], "智慧紡織發展中心202605.pdf");
+  setReports("周子揚", ["孫翊菁", "施思安"], "智慧紡織發展中心202605.pdf");
 
   GAME_DATA.reportingReady = true;
 })();
