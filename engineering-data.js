@@ -1,6 +1,6 @@
-// Supplemental people and PDF-derived directory membership for 工務處 2026/05.
-// Source files: 工務處*.pdf, 工務處處本部*.pdf, 工務處驗布團隊*.pdf, 工務處大貨技師團隊*.pdf,
-// 工務處工業工程部*.pdf, 工務處品質管理部*.pdf.
+// Supplemental people and PDF-derived directory membership for 工務處 2026/06.
+// Source files: 工務處*.pdf, 工務處處本部*.pdf, 工務處驗布團隊*.pdf,
+// 工務處工業工程部*.pdf, 工務處品質管理部*.pdf, 人令字第二六○九號.
 (function addEngineeringOrgData() {
   const peopleByLocalName = new Map();
   [...GAME_DATA.members, ...(GAME_DATA.orgPeople || [])].forEach((member) => {
@@ -49,15 +49,12 @@
       ["楊東龍", "Allan Yang"],
       ["張景翔", "JohnCH Chang"]
     ]),
-    "bulk-technician-team": ids("工務處 / 大貨技師團隊", [
-      ["余翠晃", "Tracy Yu"],
-      ["胡怡靜", "Anne Hu"],
-      ["徐培倫", "Ellan Hsu"]
-    ]),
     "industrial-engineering": ids("工務處 / 工業工程部", [
       ["胡怡靜", "Anne Hu"],
       ["蔡佩芸", "Daphne Tsai"],
       ["朱玉燕", "Angela Chu"],
+      ["余翠晃", "Tracy Yu"],
+      ["徐培倫", "Ellan Hsu"],
       ["陳吟函", "Selina Chen"],
       ["林敏榮", "Minrong Lin"],
       ["林栢賢", "Paihsien Lin"],

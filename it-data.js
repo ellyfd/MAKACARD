@@ -1,4 +1,4 @@
-// Supplemental people and PDF-derived directory membership for 營運管理群 / 資訊處 2026/05.
+// Supplemental people and PDF-derived directory membership for 營運管理群 / 資訊處 2026/06.
 // Source files: 資訊處*.pdf.
 (function addItOrgData() {
   const peopleByLocalName = new Map();
@@ -43,6 +43,9 @@
       ["黃渝晴", "Mandy Huang"],
       ["謝孔超", "Benjamin Hsieh"]
     ]),
+    "app-modernization-engineering": ids("資訊處 / 應用開發部 / 現代化工程", [
+      ["林彥輝", "Wayne Lin"]
+    ]),
     "app-dev-1": ids("資訊處 / 應用開發部 / 開發I課", [
       ["林彥輝", "Wayne Lin"]
     ]),
@@ -74,6 +77,9 @@
       ["邱煥盛", "Hanson Chiu"],
       ["陳佳麟", "Roger Chen"]
     ]),
+    "erp-modernization-engineering": ids("資訊處 / ERP開發部 / 現代化工程", [
+      ["張肯銘", "Jimbo Chang"]
+    ]),
     "engineering-system": ids("資訊處 / 工務系統部", [
       ["楊宗憲", "Ken Yang"],
       ["詹祥麟", "Alex Chan"],
@@ -85,6 +91,13 @@
       ["洪子汧", "Ed Hong"],
       ["陳玟華", "Wenna Chen"],
       ["蔡佳君", "Novia Tsai"]
+    ]),
+    "engineering-system-modernization": ids("資訊處 / 工務系統部 / 現代化工程", [
+      ["蔡佳君", "Novia Tsai"],
+      ["黃耀毅", "Ian Huang"],
+      ["黃筠筑", "Yunchu Huang"],
+      ["洪子汧", "Ed Hong"],
+      ["連詠華", "Jasper Lian"]
     ]),
     "system-operations": ids("資訊處 / 系統營運部", [
       ["劉祥威", "Ray Liu"],
@@ -109,21 +122,24 @@
       ["黃渝晴", "Mandy Huang"],
       ["謝孔超", "Benjamin Hsieh"]
     ]),
+    "dt-modernization-engineering": ids("資訊處 / 數位轉型部 / 現代化工程", [
+      ["吳堃源", "Kevin Wu"]
+    ]),
     "dt-engineering": ids("資訊處 / 數位轉型部 / 工程師群", [
-      ["吳堃源", "Kevin Wu"],
+      ["李宛真", "Judy Lee"],
       ["蔡智宏", "Welles Nicolas"]
     ]),
     "ai-ops-project": ids("資訊處 / 數位轉型部 / AI應用/營運與專案管理", [
       ["朱心怡", "Hsinyi Chu"],
-      ["郭昀甄", "Jennifer Guo"],
       ["郭文光", "Wongsatorn T"],
       ["孫晉崴", "Jerry Sun"]
     ]),
-    "intelligent-application": ids("資訊處 / 智能應用組", [
-      ["謝孔超", "Benjamin Hsieh"],
-      ["黃渝晴", "Mandy Huang"],
-      ["李宛真", "Judy Lee"],
-      ["黃宇傑", "YuJiet Vong"]
+    "data-platform": ids("資訊處 / 資料平台部", [
+      ["林虹君", "Angela Lin"],
+      ["郭昀甄", "Jennifer Guo"],
+      ["徐志堯", "Chihyao Hsu"],
+      ["黃宇傑", "YuJiet Vong"],
+      ["高奕莘", "Sean Kao"]
     ]),
     "software-architecture-committee": ids("資訊處 / 軟體架構委員會", [
       ["謝孔超", "Benjamin Hsieh"],
