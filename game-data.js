@@ -1042,12 +1042,36 @@ const GAME_DATA = {
       weights: { context: 1.15, speed: 1, data: 1.05, warmth: 1.1, clarity: .95, risk: .85 }
     }
   ],
+  jobProfiles: [
+    { id: "apparel-dev-sales", group: "業務行銷群", title: "成衣開發業務", unit: "sales-marketing", belongsTo: "各業務處（開發端）", focus: ["開發報價", "調樣", "進單", "作工會議", "樣品跟催"], time: { 訂單開發: 60, 訂單管理: 35, 客供經營: 5 }, competencies: { 溝通協調: "L2", 團隊合作: "L1", 問題解決: "L1-L2" }, traits: ["例行框架", "細心", "開發流程"], conditions: ["成衣產業經驗", "熟悉開發流程"] },
+    { id: "bulk-sales", group: "業務行銷群", title: "成衣業務（大貨）", unit: "sales-marketing", belongsTo: "各業務處（大貨端）", focus: ["大貨交期", "產區詢表", "產能確認", "採購串接", "客供維繫"], time: { 訂單管理: 70, 採購串接: 20, 客供經營: 10 }, competencies: { 溝通協調: "L2", 目標導向: "L1-L2", 問題解決: "L2" }, traits: ["負責任", "抗壓", "配合度高"] },
+    { id: "v7b-dev-sales", group: "業務行銷群", title: "開發業務（顧家型 V7B）", unit: "sales-marketing", belongsTo: "業務七處 B 部", focus: ["樣品", "報價", "交期", "商機異動", "特殊需求控管"], time: { 客戶服務: 30, 控管訂單: 25, 樣品製作: 15, 特殊需求控管: 15, 報價: 15 }, competencies: { 溝通協調: "L2", 問題解決: "L2" }, traits: ["穩定度高", "抗壓性強"], conditions: ["1-3 年成衣經驗", "TOEIC 785+"] },
+    { id: "japanese-sales-indonesia", group: "業務行銷群", title: "日語業務（派駐印尼）", unit: "sales-marketing", belongsTo: "業務六處（派駐業務組）", focus: ["日英文客戶聯繫", "訂單跟催", "驗貨安排", "文件管理", "跨部門資料轉換"], time: { 訂單管理: 95, 驗貨QA協作: 5 }, competencies: { 溝通協調: "L2", 目標導向: "L2" }, traits: ["務實能吃苦", "高工時", "文件細節"], conditions: ["日文 N1/N2", "英文中上", "接受長期派駐"] },
+    { id: "material-purchaser-main", group: "業務行銷群", title: "採購管理師（主料）", unit: "sales-marketing", belongsTo: "行銷發展處 / 材質研發部", focus: ["主料 PO", "收料", "TNA 追蹤", "異常處理", "布廠工廠協調"], time: { PO收料: 40, TNA追蹤: 30, 異常處理: 20, 外部協調: 10 }, competencies: { 溝通協調: "L2", 團隊合作: "L1", 問題解決: "L1-L2" }, traits: ["數字敏感", "耐心", "可獨立作業"], conditions: ["布廠經驗", "國貿流程佳"] },
+    { id: "material-purchaser-trim", group: "業務行銷群", title: "採購管理師（副料）", unit: "sales-marketing", belongsTo: "行銷發展處 / 材質研發部", focus: ["副料搜尋", "採買", "TNA 追蹤", "異常處理", "副料細節辨識"], time: { 副料搜尋採買: 40, TNA追蹤: 30, 異常處理: 20, 外部協調: 10 }, competencies: { 溝通協調: "L2", 團隊合作: "L1", 問題解決: "L1" }, traits: ["例行工作", "耐心", "細節辨識"], conditions: ["紡織服裝背景", "採購經驗佳"] },
+    { id: "technical-designer", group: "開發暨技術處", title: "開發處 TD", unit: "tech-rd", belongsTo: "開發暨技術處 / 技術設計部", focus: ["歐美客戶技術窗口", "pre-fit/尺寸評語", "樣品審核", "內部技術橋梁", "海外樣品中心支援"], time: { 客戶經營: 30, 技術溝通: 35, 樣品審核: 15, 海外出差: 10, 人才培育: 10 }, competencies: { 溝通協調: "L2-L3", 問題解決: "L1-L3", 目標導向: "L2", 團隊合作: "L2" }, traits: ["技術翻譯", "版型判斷", "英文技術文件"], conditions: ["英文技術溝通", "熟悉版型與樣品審核"] },
+    { id: "ie-engineer", group: "工務處", title: "IE 工程師", unit: "tech-rd", belongsTo: "工務處 / 工業工程部", focus: ["生產技術資料庫", "產線平衡", "工時評比", "技術包裹", "系統優化"], time: { 現場改善: 40, 技術包裹: 20, 工廠交流: 20, 系統分析: 15, 客戶ME專案: 5 }, competencies: { 問題解決: "L3", 溝通協調: "L2", 團隊合作: "L3", 創新能力: "L2" }, traits: ["拆解瓶頸", "現場改善", "數據效率"], conditions: ["IE/工管/機械/紡織背景佳"] },
+    { id: "engineering-project-specialist", group: "工務處", title: "工務管理 專案專員", unit: "tech-rd", belongsTo: "工務處 / 處本部", focus: ["工務管理資訊", "估購送用存資料庫", "KPI", "系統導入", "資料除錯", "產區交流"], time: { 管理資訊規劃: 25, 原物料資料庫: 15, KPI: 15, 系統專案: 15, 資料分析: 10, 產區交流: 10, 出差支援: 10 }, competencies: { 問題解決: "L3-L4", 溝通協調: "L3-L4", 創新能力: "L1-L3", 目標導向: "L1-L2" }, traits: ["系統推動", "跨單位整合", "資料除錯"] },
+    { id: "apparel-quality", group: "工務處", title: "成衣品管師", unit: "tech-rd", belongsTo: "工務處 / 品質管理部 / 成衣品管課", focus: ["品質成績分析", "核廠認證", "根因分析", "品質專案", "程序書教材"], time: { 品質分析: 20, 認證準備: 20, 根因分析: 20, 品質專案: 20, 教材培訓: 10, 稽核出差: 10 }, competencies: { 問題解決: "L3", 溝通協調: "L2-L3", 目標導向: "L2", 團隊合作: "L3" }, traits: ["5-why", "魚骨圖", "品質系統", "稽核"] },
+    { id: "material-quality", group: "工務處", title: "材質品管師", unit: "tech-rd", belongsTo: "工務處 / 品質管理部 / 材質品管課", focus: ["主料檢驗", "驗貨報告", "檢驗計畫", "面料異常", "供應商廠查"], time: { 主料檢驗: 30, 驗貨安排: 30, 異常追蹤: 20, 供應商廠查: 10, 品質專案: 10 }, competencies: { 目標導向: "L2-L3", 問題解決: "L2", 溝通協調: "L2-L3", 團隊合作: "L2-L3" }, traits: ["檢驗標準", "異常追蹤", "品質證據"] },
+    { id: "overseas-accounting", group: "財會管理處", title: "會計管理師（海外）", unit: "ops-mgmt", belongsTo: "財會管理處 / 會計一二三部", focus: ["海外帳務", "合併報表", "成本分析", "稅務法遵", "投資評估", "產區會計培育"], time: { 帳務報表: 20, 成本分析: 15, 稅務法遵: 15, 投資評估: 10, 預算預測: 10 }, competencies: { 問題解決: "L2", 溝通協調: "L2", 目標導向: "L2", 培育部屬: "L2" }, traits: ["英文溝通", "法遵", "財務模擬"], conditions: ["會計背景佳"] },
+    { id: "hrd-specialist", group: "總管理處 人力資源部", title: "人才發展課 HRD 專員", unit: "general-mgmt", belongsTo: "總管理處 / 人力資源部 / 人才發展課", focus: ["年度訓練架構", "數位學習平台", "內部講師教材", "員工關係", "人力規劃", "人才識別"], time: { 訓練架構: 25, 數位學習: 20, 教材開發: 20, 員工關係: 10, 人力規劃: 10, 招募識別: 10, 績效高潛: 5 }, competencies: { 目標導向: "L2", 問題解決: "L2-L3", 溝通協調: "L2", 團隊合作: "L1-L2" }, traits: ["知識傳承", "平台推動", "組織優化"] },
+    { id: "overseas-hr-admin-lead", group: "海外產區", title: "產區 人事行政主管", unit: "overseas", belongsTo: "海外產區各廠", focus: ["工廠人事行政制度", "總務庶務管理", "廠務協調", "人權驗廠/CSR", "在地團隊帶領"], time: { 人事行政制度: 40, 總務採購架構: 20, 廠務協調: 20, CSR稽核: 15, 團隊帶領: 5 }, competencies: { 問題解決: "L3", 溝通協調: "L2", 創新能力: "L2", 團隊合作: "L3" }, traits: ["結構化", "制度流程", "多元文化彈性"], conditions: ["海外工廠派駐", "東南亞管理經驗", "中文母語"] },
+    { id: "overseas-engineering-trainee", group: "海外產區", title: "產區 工務培訓幹部", unit: "overseas", belongsTo: "海外產區各廠", focus: ["生產進度", "隱藏問題", "良率效率", "外籍幹部協作", "產區改善"], time: { 生產追蹤: 40, 數據監控: 30, 跨國協作: 20, 改善專案: 10 }, competencies: { 問題解決: "L3", 溝通協調: "L2", 培育部屬: "L2", 目標導向: "L4" }, traits: ["務實能吃苦", "跨國協作", "穩定度高", "工廠管理職涯"], conditions: ["可長期駐點輪調", "可配合加班"] }
+  ],
+  competencyLevels: {
+    L1: "積極面對基本問題；願意合作；主動了解目標",
+    L2: "清楚具體表達想法；快速尋求資源協助；對目標全力以赴",
+    L3: "能拆解複雜問題；提供建設性回應；主動參與團隊決議",
+    L4: "建立檢核機制；精準理解他人觀點；積極化解衝突"
+  },
   orgMissions: [
     {
       id: "fabric-trim-delay",
       name: "Fabric / Trim Lead Time Slip",
       prompt: "主布或副料交期延遲，PP sample、排產和出貨窗口全部被壓縮。玩家必須在五回合內建立替代料、客戶 approval 和產區排程的共同節奏。",
       goal: "鎖定替代料路線、approval owner、產區排程重算與客戶溝通口徑。",
+      jobNeeds: ["material-purchaser-main", "material-purchaser-trim", "apparel-dev-sales", "bulk-sales"],
       pressure: { trust: 36, clarity: 30, momentum: 34, friction: 48 },
       weights: { data: 1.25, risk: 1.25, clarity: 1.15, speed: 1.05, context: 1, warmth: .8 }
     },
@@ -1056,6 +1080,7 @@ const GAME_DATA = {
       name: "PP Sample Approval Loop",
       prompt: "PP sample 被退回多輪，fit、construction、material handfeel 和客戶 comment 版本混在一起，bulk production 不能再等。",
       goal: "把退樣原因拆成 fit / construction / material / customer sign-off，決定下一版樣衣的唯一責任人。",
+      jobNeeds: ["technical-designer", "apparel-dev-sales", "material-quality", "v7b-dev-sales"],
       pressure: { trust: 38, clarity: 27, momentum: 32, friction: 50 },
       weights: { clarity: 1.35, context: 1.15, risk: 1.2, data: 1.15, speed: .9, warmth: .85 }
     },
@@ -1064,6 +1089,7 @@ const GAME_DATA = {
       name: "Spec Version Drift",
       prompt: "業務、技術、工廠各自拿到不同版本 spec，QC 判定和現場做法不一致，rework 正在累積。",
       goal: "建立 single source of truth、版本凍結點、變更通知與工廠 access 規則。",
+      jobNeeds: ["technical-designer", "engineering-project-specialist", "apparel-quality", "bulk-sales"],
       pressure: { trust: 34, clarity: 24, momentum: 30, friction: 56 },
       weights: { clarity: 1.4, data: 1.35, risk: 1.2, context: 1.1, speed: .8, warmth: .75 }
     },
@@ -1072,6 +1098,7 @@ const GAME_DATA = {
       name: "QC Rework Spike",
       prompt: "inline inspection 發現縫製、裁片、印繡或尺寸問題，返工量上升，on-time delivery 開始危險。",
       goal: "找到 defect root cause、建立 containment、重排檢驗節點並回報客戶風險。",
+      jobNeeds: ["apparel-quality", "material-quality", "ie-engineer", "bulk-sales"],
       pressure: { trust: 33, clarity: 31, momentum: 32, friction: 58 },
       weights: { risk: 1.4, data: 1.25, clarity: 1.15, speed: 1.1, context: .9, warmth: .75 }
     },
@@ -1080,6 +1107,7 @@ const GAME_DATA = {
       name: "Capacity / WIP Bottleneck",
       prompt: "某條產線 WIP 暴增，瓶頸卡在 sewing、finishing 或 packing；業務仍在追出貨，現場需要取捨。",
       goal: "用 shared timeline 找瓶頸、重排產能、決定是否拆單或改交期。",
+      jobNeeds: ["ie-engineer", "overseas-engineering-trainee", "bulk-sales", "engineering-project-specialist"],
       pressure: { trust: 35, clarity: 33, momentum: 28, friction: 52 },
       weights: { speed: 1.25, data: 1.2, risk: 1.2, clarity: 1.1, context: 1, warmth: .8 }
     },
@@ -1088,6 +1116,7 @@ const GAME_DATA = {
       name: "Digital Sample Adoption",
       prompt: "品牌想縮短 sample loop，但設計、業務、3D、產區對 digital sample 的信任程度不同，必須定義哪些款能用數位樣核准。",
       goal: "建立 digital sample 適用條件、驗收標準、例外處理和客戶教育路徑。",
+      jobNeeds: ["technical-designer", "apparel-dev-sales", "engineering-project-specialist"],
       pressure: { trust: 40, clarity: 32, momentum: 38, friction: 42 },
       weights: { context: 1.25, clarity: 1.2, data: 1.15, risk: 1.05, speed: 1, warmth: 1 }
     },
@@ -1096,6 +1125,7 @@ const GAME_DATA = {
       name: "Shipment Booking Crunch",
       prompt: "Final inspection、packing、booking 和文件節點互相擠壓，船期或空運成本風險升高。",
       goal: "把 inspection pass、packing readiness、booking cut-off 和客戶承諾放進同一張決策表。",
+      jobNeeds: ["bulk-sales", "apparel-quality", "overseas-engineering-trainee", "japanese-sales-indonesia"],
       pressure: { trust: 37, clarity: 32, momentum: 36, friction: 49 },
       weights: { speed: 1.3, risk: 1.2, data: 1.15, clarity: 1.1, context: .9, warmth: .75 }
     },
@@ -1104,6 +1134,7 @@ const GAME_DATA = {
       name: "Costing / Margin Squeeze",
       prompt: "客戶 target cost 壓低，但 fabric、labor、freight 或 MOQ 條件不配合；團隊要在報價、設計調整與供應替代間決策。",
       goal: "拆出 cost driver、替代方案、客戶可接受 trade-off 與 margin guardrail。",
+      jobNeeds: ["apparel-dev-sales", "bulk-sales", "material-purchaser-main", "overseas-accounting"],
       pressure: { trust: 39, clarity: 34, momentum: 34, friction: 44 },
       weights: { data: 1.3, clarity: 1.2, risk: 1.2, context: 1, speed: .9, warmth: .8 }
     },
@@ -1112,6 +1143,7 @@ const GAME_DATA = {
       name: "Traceability Request",
       prompt: "品牌要求供應鏈透明度、材料來源或永續文件，但資料散在採購、工廠、品管和客戶文件裡。",
       goal: "定義資料責任、文件證據鏈、供應商回覆 SLA 與客戶揭露格式。",
+      jobNeeds: ["material-quality", "material-purchaser-main", "apparel-quality", "overseas-hr-admin-lead"],
       pressure: { trust: 38, clarity: 29, momentum: 31, friction: 46 },
       weights: { data: 1.4, risk: 1.2, context: 1.15, clarity: 1.15, speed: .8, warmth: .85 }
     },
@@ -1120,6 +1152,7 @@ const GAME_DATA = {
       name: "PLM / AI Visibility Pilot",
       prompt: "公司想用 PLM、portal 或 AI dashboard 改善 lead time visibility，但如果只做工具，不改資料 owner 和例外流程，pilot 會空轉。",
       goal: "定義 pilot scope、資料 owner、例外訊號、成功指標與上線後維運責任。",
+      jobNeeds: ["engineering-project-specialist", "hrd-specialist", "technical-designer", "overseas-accounting"],
       pressure: { trust: 42, clarity: 31, momentum: 40, friction: 38 },
       weights: { clarity: 1.25, data: 1.25, context: 1.2, speed: 1, risk: 1, warmth: .9 }
     }
@@ -1397,5 +1430,4 @@ const GAME_DATA = {
     }
   }
 };
-
 

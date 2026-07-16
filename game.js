@@ -230,6 +230,55 @@ function missionRequires(mission) {
   return MISSION_REQUIREMENTS[mission.id] || ["newbiz", "tech-rd", "sales-marketing"];
 }
 
+function jobProfileById(id) {
+  return (GAME_DATA.jobProfiles || []).find((job) => job.id === id);
+}
+
+function missionJobNeeds(mission) {
+  return (mission?.jobNeeds || []).map(jobProfileById).filter(Boolean);
+}
+
+function memberJobFit(member, mission) {
+  const jobs = missionJobNeeds(mission);
+  if (!jobs.length || !member) return { score: 50, jobs: [], label: "JD 未設定" };
+  const unit = unitFor(member);
+  const text = `${member.name} ${member.localName || ""} ${member.role || ""} ${member.department || ""}`.toLowerCase();
+  const vectors = vectorsFor(member);
+  const scored = jobs.map((job) => {
+    let score = job.unit === unit ? 32 : -12;
+    const belongs = (job.belongsTo || "").split("/").map((part) => part.trim()).filter(Boolean);
+    score += belongs.some((part) => text.includes(part.toLowerCase())) ? 18 : 0;
+    const keywords = [...(job.focus || []), ...(job.traits || []), job.title, job.group].filter(Boolean);
+    score += keywords.reduce((sum, keyword) => sum + (text.includes(String(keyword).toLowerCase()) ? 7 : 0), 0);
+    score += competencyVectorFit(job, vectors);
+    return { job, score: clamp(score) };
+  }).sort((left, right) => right.score - left.score);
+  const best = scored[0];
+  return {
+    score: best.score,
+    jobs: scored,
+    label: best.score >= 76 ? `JD FIT: ${best.job.title}` : best.score >= 58 ? `JD PARTIAL: ${best.job.title}` : `JD GAP: ${best.job.title}`
+  };
+}
+
+function competencyVectorFit(job, vectors) {
+  const competencies = Object.keys(job.competencies || {}).join(" ");
+  let score = 0;
+  if (competencies.includes("溝通協調")) score += (average([vectors.context, vectors.warmth]) - 62) / 4;
+  if (competencies.includes("問題解決")) score += (average([vectors.clarity, vectors.risk, vectors.data]) - 62) / 4;
+  if (competencies.includes("目標導向")) score += (average([vectors.speed, vectors.clarity]) - 62) / 5;
+  if (competencies.includes("團隊合作")) score += (average([vectors.warmth, vectors.context]) - 60) / 5;
+  if (competencies.includes("創新能力")) score += (average([vectors.speed, vectors.data]) - 60) / 5;
+  if (competencies.includes("培育部屬")) score += (average([vectors.context, vectors.clarity]) - 60) / 5;
+  return score;
+}
+
+function renderMissionJobNeeds(mission) {
+  const jobs = missionJobNeeds(mission);
+  if (!jobs.length) return "";
+  return `<div class="job-need-strip">${jobs.map((job) => `<i>${job.title}<b>${job.competencies ? Object.keys(job.competencies).join(" / ") : ""}</b></i>`).join("")}</div>`;
+}
+
 function missingUnits() {
   const covered = new Set(state.meeting.coveredUnits);
   return missionRequires(state.meeting.scenario).filter((unit) => !covered.has(unit));
@@ -421,14 +470,16 @@ function analyzePair() {
   const pairScores = [scorePair(a, b, scenario, bestStrategyFor(a, b, scenario)), scorePair(b, c, scenario, bestStrategyFor(b, c, scenario)), scorePair(a, c, scenario, bestStrategyFor(a, c, scenario))];
   const coverage = clamp((covered.size / required.length) * 100);
   const roles = trio.map(teamRole);
+  const jdFits = trio.map((member) => memberJobFit(member, scenario));
+  const jdCoverage = clamp(average(jdFits.map((fit) => fit.score)));
   const uniqueRoles = new Set(roles.map((role) => role.id));
   const roleBalance = clamp(uniqueRoles.size / 3 * 78 + (hasRole(roles, "sponsor") ? 10 : 0) + (hasRole(roles, "operator") ? 8 : 0) + (hasRole(roles, "translator") ? 6 : 0));
   const decisionRights = clamp((hasRole(roles, "sponsor") ? 38 : 0) + (hasRole(roles, "operator") ? 24 : 0) + (hasRole(roles, "domain") ? 22 : 0) + coverage * .16 - duplicatePenalty(units));
   const boundaryLoad = clamp(100 - (new Set(units).size - 1) * 14 - (required.length - covered.size) * 18 - duplicatePenalty(units) + (hasRole(roles, "translator") ? 14 : 0));
   const pairFriction = average(pairScores.map((score) => score.stress));
-  const lensScore = lensCheck(lens.id, { trio, roles, units, scenario, coverage, roleBalance, decisionRights, boundaryLoad, pairFriction });
+  const lensScore = lensCheck(lens.id, { trio, roles, units, scenario, coverage, roleBalance, decisionRights, boundaryLoad, pairFriction, jdCoverage });
   const resource = teamResources({ trio, roles, units, scenario, coverage, roleBalance, decisionRights, boundaryLoad, pairFriction });
-  const chain = clamp(coverage * .24 + roleBalance * .24 + decisionRights * .22 + boundaryLoad * .15 + lensScore.score * .15);
+  const chain = clamp(coverage * .2 + roleBalance * .2 + decisionRights * .2 + boundaryLoad * .12 + lensScore.score * .13 + jdCoverage * .15);
   const tempo = clamp(average(trio.map((member) => vectorsFor(member).speed)) + (hasRole(roles, "operator") ? 10 : 0) - (required.length - covered.size) * 7);
   const friction = clamp(pairFriction + (100 - boundaryLoad) * .25 + (required.length - covered.size) * 8 - (hasRole(roles, "translator") ? 8 : 0));
   const missing = required.filter((unit) => !covered.has(unit));
@@ -438,7 +489,8 @@ function analyzePair() {
     renderScoreCard("Draft Score", chain, "這組隊形進任務前的可打程度"),
     renderScoreCard("Role Spread", roleBalance, "Sponsor / Domain / Translator / Operator 的互補程度"),
     renderScoreCard("Decision Token", decisionRights, "是否有人能拍板，不只是討論"),
-    renderScoreCard("Handoff Tax", 100 - boundaryLoad, "跨單位交接成本，分數越低越好")
+    renderScoreCard("Handoff Tax", 100 - boundaryLoad, "跨單位交接成本，分數越低越好"),
+    renderScoreCard("JD Fit", jdCoverage, "這隊是否命中任務需要的職務能力")
   ].join("");
   const laneText = trio.map((member, index) => `${member.name}<b>${["開局", "轉接", "收束"][index]} · ${unitName(unitFor(member))} · ${teamRole(member).name}</b>`).join("<span>→</span>");
   const event = labEvent({ chain, missing, friction, lensScore, roles, units });
@@ -456,6 +508,8 @@ function analyzePair() {
     </div>
     <p><strong>Draft Mode：</strong>${lens.name}。${lens.focus}</p>
     <p><strong>任務覆蓋：</strong>${[...covered].map(unitName).join(" / ") || "沒有命中"}；${missing.length ? `缺 ${missing.map(unitName).join(" / ")}` : "關鍵單位已覆蓋"}。</p>
+    <p><strong>JD 需求：</strong>${missionJobNeeds(scenario).map((job) => job.title).join(" / ") || "未設定"}。</p>
+    <p><strong>隊形職務命中：</strong>${jdFits.map((fit, index) => `${trio[index].name}: ${fit.label}`).join("；")}</p>
     <p><strong>檢定事件：</strong>${lensScore.text}</p>
     <p><strong>下一張牌：</strong>${nextDraftMove({ missing, roles, units, lens })}</p>
   `;
@@ -1152,6 +1206,7 @@ function renderMeeting() {
     <b>${meeting.played.length} cards played</b>
     <b>${missing.length ? `missing: ${missing.map(unitName).join(" / ")}` : "coverage: complete"}</b>
     <div class="lane-strip">${requiredUnits.map((unit) => `<i class="${covered.has(unit) ? "covered" : ""}" style="--unit:${UNIT_COLORS[unit] || "#fff"}">${unitName(unit)}</i>`).join("")}</div>
+    ${renderMissionJobNeeds(meeting.scenario)}
   `;
   els.turnCount.textContent = `Turn ${Math.min(meeting.turn, 5)} / 5`;
   ["trust", "clarity", "momentum", "friction"].forEach((key) => {
@@ -1225,9 +1280,11 @@ function cardFit(member, action) {
   const newLaneBonus = required.includes(unit) && !meeting.coveredUnits.includes(unit) ? 11 : 0;
   const repeatPenalty = meeting.lastUnit && meeting.lastUnit === unit ? -16 : 0;
   const profileBonus = actionProfileBonus(action, profile) / 3;
+  const jdFit = memberJobFit(member, meeting.scenario);
+  const jdBonus = (jdFit.score - 50) / 4;
   const risk = triggeredRisk(member, action, unit);
   const riskPenalty = risk ? risk.penalty : 0;
-  const score = vectorScore + actionNeed + requiredBonus + newLaneBonus + repeatPenalty + profileBonus - riskPenalty;
+  const score = vectorScore + actionNeed + requiredBonus + newLaneBonus + repeatPenalty + profileBonus + jdBonus - riskPenalty;
 
   if (risk?.fatal) return { score, label: "BLOCKER", className: "blocker", risk };
   if (score >= 38) return { score, label: "CORE FIT", className: "core-fit", risk };
@@ -1289,6 +1346,9 @@ function cardPips(member, action, fit) {
   const unit = unitFor(member);
   const pips = [unitName(unit), `${axisName(action.vector)} ${vector}`];
   if (profile?.aiFit >= 4) pips.push("AI+");
+  const jdFit = memberJobFit(member, state.meeting.scenario);
+  if (jdFit.score >= 76) pips.push("JD FIT");
+  if (jdFit.score < 45) pips.push("JD GAP");
   if (fit?.score < 0) pips.push("MISFIT");
   if (state.meeting.lastUnit && state.meeting.lastUnit !== unit) pips.push("COMBO");
   return pips.slice(0, 3);
@@ -1324,6 +1384,8 @@ function playMeetingTurn(memberId) {
   const boost = action.boosts;
   const vectorFit = (vectorsFor(person)[action.vector] - 50) / 6;
   const orgFit = actionProfileBonus(action, GAME_DATA.distillations?.[person.id]) / 4;
+  const jdFit = memberJobFit(person, meeting.scenario);
+  const jdBoost = (jdFit.score - 50) / 10;
   const crossUnit = meeting.lastUnit && meeting.lastUnit !== unit;
   const sameLane = meeting.lastUnit && meeting.lastUnit === unit;
   const laneBonus = missionRequires(meeting.scenario).includes(unit) ? 3 : -8;
@@ -1332,15 +1394,15 @@ function playMeetingTurn(memberId) {
   const offLane = fit.className === "off-lane" || fit.className === "blocker";
 
   meeting.trust = clamp(meeting.trust + (boost.trust || 0) + (scores.communication - 64) / 11 + orgFit + (crossUnit ? 3 : 0) + (offLane ? -7 : 0));
-  meeting.clarity = clamp(meeting.clarity + (boost.clarity || 0) + vectorFit + (scores.work - 66) / 13 + laneBonus - riskPenalty / 5);
-  meeting.momentum = clamp(meeting.momentum + (boost.momentum || 0) + (scores.decision - 64) / 12 + (sameLane ? 2 : 0) + (newRequiredLane ? 5 : 0) - (offLane ? 5 : 0));
+  meeting.clarity = clamp(meeting.clarity + (boost.clarity || 0) + vectorFit + (scores.work - 66) / 13 + laneBonus + jdBoost - riskPenalty / 5);
+  meeting.momentum = clamp(meeting.momentum + (boost.momentum || 0) + (scores.decision - 64) / 12 + (sameLane ? 2 : 0) + (newRequiredLane ? 5 : 0) + jdBoost / 2 - (offLane ? 5 : 0));
   meeting.friction = clamp(meeting.friction + (boost.friction || 0) + (scores.stress - 50) / 8 - orgFit + (crossUnit ? -3 : 0) + (sameLane ? 8 : 0) + riskPenalty / 2 + (offLane ? 8 : 0));
 
   const profile = GAME_DATA.distillations?.[person.id];
   const solution = profile ? profile.leverage : `${unitName(unit)} 進場，補上一個正式組織視角。`;
   const comboText = crossUnit ? `跨單位 combo：${unitName(meeting.lastUnit)} → ${unitName(unit)}` : sameLane ? "同單位連打：速度上升，但 tunnel vision 增加" : "開場佈局";
   const riskText = fit.risk ? `風險觸發「${fit.risk.title}」：${fit.risk.text}` : "沒有明顯錯配。";
-  meeting.log.unshift(`T${meeting.turn}: ${person.name} / ${unitName(unit)} 打出「${action.name}」〔${fit.label}〕。${comboText}。${riskText}`);
+  meeting.log.unshift(`T${meeting.turn}: ${person.name} / ${unitName(unit)} 打出「${action.name}」〔${fit.label}〕。${comboText}。${jdFit.label}。${riskText}`);
   meeting.log.unshift(`組織效果：${solution}`);
   meeting.played.push(person.id);
   if (!meeting.coveredUnits.includes(unit) && missionRequires(meeting.scenario).includes(unit)) {
@@ -1430,5 +1492,4 @@ function init() {
 }
 
 init();
-
 

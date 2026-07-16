@@ -599,6 +599,33 @@ button:disabled {
   margin-bottom: 0;
 }
 
+.job-need-strip {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.job-need-strip i {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 9px;
+  border: 1px solid rgba(255, 207, 90, .44);
+  border-radius: 999px;
+  color: #fff4d3;
+  background: rgba(255, 207, 90, .08);
+  font-size: .72rem;
+  font-style: normal;
+}
+
+.job-need-strip b {
+  padding: 0;
+  color: #ffcf5a;
+  background: transparent;
+  font-size: .64rem;
+  font-weight: 800;
+}
 .meeting-stats {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -757,7 +784,8 @@ button:disabled {
   .lab-layout,
   .meeting-layout,
   .score-grid,
-  .meeting-stats {
+
+.meeting-stats {
     grid-template-columns: 1fr;
   }
 
@@ -2101,3 +2129,4 @@ body.org-mode .org-focus-detail {
     width: auto;
   }
 }
+
