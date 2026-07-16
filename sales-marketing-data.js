@@ -281,9 +281,96 @@
     ])
   };
 
+
+  const salesLeadIndex = [
+    { office: "業務一處", directoryId: "sales-1-a", department: "業務一處 / A部", localName: "廖映瑜", name: "Ivy Liao", title: "A部（BR/UA/ATH/GS/GO/IPSS）部 lead" },
+    { office: "業務一處", directoryId: "sales-1-a-prod", department: "業務一處 / A部 / Production", localName: "林美珠", name: "Doreen Lin", title: "A部 Production lead" },
+    { office: "業務一處", directoryId: "sales-1-b", department: "業務一處 / B部", localName: "許惠雯", name: "Erica Hsu", title: "B部（GAP/GO Knits）部 lead" },
+    { office: "業務一處", directoryId: "sales-1-b-dev", department: "業務一處 / B部 / Development", localName: "陳奕心", name: "Demi Chen", title: "B部 Development（一處新客戶開發/GS LOGO male）lead" },
+    { office: "業務一處", directoryId: "sales-1-b-dev", department: "業務一處 / B部 / Development", localName: "張雅雯", name: "Carol Chang", title: "B部 Development（GO LOGO/GS LOGO female/KIDS FR/ROSS）lead" },
+    { office: "業務一處", directoryId: "sales-1-b-prod", department: "業務一處 / B部 / Production", localName: "許惠雯", name: "Erica Hsu", title: "B部 Production（GS LOGO adult）lead（兼）" },
+    { office: "業務一處", directoryId: "sales-1-b-prod", department: "業務一處 / B部 / Production", localName: "趙芳儀", name: "Daphne Chao", title: "B部 Production（GO LOGO/KIDS FR/ROSS）lead" },
+    { office: "業務一處", directoryId: "sales-1-purchasing", department: "業務一處 / 採購課", localName: "張兆渝", name: "Ellen Chang", title: "採購課部 lead" },
+    { office: "業務一處", directoryId: "sales-1-project", department: "業務一處 / 專案整合", localName: "廖映瑜", name: "Ivy Liao", title: "專案整合（兼）" },
+
+    { office: "業務二處", directoryId: "sales-2-a", department: "業務二處 / A部", localName: "劉雅如", name: "Tania Liu", title: "A部（DKS-Calia/VRST + Sanmar）統籌" },
+    { office: "業務二處", directoryId: "sales-2-a-dks-dev", department: "業務二處 / A部 / DKS-Calia/VRST Development", localName: "王彥慈", name: "Jessica Wang", title: "A部 DKS-Calia/VRST + Sanmar Development lead" },
+    { office: "業務二處", directoryId: "sales-2-a-dks-prod-buy", department: "業務二處 / A部 / DKS-Calia/VRST Production/採購", localName: "盧昭如", name: "Angel Lu", title: "A部 DKS-Calia/VRST Production/採購 lead" },
+    { office: "業務二處", directoryId: "sales-2-b", department: "業務二處 / B部", localName: "許貿昇", name: "Vince Hsu", title: "B部（DKS-DSG/PG/AP/Golf）統籌" },
+    { office: "業務二處", directoryId: "sales-2-b-dev", department: "業務二處 / B部 / Development", localName: "王慧琦", name: "Michelle Wang", title: "B部 DSG/PG/AP Development lead" },
+    { office: "業務二處", directoryId: "sales-2-b-prod-buy", department: "業務二處 / B部 / Production/採購", localName: "吳卓芝", name: "Julia Wu", title: "B部 DSG/PG/AP Production lead" },
+    { office: "業務二處", directoryId: "sales-2-b-dev", department: "業務二處 / B部 / Development", localName: "蕭于傑", name: "Jeffrey Hsiao", title: "B部 DSG/PG/AP Fabric lead" },
+    { office: "業務二處", directoryId: "sales-2-b-dev", department: "業務二處 / B部 / Development", localName: "李沛瑄", name: "Lorrita Li", title: "B部 Golf Development lead" },
+    { office: "業務二處", directoryId: "sales-2-b-prod-buy", department: "業務二處 / B部 / Production/採購", localName: "林怡嫺", name: "Lisa Lin", title: "B部 Golf Production lead" },
+
+    { office: "業務三處", directoryId: "sales-3-a", department: "業務三處 / A部", localName: "李錦森", name: "Eric Lee", title: "A部（NET + TOMS/Joe Fresh）資深經理" },
+    { office: "業務三處", directoryId: "sales-3-b", department: "業務三處 / B部", localName: "袁怡茹", name: "Jasmine Yuan", title: "B部 HLF/ACS-EU/A&F 統籌" },
+    { office: "業務三處", directoryId: "sales-3-b-hlf", department: "業務三處 / B部 / HLF-ACS-EU-A&F", localName: "莊雅雯", name: "Brenda Chuang", title: "B部 HLF/ACS-EU/A&F Production lead" },
+    { office: "業務三處", directoryId: "sales-3-b-wmt", department: "業務三處 / B部 / WMT-Zara-Quince-Gildan-新客戶", localName: "吳承隽", name: "Scott Wu", title: "B部 WMT/Zara/Quince/Gildan/新客戶 Development lead" },
+    { office: "業務三處", directoryId: "sales-3-b-wmt", department: "業務三處 / B部 / WMT-Zara-Quince-Gildan-新客戶", localName: "吳巧思", name: "Joyce Wu", title: "B部 WMT等 Production lead" },
+    { office: "業務三處", directoryId: "sales-3-c", department: "業務三處 / C部", localName: "游蓓玟", name: "Masaki Yu", title: "C部（KOH）資深經理" },
+    { office: "業務三處", directoryId: "sales-3-purchasing-acc", department: "業務三處 / 採購課 / 副料", localName: "林惠儀", name: "Lois Lin", title: "採購課 副料 lead" },
+    { office: "業務三處", directoryId: "sales-3-purchasing-fab", department: "業務三處 / 採購課 / 主料", localName: "陳玉書", name: "Susan Chen", title: "採購課 主料 lead" },
+
+    { office: "業務五處", directoryId: "sales-5-a", department: "業務五處 / A部", localName: "陳婉華", name: "Flora Chen", title: "A部（TGT Performance）資深經理" },
+    { office: "業務五處", directoryId: "sales-5-a-prod", department: "業務五處 / A部 / Production", localName: "王湘洳", name: "Chloe Wang", title: "A部 Production lead（C部本職兼 A）" },
+    { office: "業務五處", directoryId: "sales-5-a-prod", department: "業務五處 / A部 / Production", localName: "王聖雄", name: "Alan Wang", title: "A部 Production lead" },
+    { office: "業務五處", directoryId: "sales-5-b", department: "業務五處 / B部", localName: "林雪芬", name: "Stephanie Lin", title: "B+C部 資深經理" },
+    { office: "業務五處", directoryId: "sales-5-b-prod", department: "業務五處 / B部 / Production", localName: "蔡瑜惠", name: "Kelly Tsai", title: "B部（Underwear）Production lead（兼 C部 GAP_TSD）" },
+    { office: "業務五處", directoryId: "sales-5-b-dev", department: "業務五處 / B部 / Development", localName: "林祐竹", name: "June Lin", title: "B/C 部 Development lead" },
+    { office: "業務五處", directoryId: "sales-5-c-gap-dev", department: "業務五處 / C部 / GAP_TSD Development", localName: "賴若琦", name: "Cerita Lai", title: "C部 GAP_TSD Development lead" },
+
+    { office: "業務六處", directoryId: "sales-6-hq", department: "業務六處 / 處本部", localName: "陳麗玲", name: "Joyce Chen", title: "處本部資深經理（兼 C部）" },
+    { office: "業務六處", directoryId: "sales-6-a", department: "業務六處 / A部", localName: "賴姵妘", name: "Stephy Lai", title: "A部 資深經理", change: "2026/05 變更：先前由陳麗玲統籌" },
+    { office: "業務六處", directoryId: "sales-6-a-prod", department: "業務六處 / A部 / Production", localName: "黃世旻", name: "Rene Huang", title: "A部 Production lead" },
+    { office: "業務六處", directoryId: "sales-6-b-dev", department: "業務六處 / B部 / Development", localName: "陳昀昀", name: "Sofia Chen", title: "B部 Development（23/33）lead" },
+    { office: "業務六處", directoryId: "sales-6-b-dev", department: "業務六處 / B部 / Development", localName: "邱郁婷", name: "Olga Ciou", title: "B部 Development（24/27/32/34/37/KIDS）lead" },
+    { office: "業務六處", directoryId: "sales-6-b-prod", department: "業務六處 / B部 / Production", localName: "鄭佩文", name: "Peggy Cheng", title: "B部 Production lead" },
+    { office: "業務六處", directoryId: "sales-6-b-prod", department: "業務六處 / B部 / Production", localName: "朱思盈", name: "Francis Chu", title: "B部 Production（24/34/37 + 27/32/KIDS）sub-lead" },
+    { office: "業務六處", directoryId: "sales-6-expat", department: "業務六處 / C部 / 派駐業務組", localName: "詹培志", name: "Robert Chan", title: "C部 派駐業務組主管", change: "2026/05 變更：從 top-level 降至 C 部底下" },
+    { office: "業務六處", directoryId: "sales-6-procurement-fabric", department: "業務六處 / C部 / 採購組 / Fabric", localName: "陳西圳", name: "Bill Chen", title: "C部 採購組 Fabric lead" },
+    { office: "業務六處", directoryId: "sales-6-procurement-accessories", department: "業務六處 / C部 / 採購組 / Accessories", localName: "楊馥如", name: "Queenie Yang", title: "C部 採購組 Accessories lead" },
+
+    { office: "業務七處", directoryId: "sales-7-a", department: "業務七處 / A部", localName: "陳雯婷", name: "Wendy Chen", title: "A部（IPS）head", change: "2026/05 變更：先前是 B 部 Dev" },
+    { office: "業務七處", directoryId: "sales-7-a-dev", department: "業務七處 / A部 / Development", localName: "林怡均", name: "Hazel Lin", title: "A部 Powersoft/Cloudcomfy Development lead" },
+    { office: "業務七處", directoryId: "sales-7-a-dev", department: "業務七處 / A部 / Development", localName: "吳欣穎", name: "Cindy Wu", title: "A部 Studiosmooth/Sleektech Development lead" },
+    { office: "業務七處", directoryId: "sales-7-a-prod", department: "業務七處 / A部 / Production", localName: "石瑞珺", name: "Sherry Shih", title: "A部 Production（Powersoft/Cloudcomfy/MAC/BAC）lead" },
+    { office: "業務七處", directoryId: "sales-7-a-prod", department: "業務七處 / A部 / Production", localName: "王嘉鈺", name: "Alisa Wang", title: "A部 Production（Studiosmooth/Sleektech/GAC/VMI）lead" },
+    { office: "業務七處", directoryId: "sales-7-b", department: "業務七處 / B部", localName: "林莉詩", name: "Melody Lin", title: "B部（SWIM/FLEECE/FR + Beyond Yoga）head", change: "2026/05 變更" },
+    { office: "業務七處", directoryId: "sales-7-b-swim-dev", department: "業務七處 / B部 / SWIM-FLEECE-FR Development", localName: "楊蕾", name: "Carolina Yang", title: "B部 SWIM/FLEECE/FR Development lead" },
+    { office: "業務七處", directoryId: "sales-7-b-swim-prod", department: "業務七處 / B部 / SWIM-FLEECE-FR Production", localName: "謝宜君", name: "Eva Hsieh", title: "B部 SWIM/FLEECE/FR Production lead；VD/PQA for ON 對口" },
+    { office: "業務七處", directoryId: "sales-7-c", department: "業務七處 / C課", localName: "高逸鈴", name: "Ling Kao", title: "C課（TSD/WKN/KNIT TOP + LEVIS）head", change: "2026/05 變更：先前是林佳昀兼" },
+    { office: "業務七處", directoryId: "sales-7-c-prod", department: "業務七處 / C課 / Production", localName: "陳冠儒", name: "Dustin Chen", title: "C課 Production lead" },
+    { office: "業務七處", directoryId: "sales-7-purchasing", department: "業務七處 / 採購部", localName: "楊之槿", name: "Tina Yang", title: "採購部 head", change: "2026/05 變更：先前廖虹雅，廖實為 5/27 報到新人" },
+    { office: "業務七處", directoryId: "sales-7-special", department: "業務七處 / 特殊角色", localName: "翟君宜", name: "Emily Chak", title: "VMI/RnR/CA 專案" }
+  ];
+
+  GAME_DATA.salesLeadIndex = salesLeadIndex.map((lead) => ({ ...lead }));
+  salesLeadIndex.forEach((lead) => {
+    const personId = ensurePerson(lead.localName, lead.name, lead.department);
+    const person = [...GAME_DATA.members, ...(GAME_DATA.orgPeople || [])].find((member) => member.id === personId);
+    if (person) {
+      person.name = lead.name || person.name;
+      person.department = lead.department;
+      person.leadAssignments = person.leadAssignments || [];
+      if (!person.leadAssignments.some((item) => item.title === lead.title && item.department === lead.department)) {
+        person.leadAssignments.push({ office: lead.office, department: lead.department, title: lead.title, change: lead.change });
+      }
+      person.role = person.leadAssignments.map((item) => item.title).join("；");
+      if (lead.change) person.leadChange = lead.change;
+    }
+    const directory = GAME_DATA.orgDirectory.find((item) => item.id === lead.directoryId);
+    if (directory) {
+      directory.leads = directory.leads || [];
+      if (!directory.leads.some((item) => item.localName === lead.localName && item.title === lead.title)) {
+        directory.leads.push({ localName: lead.localName, name: lead.name, title: lead.title, change: lead.change });
+      }
+    }
+  });
   Object.entries(directoryMembers).forEach(([id, members]) => {
     const directory = GAME_DATA.orgDirectory.find((item) => item.id === id);
     if (!directory) return;
     directory.members = [...new Set(members)];
   });
 })();
+

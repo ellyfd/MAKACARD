@@ -998,6 +998,12 @@ function orgDirectoryPath(directory) {
   return [unitName(directory.unit), ...parents, directory.name];
 }
 
+function renderDirectoryLeads(directory) {
+  if (!directory?.leads?.length) return "";
+  const leads = directory.leads.map((lead) => `${lead.name}${lead.localName ? ` / ${lead.localName}` : ""}：${lead.title}${lead.change ? `（${lead.change}）` : ""}`).join("；");
+  return `<p>Lead 對口：${leads}</p>`;
+}
+
 function orgDirectoryDetail(directory, unit, people) {
   const children = orgDirectoryChildren(directory.id);
   const ownMembers = orgDirectoryMembers(directory, people);
@@ -1010,6 +1016,7 @@ function orgDirectoryDetail(directory, unit, people) {
     ${children.length ? `<span>下層單位：${children.length}</span>` : ""}
     ${ownCount ? `<span>直屬成員：${ownCount}</span>` : ""}
     ${children.length && totalCount ? `<span>含下層成員：${totalCount}</span>` : ""}
+    ${renderDirectoryLeads(directory)}
     ${ownMembers.length ? `<p>直屬成員：${ownMembers.map((member) => `${member.name}${member.localName ? ` / ${member.localName}` : ""}`).join("、")}</p>` : ""}
   `;
 }
@@ -1168,6 +1175,8 @@ function renderPersonDetail(member) {
     birthdayLabel(member),
     manager ? `直屬主管：${manager.name}` : "",
     reports.length ? `直屬成員：${reports.length}` : "",
+    member.leadAssignments?.length ? `Lead 對口：${member.leadAssignments.map((item) => item.title).join("；")}` : "",
+    member.leadChange ? `異動：${member.leadChange}` : "",
     member.reportingSource ? `來源：${member.reportingSource}` : ""
   ].filter((item) => !isMissingValue(item));
   return `<strong>${member.name}</strong>${details.map((item) => `<span>${item}</span>`).join("")}`;
