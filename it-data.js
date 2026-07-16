@@ -156,6 +156,13 @@
     ])
   };
 
+  const judy = peopleByLocalName.get("李宛真");
+  if (judy) {
+    judy.role = "Techpack 解析實際執行者";
+    judy.department = "資訊處 / 數位轉型部 / 工程師群";
+    judy.style = "全公司 techpack 解析目前唯一實際執行者，範圍為 BOM 與訂單基本資料。";
+  }
+
   Object.entries(directoryMembers).forEach(([id, members]) => {
     const directory = GAME_DATA.orgDirectory.find((item) => item.id === id);
     if (!directory) return;

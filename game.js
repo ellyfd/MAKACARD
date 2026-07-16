@@ -925,6 +925,10 @@ function departmentSegmentsAfter(directory, department = "") {
   return parts.slice(index + 1).filter((part) => !isMissingValue(part));
 }
 
+function orgVerificationLine(unit) {
+  return unit?.verification && !isMissingValue(unit.verification) ? `<span>驗證狀態：${unit.verification}</span>` : "";
+}
+
 function isMissingValue(value) {
   return !value || value === "待補" || value === "資料待補" || value === "生日待補" || value === "?";
 }
@@ -983,7 +987,7 @@ function orgViewForFocus(hierarchy, focus) {
       nodes: source.departments.map((dept) => orgDirectoryNode(dept, hierarchy.people)),
       treeRoot: { type: "unit", unit: unit.id, title: unit.name, subtitle: unit.tagline, count: source.people.length ? `${source.people.length} 成員` : "", departments: source.departments.length },
       summary: `${source.departments.length} 個正式下層單位`,
-      detail: `<strong>${unit?.name || ""}</strong><span>下層單位：${source.departments.length}</span>${source.people.length ? `<span>已掛成員：${source.people.length}</span>` : ""}<p>${unit?.tagline || ""}</p>`
+      detail: `<strong>${unit?.name || ""}</strong><span>下層單位：${source.departments.length}</span>${source.people.length ? `<span>已掛成員：${source.people.length}</span>` : ""}${orgVerificationLine(unit)}<p>${unit?.tagline || ""}</p>`
     };
   }
   if (focus.type === "dept") {
@@ -1426,3 +1430,5 @@ function init() {
 }
 
 init();
+
+

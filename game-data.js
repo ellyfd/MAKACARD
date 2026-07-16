@@ -6,6 +6,7 @@ const GAME_DATA = {
       tagline: "董事長、執行長、最高層決策與跨群取捨",
       capability: ["決策授權", "資源取捨", "跨群優先級"],
       risk: "離現場太遠時，會把複雜問題壓成口號。",
+      verification: "2026/05 PDF partial: 公司頂層已對齊；顧問室本部仍為較早期累積版本，尚未經 2026/05 組織圖驗證。",
       counters: ["authority", "tradeoff", "scope"],
       links: ["sales-marketing", "tech-rd", "newbiz", "general-mgmt"]
     },
@@ -15,6 +16,7 @@ const GAME_DATA = {
       tagline: "資深顧問、制度記憶與高階輔助判斷",
       capability: ["制度記憶", "高階諮詢", "風險提醒"],
       risk: "若沒有接到一線問題，容易停留在原則層。",
+      verification: "較早期累積版本，尚未經 2026/05 組織圖驗證。",
       counters: ["memory", "advice", "review"],
       links: ["ceo", "general-mgmt"]
     },
@@ -24,6 +26,7 @@ const GAME_DATA = {
       tagline: "公司級管理節奏、AI 種子計畫與跨群推動",
       capability: ["管理節奏", "變革推動", "跨群協調"],
       risk: "變革如果只停在倡議，會缺少落地隊形。",
+      verification: "較早期累積版本，尚未經 2026/05 組織圖驗證。",
       counters: ["change", "seed", "cadence"],
       links: ["ceo", "ops-mgmt", "tech-rd", "newbiz"]
     },
@@ -33,6 +36,7 @@ const GAME_DATA = {
       tagline: "業務一至七處、行銷發展處、品牌與客戶訊號",
       capability: ["客戶情境", "品牌需求", "商業化路徑"],
       risk: "客戶語言若沒有翻成產品規格，會在交接時失真。",
+      verification: "2026/05 PDF 對齊：業務一/二/三/五/六/七處、行銷發展處、Marketing Team。",
       counters: ["brand", "client", "market"],
       links: ["ceo", "newbiz", "tech-rd"]
     },
@@ -42,6 +46,7 @@ const GAME_DATA = {
       tagline: "資訊、財會、平台治理與營運支撐",
       capability: ["系統治理", "財務約束", "資料基礎"],
       risk: "若太晚進場，產品會先長出不可維護的流程。",
+      verification: "較早期累積版本，尚未經 2026/05 組織圖驗證：資訊處、財會管理處。",
       counters: ["system", "finance", "governance"],
       links: ["general-mgmt", "newbiz", "tech-rd"]
     },
@@ -51,6 +56,7 @@ const GAME_DATA = {
       tagline: "開發暨技術處、工務處、運籌處；3D研發中心隸屬開發暨技術處",
       capability: ["研發落地", "3D 標準", "品質閘門"],
       risk: "需求邊界不清時，會用高執行力做出錯方向；知識鎖倉會形成單點風險。",
+      verification: "2026/05 PDF 對齊：開發暨技術處、3D研發中心、工務處；運籌處仍為較早期累積版本，尚未經 2026/05 組織圖驗證。",
       counters: ["rd", "3d", "gate"],
       links: ["newbiz", "sales-marketing", "ops-mgmt"]
     },
@@ -60,6 +66,7 @@ const GAME_DATA = {
       tagline: "GLR/GLS、越南與跨產區製造現場",
       capability: ["產區落地", "製造限制", "跨地回饋"],
       risk: "若只用台北視角看現場，會誤判地理成本與執行限制。",
+      verification: "較早期累積版本，尚未經 2026/05 組織圖驗證：海外產區 10 個地區。",
       counters: ["factory", "region", "feedback"],
       links: ["tech-rd", "sales-marketing"]
     },
@@ -69,6 +76,7 @@ const GAME_DATA = {
       tagline: "數位產品發展中心、智慧紡織發展中心",
       capability: ["產品實驗", "GTM", "AI prototype"],
       risk: "沒有真實 demo 與回饋迴路時，聲量無法轉成採用。",
+      verification: "2026/05 PDF 對齊：數位產品發展中心、智慧紡織發展中心。",
       counters: ["product", "ai", "feedback"],
       links: ["ceo", "tech-rd", "sales-marketing", "ops-mgmt"]
     },
@@ -78,6 +86,7 @@ const GAME_DATA = {
       tagline: "轉投資角色與外部事業連結",
       capability: ["外部資源", "事業連動", "策略彈性"],
       risk: "若和主組織任務沒有清楚接口，容易只剩名義連線。",
+      verification: "較早期累積版本，尚未經 2026/05 組織圖驗證。",
       counters: ["venture", "external", "link"],
       links: ["ceo"]
     },
@@ -152,7 +161,12 @@ const GAME_DATA = {
     { id: "api-review", unit: "ops-mgmt", parent: "software-architecture-committee", name: "API審查小組", members: [] },
     { id: "data-governance", unit: "ops-mgmt", parent: "software-architecture-committee", name: "資料治理小組", members: [] },
     { id: "dev-tech", unit: "tech-rd", name: "開發暨技術處", members: ["celia-hsu"] },
-    { id: "rd-3d", unit: "tech-rd", parent: "dev-tech", name: "3D研發中心", members: ["elly", "karen", "adia", "yoko", "debbie", "chieh", "sixian", "rou", "jean", "yota", "jan", "huihui", "tinley", "rock"] },
+    { id: "rd-3d", unit: "tech-rd", parent: "dev-tech", name: "3D研發中心", members: ["elly", "karen"] },
+    { id: "rd-3d-garment", unit: "tech-rd", parent: "rd-3d", name: "數位服飾", members: [] },
+    { id: "rd-3d-garment-taipei", unit: "tech-rd", parent: "rd-3d-garment", name: "台北", members: ["adia", "yoko", "debbie", "chieh", "sixian", "jean", "rou"] },
+    { id: "rd-3d-garment-chiayi", unit: "tech-rd", parent: "rd-3d-garment", name: "嘉義", members: ["yota", "jan"] },
+    { id: "rd-3d-garment-pinghu", unit: "tech-rd", parent: "rd-3d-garment", name: "平湖", members: ["huihui"] },
+    { id: "rd-3d-fabric", unit: "tech-rd", parent: "rd-3d", name: "數位布料", members: ["tinley", "rock"] },
     { id: "chiayi-sample-center", unit: "tech-rd", parent: "dev-tech", name: "嘉義樣品中心", members: [] },
     { id: "costing-center", unit: "tech-rd", parent: "dev-tech", name: "估碼中心", members: [] },
     { id: "technical-design", unit: "tech-rd", parent: "dev-tech", name: "技術設計部", members: ["lillian-lin"] },
@@ -169,7 +183,9 @@ const GAME_DATA = {
     { id: "export-management", unit: "tech-rd", parent: "logistics-management", name: "出口管理課", members: [] },
     { id: "import-docs", unit: "tech-rd", parent: "logistics-management", name: "進口文件課", members: [] },
     { id: "production-sales-management", unit: "tech-rd", parent: "logistics-office", name: "產銷管理部", members: [] },
-    { id: "digital-product", unit: "newbiz", name: "數位產品發展中心", members: ["alex", "elly", "alan", "andy", "vanessa", "doris", "emily", "dianne"] },
+    { id: "digital-product", unit: "newbiz", name: "數位產品發展中心", members: ["alex"] },
+    { id: "digital-product-line-1", unit: "newbiz", parent: "digital-product", name: "Line 1 產品 / 3D 線", members: ["elly", "alan", "andy"] },
+    { id: "digital-product-line-2", unit: "newbiz", parent: "digital-product", name: "Line 2 行銷 / 專案線", members: ["vanessa", "doris", "emily", "dianne"] },
     { id: "smart-textile", unit: "newbiz", name: "智慧紡織發展中心", members: ["wayi-tsai"] },
     { id: "overseas-region", unit: "overseas", name: "海外產區", members: ["annie-wang", "leo-tsai"] },
     { id: "investment-companies", unit: "investment", name: "轉投資企業", members: ["puli-yu", "hongren-huang"] },
@@ -198,7 +214,7 @@ const GAME_DATA = {
       name: "Alan Liu",
       localName: "劉俊毅",
       role: "資深3D技師",
-      department: "數位產品發展中心",
+      department: "數位產品發展中心 / Line 1 產品 / 3D 線",
       orgUnit: "newbiz",
       birthday: "1992-01-31",
       numerology: 8,
@@ -233,7 +249,7 @@ const GAME_DATA = {
       name: "Andy Liu",
       localName: "柳宥良",
       role: "3D技師",
-      department: "數位產品發展中心",
+      department: "數位產品發展中心 / Line 1 產品 / 3D 線",
       orgUnit: "newbiz",
       birthday: "1996-11-01",
       numerology: 1,
@@ -283,7 +299,7 @@ const GAME_DATA = {
       name: "Dianne Chen",
       localName: "陳亭妤",
       role: "行銷專員",
-      department: "數位產品發展中心",
+      department: "數位產品發展中心 / Line 2 行銷 / 專案線",
       orgUnit: "newbiz",
       birthday: "1993-03-18",
       numerology: 7,
@@ -300,7 +316,7 @@ const GAME_DATA = {
       name: "Doris Lin",
       localName: "林雅庭",
       role: "專案專員",
-      department: "數位產品發展中心",
+      department: "數位產品發展中心 / Line 2 行銷 / 專案線",
       orgUnit: "newbiz",
       birthday: "1995-10-22",
       numerology: 11,
@@ -317,8 +333,8 @@ const GAME_DATA = {
       id: "elly",
       name: "Elly Cheng",
       localName: "程麗如",
-      role: "數位產品開發總監（兼3D研發中心）",
-      department: "數位產品發展中心",
+      role: "數位產品開發總監（Line 1；兼3D研發中心）",
+      department: "數位產品發展中心 / Line 1 產品 / 3D 線",
       orgUnit: "newbiz",
       birthday: "1983-04-27",
       numerology: 7,
@@ -336,7 +352,7 @@ const GAME_DATA = {
       name: "Emily Shen",
       localName: "申書璇",
       role: "行銷專員",
-      department: "數位產品發展中心",
+      department: "數位產品發展中心 / Line 2 行銷 / 專案線",
       orgUnit: "newbiz",
       birthday: "1994-04-29",
       numerology: 11,
@@ -472,8 +488,8 @@ const GAME_DATA = {
       id: "vanessa",
       name: "Vanessa Chou",
       localName: "周嗣萱",
-      role: "行銷策略總監",
-      department: "數位產品發展中心",
+      role: "行銷策略總監（Line 2）",
+      department: "數位產品發展中心 / Line 2 行銷 / 專案線",
       orgUnit: "newbiz",
       birthday: "1984-12-25",
       numerology: 5,
@@ -797,7 +813,7 @@ const GAME_DATA = {
       department: "業務七處",
       orgUnit: "sales-marketing",
       birthday: "待補",
-      style: "業務七處主管，GAP 來訪 prep 協調主責，適合把正式客戶節點與內部準備接起來。",
+      style: "MK Mandy(ON) = 陳瑋今 Mandy Chen；業務七處主管，管轄 VD/PQA for Old Navy，適合把正式客戶節點與內部準備接起來。",
       vectors: { clarity: 82, context: 76, speed: 68, risk: 72, data: 68, warmth: 58 }
     },
     {
@@ -1381,3 +1397,5 @@ const GAME_DATA = {
     }
   }
 };
+
+

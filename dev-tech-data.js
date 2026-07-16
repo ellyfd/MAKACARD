@@ -96,7 +96,7 @@
 
   const directoryMembers = {
     "dev-tech": ["celia-hsu"],
-    "rd-3d": ["karen", "huihui", "debbie", "elly", "yoko", "sixian", "celia-hsu", "tinley", "rock", "yota", "chieh", "jan", "jean", "adia", "rou"],
+    "rd-3d": ["elly", "karen"],
     "chiayi-sample-center": ["sammi-lin-林倩如", "devtech-hsu-feng-ying", "devtech-chen-mei-juan", "lillian-lin", "celia-hsu", "artie-yu", "sylvia-chou", "devtech-li-yi-bei", "devtech-liao-yi-ying", "devtech-ho-pei-chi", "devtech-chien-rui-ze", "teresa-hsueh"],
     "costing-center": ["sylvia-chou", "devtech-chen-su-xia", "devtech-chang-chia-hsuan", "devtech-huang-shu-ping", "devtech-lu-ya-lan", "devtech-lai-yi-chun", "devtech-lai-ko-yu", "devtech-li-yu-ju", "celia-hsu", "devtech-yang-ya-wen", "devtech-chang-chia-yun", "devtech-kou-hui-ching", "devtech-chin-kuan-ting", "devtech-hung-ming-hui", "devtech-tsai-shao-hsun", "devtech-chen-hui-fen", "devtech-su-yi-chen", "devtech-chen-chia-wen"],
     "technical-design": ["lillian-lin", "devtech-huang-zi-hua", "devtech-hung-pei-tzu", "devtech-tao-chen-ya", "devtech-tsai-yun-chieh", "celia-hsu", "devtech-chang-hsuan", "devtech-lin-chia-yen", "devtech-wu-yen-chieh", "devtech-lai-yu-ting", "devtech-cho-wan-chen", "devtech-wu-a-hsiu", "devtech-yao-ling-ling", "devtech-huang-hsiu-chi", "devtech-hsu-hsiao-hung", "devtech-huang-yu-hsiang", "devtech-wang-li-hsueh", "devtech-tsai-tzu-yu", "devtech-yen-che-hui", "devtech-wang-wan-tzu", "devtech-chiu-pei-hsuan", "devtech-lin-wan-ting", "devtech-li-pei-tzu", "devtech-huang-hsiang-lin"],
