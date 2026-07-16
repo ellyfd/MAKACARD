@@ -35,30 +35,13 @@
 
   const directoryMembers = {
     "general-office": ids("總管理處", [
-      ["黃渝晴", "Mandy Huang"],
-      ["周心鵬", "Alex Chou"]
-    ]),
-    "strategy-management": ids("策略暨經營管理部", [
-      ["黃渝晴", "Mandy Huang"],
-      ["鄭俐俐", "Lilly Cheng"]
-    ]),
-    "industry-strategy": ids("產業策略課", [
-      ["易佳蓉", "Rosa Yi"],
-      ["周襄", "Maeve Chou"]
-    ]),
-    "business-management": ids("經營管理課", [
-      ["鄭俐俐", "Lilly Cheng"],
-      ["陸玟瑄", "Michelle Lu"],
-      ["謝佩如", "Ruby Hsieh"]
+      ["黃渝晴", "Mandy Huang"]
     ]),
     "human-resources": ids("人力資源部", [
-      ["黃渝晴", "Mandy Huang"],
-      ["謝宜儒", "Sam Hsieh"]
+      ["黃渝晴", "Mandy Huang"]
     ]),
-    "compensation-management": ids("薪酬管理課", [
-      ["林政祐", "Josh Lin"],
-      ["王如玉", "Fiona Wang"],
-      ["楊麒弘", "Albert Yang"]
+    recruiting: ids("招募暨任用管理課", [
+      ["蔡一駖", "Christina Tsai"]
     ]),
     "talent-development": ids("人才發展課", [
       ["汪宜嫻", "Cathy Wang"],
@@ -66,56 +49,80 @@
       ["黃詩涵", "Nancy Huang"],
       ["廖明月", "Luna Liao"],
       ["謝欣晏", "Kim Hsieh"],
-      ["蔡一駖", "Christina Tsai"]
+      ["葉芷吟", "Eliza Yeh"],
+      ["黃伊嘉", "Eva Huang"],
+      ["黃虹婷", "Julia Huang"]
+    ]),
+    "compensation-management": ids("薪酬管理課", [
+      ["林政祐", "Josh Lin"]
     ]),
     "general-affairs": ids("總務管理課", [
-      ["林嘉宏", "Alden Lin"],
-      ["鍾佩樺", "Jessie Chung"],
-      ["黃伊嘉", "Eva Huang"]
-    ]),
-    hrbp: ids("HRBP", [
-      ["蔡一駖", "Christina Tsai"],
-      ["汪宜嫻", "Cathy Wang"],
-      ["柳映汝", "Ann Liu"],
-      ["張育誠", "Roland Chang"],
-      ["林芃妤", "Angelapy Lin"],
-      ["陳薇年", "Weinien Chen"],
-      ["鍾佩樺", "Jessie Chung"],
-      ["阮芳英", "Andie Nguyen"]
-    ]),
-    recruiting: ids("招募暨任用管理課", [
-      ["蔡一駖", "Christina Tsai"],
-      ["葉芷吟", "Eliza Yeh"],
-      ["黃虹婷", "Julia Huang"],
       ["張育誠", "Roland Chang"]
     ]),
+    hrbp: ids("河內子公司 HR", [
+      ["阮芳英", "Andie Nguyen"]
+    ]),
+    "investor-relations": ids("投資人關係組", [
+      ["林恆宇", "Henry Lin"],
+      ["黃仲傑", "Jacky Huang"]
+    ]),
+    "strategy-management": ids("策略暨經營管理部", [
+      ["鄭俐俐", "Lilly Cheng"]
+    ]),
+    "industry-strategy": ids("產業策略課", [
+      ["易佳蓉", "Rosa Yi"],
+      ["周襄", "Maeve Chou"]
+    ]),
+    "business-management": ids("經營管理課", [
+      ["陸玟瑄", "Michelle Lu"],
+      ["謝佩如", "Ruby Hsieh"]
+    ]),
+    "audit-legal": ids("稽核暨法務組", [
+      ["葉辰涓", "Eva Yeh"],
+      ["李維勇", "Steve Lee"],
+      ["高儀芬", "Even Kao"]
+    ]),
     "sustainability-development": ids("永續發展部", [
-      ["黃渝晴", "Mandy Huang"],
       ["林健生", "Johnson Lin"],
       ["李婷玉", "Tina Lee"],
       ["鄭佳容", "Winnie Cheng"],
       ["林勝偉", "Stenfer Lin"],
-      ["洪孟瑛", "Mengying Hong"],
-      ["林璽容", "Kelly Lin"],
-      ["程暐婷", "Elodie Cheng"],
-      ["王郁菱", "Treasta Wang"]
-    ]),
-    "investor-relations": ids("投資人關係組", [
-      ["黃渝晴", "Mandy Huang"],
-      ["林恆宇", "Henry Lin"],
-      ["黃仲傑", "Jacky Huang"]
-    ]),
-    "audit-legal": ids("稽核暨法務組", [
-      ["黃渝晴", "Mandy Huang"],
-      ["葉辰涓", "Eva Yeh"],
-      ["李維勇", "Steve Lee"],
-      ["高儀芬", "Even Kao"]
+      ["林璽容", "Kelly"],
+      ["程暐婷", "Elodie"],
+      ["王郁菱", "Treasta"]
     ])
   };
 
+  const roleByLocalName = {
+    黃渝晴: "群總經理（兼營運管理群群總；AI 種子計畫發起人）",
+    蔡一駖: "副理 / 招募暨任用課負責人",
+    汪宜嫻: "副理 / 人才發展課負責人",
+    林政祐: "副理 / 薪酬管理課負責人",
+    張育誠: "副理 / 總務管理課負責人",
+    阮芳英: "河內子公司 HR",
+    林恆宇: "資深經理 / 投資人關係組",
+    黃仲傑: "經理 / 投資人關係組",
+    鄭俐俐: "經理 / 策略暨經營管理部",
+    葉辰涓: "經理 / 稽核暨法務組",
+    李維勇: "資深稽核",
+    高儀芬: "稽核",
+    林健生: "資深經理 / 永續發展部",
+    李婷玉: "資深專案",
+    鄭佳容: "資深專案",
+    林勝偉: "安全工程",
+    林璽容: "永續專員",
+    程暐婷: "永續專員",
+    王郁菱: "永續專員"
+  };
+
+  Object.entries(roleByLocalName).forEach(([localName, role]) => {
+    const person = peopleByLocalName.get(localName);
+    if (person) person.role = role;
+  });
   Object.entries(directoryMembers).forEach(([id, members]) => {
     const directory = GAME_DATA.orgDirectory.find((item) => item.id === id);
     if (!directory) return;
     directory.members = [...new Set(members)];
   });
 })();
+

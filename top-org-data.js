@@ -35,36 +35,24 @@
 
   const directoryMembers = {
     board: ids("董事會", "ceo", [
-      ["周心鵬", "Alex Chou"],
-      ["王安妮", "Annie Wang"]
+      ["周理平", "Frank Chou"]
     ]),
-    "audit-office": ids("稽核室", "ceo", [
-      ["王安妮", "Annie Wang"]
-    ]),
+    "audit-office": [],
     "ceo-office": ids("執行長 / 公司頂層", "ceo", [
       ["周心鵬", "Alex Chou"]
     ]),
     "decision-integration-committee": ids("決策整合委員會", "ceo", [
-      ["郭良祿", "Arthur Kuo"],
-      ["周理平", "Frank Chou"],
       ["周心鵬", "Alex Chou"]
     ]),
-    "audit-committee": ids("審計委員會", "ceo", [
-      ["周心鵬", "Alex Chou"]
-    ]),
-    "compensation-committee": ids("薪資報酬委員會", "ceo", [
-      ["周心鵬", "Alex Chou"]
-    ]),
-    "sustainability-committee": ids("永續委員會", "ceo", [
-      ["周心鵬", "Alex Chou"]
-    ]),
+    "audit-committee": [],
+    "compensation-committee": [],
+    "sustainability-committee": [],
     "consulting-office": ids("顧問室本部", "consulting", [
       ["宋光漢", "Michael Song"],
       ["王謙", "Charley Wang"],
       ["黃宏仁", "Richard Huang"],
       ["廖白蓉", "Amy Liao"],
-      ["何煌清", "Huangching Ho"],
-      ["周心鵬", "Alex Chou"]
+      ["何煌清", "Huangching Ho"]
     ]),
     "investment-companies": ids("轉投資企業", "investment", [
       ["黃宏仁", "Richard Huang"],
@@ -73,9 +61,24 @@
     ])
   };
 
+  const roleByLocalName = {
+    周理平: "董事長",
+    周心鵬: "執行長 CEO",
+    宋光漢: "資深執行顧問",
+    王謙: "資深顧問",
+    黃宏仁: "資深顧問",
+    廖白蓉: "資深顧問",
+    何煌清: "顧問"
+  };
+
+  Object.entries(roleByLocalName).forEach(([localName, role]) => {
+    const person = peopleByLocalName.get(localName);
+    if (person) person.role = role;
+  });
   Object.entries(directoryMembers).forEach(([id, members]) => {
     const directory = GAME_DATA.orgDirectory.find((item) => item.id === id);
     if (!directory) return;
     directory.members = [...new Set(members)];
   });
 })();
+

@@ -6,7 +6,7 @@ const GAME_DATA = {
       tagline: "董事長、執行長、最高層決策與跨群取捨",
       capability: ["決策授權", "資源取捨", "跨群優先級"],
       risk: "離現場太遠時，會把複雜問題壓成口號。",
-      verification: "2026/05 PDF partial: 公司頂層已對齊；顧問室本部仍為較早期累積版本，尚未經 2026/05 組織圖驗證。",
+      verification: "已對齊：董事會層級、執行長以下決策架構。",
       counters: ["authority", "tradeoff", "scope"],
       links: ["sales-marketing", "tech-rd", "newbiz", "general-mgmt"]
     },
@@ -16,7 +16,7 @@ const GAME_DATA = {
       tagline: "資深顧問、制度記憶與高階輔助判斷",
       capability: ["制度記憶", "高階諮詢", "風險提醒"],
       risk: "若沒有接到一線問題，容易停留在原則層。",
-      verification: "較早期累積版本，尚未經 2026/05 組織圖驗證。",
+      verification: "已對齊：顧問室本部。",
       counters: ["memory", "advice", "review"],
       links: ["ceo", "general-mgmt"]
     },
@@ -26,7 +26,7 @@ const GAME_DATA = {
       tagline: "公司級管理節奏、AI 種子計畫與跨群推動",
       capability: ["管理節奏", "變革推動", "跨群協調"],
       risk: "變革如果只停在倡議，會缺少落地隊形。",
-      verification: "較早期累積版本，尚未經 2026/05 組織圖驗證。",
+      verification: "已對齊：總管理處 HR/IR/策經/稽核法務/永續。",
       counters: ["change", "seed", "cadence"],
       links: ["ceo", "ops-mgmt", "tech-rd", "newbiz"]
     },
@@ -117,8 +117,8 @@ const GAME_DATA = {
     { id: "compensation-management", unit: "general-mgmt", parent: "human-resources", name: "薪酬管理課", members: [] },
     { id: "talent-development", unit: "general-mgmt", parent: "human-resources", name: "人才發展課", members: [] },
     { id: "general-affairs", unit: "general-mgmt", parent: "human-resources", name: "總務管理課", members: [] },
-    { id: "hrbp", unit: "general-mgmt", parent: "human-resources", name: "HRBP", members: [] },
-    { id: "recruiting", unit: "general-mgmt", parent: "human-resources", name: "招募暨任用管理課", members: [] },
+    { id: "hrbp", unit: "general-mgmt", parent: "human-resources", name: "河內子公司 HR", members: [] },
+    { id: "recruiting", unit: "general-mgmt", parent: "human-resources", name: "招募暨任用課", members: [] },
     { id: "sustainability-development", unit: "general-mgmt", parent: "general-office", name: "永續發展部", members: [] },
     { id: "investor-relations", unit: "general-mgmt", parent: "general-office", name: "投資人關係組", members: [] },
     { id: "audit-legal", unit: "general-mgmt", parent: "general-office", name: "稽核暨法務組", members: [] },
