@@ -116,6 +116,7 @@ const MEMBER_TRAITS = {
   vanessa: ["tradeoff", "coordination"],
   winnie: ["meeting-observed", "role-pending"],
   yoko: ["reliable", "overloaded", "soft-force"],
+  "wayi-tsai-蔡維溢": ["smart-textile", "manager"],
   yota: ["remote-owner", "geo-blindspot"]
 };
 
@@ -1016,6 +1017,7 @@ function orgDirectoryDetail(directory, unit, people) {
     ${children.length ? `<span>下層單位：${children.length}</span>` : ""}
     ${ownCount ? `<span>直屬成員：${ownCount}</span>` : ""}
     ${children.length && totalCount ? `<span>含下層成員：${totalCount}</span>` : ""}
+    ${directory.note ? `<p>${directory.note}</p>` : ""}
     ${renderDirectoryLeads(directory)}
     ${ownMembers.length ? `<p>直屬成員：${ownMembers.map((member) => `${member.name}${member.localName ? ` / ${member.localName}` : ""}`).join("、")}</p>` : ""}
   `;
@@ -1099,8 +1101,8 @@ function orgViewForFocus(hierarchy, focus) {
 }
 
 function orgChartRank(dept, member) {
-  const digitalProduct = ["Alex Chou", "Elly Cheng", "Vanessa Chou", "Alan Liu", "Andy Liu", "Doris Lin", "Emily Shen", "Dianne Chen"];
-  const smartTextile = ["Alex Chou", "Wayi Tsai", "Shirley Sun", "Evan Sheu", "Jimmy Chou", "Tanis Lee", "Jonathan Wu", "Gary Yen", "Dean Lo", "Ian Tseng", "Sunny Shih"];
+  const digitalProduct = ["Alex Chou", "Elly Cheng", "Alan Liu", "Andy Liu", "Vanessa Chou", "Doris Lin", "Emily Shen", "Dianne Chen"];
+  const smartTextile = ["Alex Chou", "Wayi Tsai", "Shirley Sun", "Tanis Lee", "Evan Sheu", "Jonathan Wu", "Gary Yen", "Dean Lo", "Ian Tseng", "Jimmy Chou", "Sunny Shih"];
   const list = dept === "數位產品發展中心" ? digitalProduct : dept === "智慧紡織發展中心" ? smartTextile : [];
   const index = list.indexOf(member.name);
   return index === -1 ? 999 : index;
