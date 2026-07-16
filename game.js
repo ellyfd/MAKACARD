@@ -83,16 +83,20 @@ const MISSION_REQUIREMENTS = {
   "shipment-booking-crunch": ["sales-marketing", "tech-rd", "overseas"],
   "costing-margin-squeeze": ["sales-marketing", "tech-rd", "ops-mgmt"],
   "sustainability-traceability": ["general-mgmt", "sales-marketing", "tech-rd", "overseas"],
-  "ai-plm-visibility": ["newbiz", "ops-mgmt", "sales-marketing", "tech-rd"]
+  "ai-plm-visibility": ["newbiz", "ops-mgmt", "sales-marketing", "tech-rd"],
+  "gap-exec-visit": ["ceo", "sales-marketing", "newbiz", "tech-rd"],
+  "techpack-truth-map": ["ops-mgmt", "tech-rd", "newbiz", "general-mgmt"],
+  "ai-seed-rollout": ["general-mgmt", "tech-rd", "ops-mgmt", "newbiz"]
 };
 
 const MEMBER_TRAITS = {
   adia: ["visual-exec", "needs-boundary"],
   alan: ["waits-for-brief", "interface"],
-  alex: ["authority", "big-picture"],
+  alex: ["authority", "big-picture", "needs-visible-demo"],
   andy: ["research-depth", "deadline-needed", "over-research"],
   chieh: ["throughput", "motivation-risk"],
-  "celia-hsu": ["formal-lead", "tech-rd"],
+  "celia-hsu": ["formal-lead", "tech-rd", "escalation-coach"],
+  "celia-hsu-許佳瑛": ["formal-lead", "tech-rd", "escalation-coach"],
   debbie: ["presentation-candidate", "profile-thin"],
   dianne: ["market-sense", "story"],
   doris: ["coordination", "taste"],
@@ -100,11 +104,17 @@ const MEMBER_TRAITS = {
   emily: ["visual-quality", "teaching"],
   "erica-chang": ["meeting-observed", "sales-dev"],
   "hazel-lin": ["sales-dev", "market-signal"],
+  "emily-chak": ["alex-translator", "boundary", "analysis"],
+  "emily-chak-翟君宜": ["alex-translator", "boundary", "analysis"],
   jessica: ["workshop", "audience-design"],
   jan: ["pm", "direct", "remote-owner"],
   jean: ["content-ai", "route-boundary"],
   karen: ["architect", "quality-gate-gap"],
+  "karen-king-經國媛": ["architect", "quality-gate-gap"],
+  "lilly-cheng-鄭俐俐": ["truth-mapper", "after-meeting"],
   "lillian-lin": ["tech-design", "brief-builder"],
+  "brian-lin": ["ai-seed", "needs-evidence"],
+  "brian-lin-林欣煇": ["ai-seed", "needs-evidence"],
   maggie: ["dev-trip", "material-need"],
   rock: ["ground-truth", "knowledge-lock"],
   rou: ["quality-eye", "weak-expression"],
@@ -117,6 +127,11 @@ const MEMBER_TRAITS = {
   winnie: ["meeting-observed", "role-pending"],
   yoko: ["reliable", "overloaded", "soft-force"],
   "wayi-tsai-蔡維溢": ["smart-textile", "manager"],
+  "judy-lee-李宛真": ["actual-operator", "techpack-bom"],
+  "kisa-lin-林嘉慧": ["translation-vault", "needs-mapping"],
+  "jeff-yang-楊璿融": ["boundary-witness", "system-modernization"],
+  "it-694a-74bf-878d": ["boundary-witness", "system-modernization"],
+  "alice-chiu-邱瀞儀": ["pilot-scope", "ie-guardian"],
   yota: ["remote-owner", "geo-blindspot"]
 };
 
@@ -1175,6 +1190,8 @@ function renderPersonDetail(member) {
     member.department,
     member.role,
     birthdayLabel(member),
+    member.gameMove ? `人物技：${member.gameMove}` : "",
+    member.riskTell ? `風險訊號：${member.riskTell}` : "",
     manager ? `直屬主管：${manager.name}` : "",
     reports.length ? `直屬成員：${reports.length}` : "",
     member.leadAssignments?.length ? `Lead 對口：${member.leadAssignments.map((item) => item.title).join("；")}` : "",
@@ -1328,6 +1345,18 @@ function triggeredRisk(member, action, unit) {
   }
   if (traits.includes("quality-gate-gap") && ["qc-rework-spike", "spec-version-drift", "capacity-wip-bottleneck"].includes(mission.id) && action.id === "gate") {
     return { title: "白臉真空", text: "架構可以設，但品質 gate 需要外部標準撐住，不然現場會滑動。", penalty: 10 };
+  }
+  if (traits.includes("needs-visible-demo") && ["gap-exec-visit", "digital-sample-adoption", "ai-plm-visibility"].includes(mission.id) && !["prototype", "frame"].includes(action.id)) {
+    return { title: "需要實體", text: "高層場若只講抽象敘事，會進入反覆猜方向；先做可看的版本或凍結主軸。", penalty: 14 };
+  }
+  if (traits.includes("needs-evidence") && ["techpack-truth-map", "ai-seed-rollout", "ai-plm-visibility"].includes(mission.id) && action.id !== "evidence") {
+    return { title: "口頭確認需佐證", text: "這張牌能推動，但系統事實不能只靠印象；要綁 owner、文件與範圍證據。", penalty: 16 };
+  }
+  if (traits.includes("needs-mapping") && mission.id === "techpack-truth-map" && !["evidence", "bridge"].includes(action.id)) {
+    return { title: "資料不可用", text: "翻譯資料若缺款號與前後端 mapping，存在不等於可用。", penalty: 13 };
+  }
+  if (traits.includes("actual-operator") && mission.id === "techpack-truth-map" && action.id !== "evidence") {
+    return { title: "範圍需標註", text: "實際執行者能提供真相，但必須把 BOM、POM、做工範圍切清楚。", penalty: 10 };
   }
   if (traits.includes("profile-thin") && state.meeting.turn <= 2) {
     return { title: "資料薄", text: "太早把低觀察資料的人放核心位，會增加推演不確定性。", penalty: 10 };
