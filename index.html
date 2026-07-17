@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>MAKACARD | Org Quest</title>
-    <link rel="stylesheet" href="styles.css?v=20260716-techrd49">
+    <link rel="stylesheet" href="styles.css?v=20260717-sandbox50">
   </head>
   <body>
     <main class="app-shell">
@@ -12,11 +12,11 @@
         <div>
           <p class="eyebrow">MAKACARD</p>
           <h1>Org Quest</h1>
-          <p class="intro">把 makalot-org 變成可互動的 Digital Org，再用人物牌測試跨單位任務隊形。</p>
+          <p class="intro">正式組織、人才能力與跨單位任務的數位沙盤。</p>
         </div>
         <div class="header-metrics" aria-label="Dataset summary">
-          <span><strong id="member-count">21</strong> members</span>
-          <span><strong>5</strong> mission turns</span>
+          <span><strong id="member-count">21</strong> people</span>
+          <span><strong id="org-unit-count">--</strong> org nodes</span>
         </div>
       </header>
 
@@ -40,24 +40,29 @@
             <div id="mission-brief" class="mission-brief"></div>
             <div class="meeting-stats">
               <article>
-                <span>Trust</span>
+                <span>決策閉環</span>
                 <meter id="trust-meter" min="0" max="100" value="45"></meter>
                 <strong id="trust-value">45</strong>
               </article>
               <article>
-                <span>Clarity</span>
+                <span>依賴覆蓋</span>
                 <meter id="clarity-meter" min="0" max="100" value="40"></meter>
                 <strong id="clarity-value">40</strong>
               </article>
               <article>
-                <span>Momentum</span>
+                <span>事實一致</span>
                 <meter id="momentum-meter" min="0" max="100" value="35"></meter>
                 <strong id="momentum-value">35</strong>
               </article>
               <article>
-                <span>Friction</span>
+                <span>交付可行</span>
                 <meter id="friction-meter" min="0" max="100" value="25"></meter>
                 <strong id="friction-value">25</strong>
+              </article>
+              <article>
+                <span>韌性</span>
+                <meter id="resilience-meter" min="0" max="100" value="35"></meter>
+                <strong id="resilience-value">35</strong>
               </article>
             </div>
           </section>
@@ -109,40 +114,23 @@
         </div>
       </section>
 
-      <section id="lab-view" class="view" aria-label="Chemistry Lab">
+      <section id="lab-view" class="view" aria-label="Draft Room">
         <div class="lab-layout">
           <section class="panel controls-panel">
             <p class="label">Team Draft</p>
-            <h2>出任務前組隊</h2>
-            <label>
-              開局牌
-              <select id="person-a"></select>
-            </label>
-            <label>
-              轉接牌
-              <select id="person-b"></select>
-            </label>
-            <label>
-              收束牌
-              <select id="person-c"></select>
-            </label>
-            <label>
-              任務地形
-              <select id="scenario-select"></select>
-            </label>
-            <label>
-              玩法檢定
-              <select id="framework-select"></select>
-            </label>
-            <button id="analyze-pair" class="primary-button" type="button">Draft Team</button>
+            <h2>任務編隊桌</h2>
+            <label>選擇任務<select id="scenario-select"></select></label>
+            <label>授權者 Sponsor<select id="draft-sponsor"></select></label>
+            <label>決策 owner<select id="draft-decision-owner"></select></label>
+            <label>技術判定者<select id="draft-technical-authority"></select></label>
+            <label>交付 owner<select id="draft-delivery-owner"></select></label>
+            <label>資料 owner<select id="draft-data-owner"></select></label>
+            <label>跨單位轉譯<select id="draft-bridge"></select></label>
+            <button id="analyze-pair" class="primary-button" type="button">驗證編隊</button>
           </section>
-
           <section class="panel result-panel">
             <div class="result-heading">
-              <div>
-                <p class="label">Draft Result</p>
-                <h2 id="pair-title">選三張牌開始測試</h2>
-              </div>
+              <div><p class="label">Draft Result</p><h2 id="pair-title">選任務並配置角色</h2></div>
               <span id="fit-badge" class="fit-badge">--</span>
             </div>
             <div id="score-grid" class="score-grid"></div>
@@ -150,7 +138,6 @@
           </section>
         </div>
       </section>
-
     </main>
 
     <script src="game-data.js?v=20260716-techrd49"></script>
@@ -167,8 +154,9 @@
     <script src="it-data.js?v=20260716-techrd49"></script>
     <script src="birthday-data.js?v=20260716-techrd49"></script>
     <script src="reporting-data.js?v=20260716-techrd49"></script>
-    <script src="people-intel-data.js?v=20260716-techrd49"></script>
-    <script src="game.js?v=20260716-techrd49"></script>
+    <script src="people-intel-data.js?v=20260717-sandbox50"></script>
+    <script src="org-sandbox-data.js?v=20260717-sandbox50"></script>
+    <script src="game.js?v=20260717-sandbox50"></script>
   </body>
 </html>
 

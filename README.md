@@ -1,35 +1,31 @@
-# MAKACARD
+# MAKACARD | Org Quest
 
-一個可直接放上 GitHub Pages 的靜態 Team Chemistry Deck。玩法把 Makalot 團隊成員做成平等人物卡，結合組織角色、溝通偏好與任務情境，分析跨單位隊形在工作事件中的合拍度。
+Makalot 的 Digital Organization Sandbox。這個 GitHub Pages 原型把正式組織結構、任務角色與跨單位推演放在同一個介面；它不是人資主檔或人格評量工具。
 
-## 遊戲概念
+## 目前可用
 
-MAKACARD 目前有三個頁面：
+- **Digital Org**：依正式群／處／中心／部／課／團隊向下展開的組織圖；支援搜尋、滑鼠縮放、平移、置中、回上層與節點詳情。
+- **Draft Room**：先選任務，再配置 Sponsor、Decision Owner、Technical Authority、Delivery Owner、Data Owner 與 Bridge；系統檢查決策閉環、依賴覆蓋、事實一致、交付可行與韌性。
+- **Mission Run**：以任務交付物、必要席位、跨單位依賴與事件卡推進五回合，而非以人格合拍度評分。
 
-- `成員總覽`：成員人物卡，含部門、角色與生日。
-- `Chemistry Lab`：選兩個人 + 一個工作情境 + 一張溝通策略卡，計算 Work Fit、Communication、Decision、Stress Friction。
-- `Meeting Game`：用 5 回合推進一個專案，透過選人與溝通策略提高 Trust、Clarity、Momentum 並降低 Friction。
+## 資料原則
 
-## 資料層
+- 正式組織、職位、匯報關係以 PDF、人令與已確認資料為準。
+- 協作訊號僅用於任務支援，不用於績效、任用、升遷或人格判定。
+- 生日僅保存月日，供靈數、星座、五行等遊戲視覺資訊使用，不參與管理決策。
+- 沒有正式資料的欄位不顯示，也不自行補造姓名、職稱或直屬關係。
 
-每個人物卡目前包含三層：
+## 資料檔
 
-- `組織層`：部門、職務、專案位置。
-- `行為層`：結論需求、脈絡需求、節奏、風險敏感度、資料依賴、情緒溫度。
-- `基本資料`：生日只保留月日；遊戲判斷以 org、職等、決策權、直屬關係與任務情境為主。
+- `game-data.js`：基礎人物、JD 與任務。
+- `*-data.js`：依組織群／資料來源逐步補入的正式組織資料。
+- `org-sandbox-data.js`：任務角色槽位、組織健康指標與資料治理規則。
+- `game.js`：Digital Org、Draft Room 與 Mission Run 互動邏輯。
 
-第一版先以 DPC、數發、Portal:M 相關成員作為 MVP。行為層是可調整的推論值，之後可以用會議紀錄、Teams、Email、Notion 摘要或 Elly 的人工標註校準。
+## 本機開啟
 
-## 在本機開啟
+直接在瀏覽器開啟 `index.html` 即可。
 
-直接用瀏覽器開啟 `index.html` 即可，不需要安裝套件。
+## GitHub Pages
 
-## 架到 GitHub Pages
-
-1. 建立 GitHub repo。
-2. 將本資料夾內容推上 GitHub。
-3. 到 repo 的 `Settings > Pages`。
-4. `Build and deployment` 選 `Deploy from a branch`。
-5. Branch 選 `main`，資料夾選 `/root`。
-
-完成後，GitHub 會提供公開網址。
+在 repo 的 `Settings > Pages` 設定：`Deploy from a branch`，選 `main` 與 `/root`。GitHub 會發布網站。

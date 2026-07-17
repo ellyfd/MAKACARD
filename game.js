@@ -43,6 +43,13 @@ const els = {
   personA: document.querySelector("#person-a"),
   personB: document.querySelector("#person-b"),
   personC: document.querySelector("#person-c"),
+  draftSponsor: document.querySelector("#draft-sponsor"),
+  draftDecisionOwner: document.querySelector("#draft-decision-owner"),
+  draftTechnicalAuthority: document.querySelector("#draft-technical-authority"),
+  draftDeliveryOwner: document.querySelector("#draft-delivery-owner"),
+  draftDataOwner: document.querySelector("#draft-data-owner"),
+  draftBridge: document.querySelector("#draft-bridge"),
+  orgUnitCount: document.querySelector("#org-unit-count"),
   scenarioSelect: document.querySelector("#scenario-select"),
   frameworkSelect: document.querySelector("#framework-select"),
   analyzePair: document.querySelector("#analyze-pair"),
@@ -63,13 +70,15 @@ const els = {
     trust: document.querySelector("#trust-meter"),
     clarity: document.querySelector("#clarity-meter"),
     momentum: document.querySelector("#momentum-meter"),
-    friction: document.querySelector("#friction-meter")
+    friction: document.querySelector("#friction-meter"),
+    resilience: document.querySelector("#resilience-meter")
   },
   values: {
     trust: document.querySelector("#trust-value"),
     clarity: document.querySelector("#clarity-value"),
     momentum: document.querySelector("#momentum-value"),
-    friction: document.querySelector("#friction-value")
+    friction: document.querySelector("#friction-value"),
+    resilience: document.querySelector("#resilience-value")
   }
 };
 
@@ -1531,5 +1540,275 @@ function init() {
   resetMeeting();
 }
 
-init();
 
+/* Digital organization sandbox: task roles, dependency coverage, and mission health. */
+function sandboxData() {
+  return GAME_DATA.sandbox || { slotCatalog: [], unitRoleHints: {}, healthMetrics: [] };
+}
+
+function missionSandbox(mission) {
+  return mission?.sandbox || { deliverable: "", slots: [], success: [], events: [] };
+}
+
+function sandboxSlot(id) {
+  return sandboxData().slotCatalog.find((slot) => slot.id === id);
+}
+
+function roleHintFit(member, slotId) {
+  if (!member) return 0;
+  const hintedSlots = sandboxData().unitRoleHints[unitFor(member)] || [];
+  const title = `${member.role || ""} ${member.department || ""}`;
+  let score = hintedSlots.includes(slotId) ? 72 : 38;
+  if (slotId === "sponsor" && /執行長|總經理|副總|處長/.test(title)) score += 22;
+  if (slotId === "decision-owner" && /執行長|總經理|副總|處長|總監|經理|主管/.test(title)) score += 18;
+  if (slotId === "technical-authority" && /技術|研發|3D|品質|工務|資訊|資料|TD/.test(title)) score += 16;
+  if (slotId === "data-owner" && /資訊|資料|系統|工務管理|專案/.test(title)) score += 16;
+  if (slotId === "bridge" && /業務|行銷|專案|PM|運籌|協調/.test(title)) score += 16;
+  if (slotId === "delivery-owner" && /專員|技師|工程|開發|業務|經理/.test(title)) score += 12;
+  return clamp(score);
+}
+
+function personSelectOptions(selected = "") {
+  const roster = allOrgMembers().sort((a, b) => `${a.localName || a.name}`.localeCompare(`${b.localName || b.name}`));
+  return [`<option value="">未指派</option>`, ...roster.map((member) => `<option value="${member.id}" ${member.id === selected ? "selected" : ""}>${member.name} · ${member.role || member.department || unitName(unitFor(member))}</option>`)].join("");
+}
+
+function suggestedMemberFor(slotId) {
+  return allOrgMembers().find((member) => roleHintFit(member, slotId) >= 88)?.id || "";
+}
+
+function fillStaticControls() {
+  const roster = allOrgMembers();
+  els.memberCount.textContent = roster.length;
+  if (els.orgUnitCount) els.orgUnitCount.textContent = (GAME_DATA.orgDirectory || []).length;
+  fillSelect(els.scenarioSelect, GAME_DATA.orgMissions, (mission) => mission.name);
+  const draftSlots = [
+    [els.draftSponsor, "sponsor"],
+    [els.draftDecisionOwner, "decision-owner"],
+    [els.draftTechnicalAuthority, "technical-authority"],
+    [els.draftDeliveryOwner, "delivery-owner"],
+    [els.draftDataOwner, "data-owner"],
+    [els.draftBridge, "bridge"]
+  ];
+  draftSlots.forEach(([select, slotId]) => {
+    if (!select) return;
+    select.innerHTML = personSelectOptions(suggestedMemberFor(slotId));
+  });
+  els.scenarioSelect.value = GAME_DATA.orgMissions.some((mission) => mission.id === "gap-exec-visit") ? "gap-exec-visit" : GAME_DATA.orgMissions[0]?.id;
+}
+
+function renderScoreCard(label, value, helper) {
+  const safeValue = clamp(value);
+  return `<article class="score-card"><span>${label}</span><strong>${safeValue}</strong><meter min="0" max="100" value="${safeValue}"></meter><p>${helper}</p></article>`;
+}
+
+function draftAssignments() {
+  return [
+    { slotId: "sponsor", member: memberById(els.draftSponsor?.value) },
+    { slotId: "decision-owner", member: memberById(els.draftDecisionOwner?.value) },
+    { slotId: "technical-authority", member: memberById(els.draftTechnicalAuthority?.value) },
+    { slotId: "delivery-owner", member: memberById(els.draftDeliveryOwner?.value) },
+    { slotId: "data-owner", member: memberById(els.draftDataOwner?.value) },
+    { slotId: "bridge", member: memberById(els.draftBridge?.value) }
+  ];
+}
+
+function analyzePair() {
+  const mission = scenarioById(els.scenarioSelect.value);
+  if (!mission) return;
+  const blueprint = missionSandbox(mission);
+  const assignments = draftAssignments();
+  const requiredUnits = missionRequires(mission);
+  const selected = assignments.filter((assignment) => assignment.member);
+  const selectedUnits = new Set(selected.map((assignment) => unitFor(assignment.member)));
+  const coveredUnits = requiredUnits.filter((unit) => selectedUnits.has(unit));
+  const missingUnits = requiredUnits.filter((unit) => !selectedUnits.has(unit));
+  const missingSlots = blueprint.slots.filter((slotId) => !assignments.find((assignment) => assignment.slotId === slotId)?.member);
+  const roleFits = selected.map((assignment) => roleHintFit(assignment.member, assignment.slotId));
+  const decision = clamp((assignments.find((item) => item.slotId === "decision-owner")?.member ? 60 : 0) + (assignments.find((item) => item.slotId === "sponsor")?.member ? 25 : 0) + (selected.length >= 4 ? 10 : 0));
+  const dependency = clamp(requiredUnits.length ? coveredUnits.length / requiredUnits.length * 100 : 0);
+  const facts = clamp((assignments.find((item) => item.slotId === "data-owner")?.member ? 58 : 0) + (assignments.find((item) => item.slotId === "technical-authority")?.member ? 25 : 0) + (missingUnits.length ? 0 : 12));
+  const delivery = clamp((assignments.find((item) => item.slotId === "delivery-owner")?.member ? 60 : 0) + (assignments.find((item) => item.slotId === "bridge")?.member ? 18 : 0) + (selected.length >= 4 ? 12 : 0));
+  const resilience = clamp(new Set(selected.map((assignment) => assignment.member.id)).size / Math.max(1, selected.length) * 45 + new Set(selected.map((assignment) => unitFor(assignment.member))).size * 12 + (assignments.find((item) => item.slotId === "bridge")?.member ? 12 : 0));
+  const overall = clamp(average([decision, dependency, facts, delivery, resilience]) + (roleFits.length ? average(roleFits) - 55 : -20) * .15);
+
+  els.pairTitle.textContent = mission.name;
+  els.fitBadge.textContent = `${overall} · ${overall >= 78 ? "可進場" : overall >= 58 ? "需補位" : "尚未成隊"}`;
+  els.scoreGrid.innerHTML = [
+    renderScoreCard("決策閉環", decision, "授權者與最終拍板是否到位"),
+    renderScoreCard("依賴覆蓋", dependency, "任務必要單位是否已接上"),
+    renderScoreCard("事實一致", facts, "資料與技術判定是否有人負責"),
+    renderScoreCard("交付可行", delivery, "是否有交付與跨單位轉譯者"),
+    renderScoreCard("韌性", resilience, "人員與單位是否過度集中")
+  ].join("");
+
+  const assignmentList = assignments.map((assignment) => {
+    const slot = sandboxSlot(assignment.slotId);
+    const member = assignment.member;
+    const fit = member ? roleHintFit(member, assignment.slotId) : 0;
+    return `<article class="assignment-card ${member ? "assigned" : "missing"}"><span>${slot?.zh || assignment.slotId}</span><strong>${member ? member.name : "未指派"}</strong><small>${member ? `${unitName(unitFor(member))} · 任務適配 ${fit}` : slot?.detail || ""}</small></article>`;
+  }).join("");
+  els.pairInsight.innerHTML = `
+    <div class="draft-deliverable"><span>任務交付物</span><strong>${blueprint.deliverable}</strong></div>
+    <div class="assignment-grid">${assignmentList}</div>
+    <div class="draft-columns">
+      <section><b>已覆蓋單位</b><p>${coveredUnits.map(unitName).join(" / ") || "尚未覆蓋"}</p></section>
+      <section><b>需要補位</b><p>${[...missingSlots.map((slotId) => sandboxSlot(slotId)?.zh || slotId), ...missingUnits.map(unitName)].join(" / ") || "角色與單位已覆蓋"}</p></section>
+      <section><b>成功條件</b><p>${blueprint.success.join(" / ")}</p></section>
+    </div>
+  `;
+}
+
+function resetMeeting() {
+  const mission = GAME_DATA.orgMissions[Math.floor(Math.random() * GAME_DATA.orgMissions.length)];
+  state.meeting = {
+    turn: 1,
+    scenario: mission,
+    trust: mission.pressure.trust,
+    clarity: mission.pressure.clarity,
+    momentum: mission.pressure.momentum,
+    friction: clamp(100 - mission.pressure.friction),
+    resilience: 42,
+    hand: [],
+    played: [],
+    coveredUnits: [],
+    lastDepartment: null,
+    lastUnit: null,
+    log: [`任務展開：${mission.goal}`]
+  };
+  drawHand();
+  renderMeeting();
+}
+
+function renderMeeting() {
+  const meeting = state.meeting;
+  const blueprint = missionSandbox(meeting.scenario);
+  const requiredUnits = missionRequires(meeting.scenario);
+  const covered = new Set(meeting.coveredUnits);
+  const missing = requiredUnits.filter((unit) => !covered.has(unit));
+  els.meetingTitle.textContent = meeting.scenario.name;
+  els.meetingScenario.textContent = meeting.scenario.prompt;
+  els.missionBrief.innerHTML = `
+    <div class="mission-meta"><span>交付物</span><strong>${blueprint.deliverable}</strong></div>
+    <div class="mission-meta"><span>必要席位</span><strong>${blueprint.slots.map((slotId) => sandboxSlot(slotId)?.zh || slotId).join(" / ")}</strong></div>
+    <div class="mission-meta"><span>本回合事件</span><strong>${blueprint.events[(meeting.turn - 1) % Math.max(1, blueprint.events.length)] || "確認 owner、版本與下一步。"}</strong></div>
+    <div class="lane-strip">${requiredUnits.map((unit) => `<i class="${covered.has(unit) ? "covered" : ""}" style="--unit:${UNIT_COLORS[unit] || "#fff"}">${unitName(unit)}</i>`).join("")}</div>
+  `;
+  els.turnCount.textContent = `Turn ${Math.min(meeting.turn, 5)} / 5`;
+  ["trust", "clarity", "momentum", "friction", "resilience"].forEach((key) => {
+    if (els.meters[key]) els.meters[key].value = meeting[key];
+    if (els.values[key]) els.values[key].textContent = meeting[key];
+  });
+  els.meetingLog.innerHTML = meeting.log.map((item) => `<li>${item}</li>`).join("");
+  renderActionCards();
+  renderOrgMap();
+}
+
+function playMeetingTurn(memberId) {
+  const meeting = state.meeting;
+  const person = memberById(memberId);
+  const action = bestActionForMember(person);
+  const unit = unitFor(person);
+  const fit = cardFit(person, action);
+  const required = missionRequires(meeting.scenario);
+  const newLane = required.includes(unit) && !meeting.coveredUnits.includes(unit);
+  const crossUnit = meeting.lastUnit && meeting.lastUnit !== unit;
+  const riskPenalty = fit.risk ? fit.risk.penalty : 0;
+  const actionBoost = action.boosts || {};
+  const decisionGain = (action.id === "frame" ? 16 : 4) + (newLane ? 4 : 0) - riskPenalty / 6;
+  const factGain = (action.id === "evidence" ? 17 : action.id === "gate" ? 10 : 4) - riskPenalty / 7;
+  const deliveryGain = (action.id === "prototype" ? 17 : action.id === "bridge" ? 10 : 5) + (newLane ? 5 : 0) - riskPenalty / 7;
+  const dependencyGain = newLane ? 24 : crossUnit ? 8 : 2;
+  const resilienceGain = crossUnit ? 7 : 2;
+
+  meeting.trust = clamp(meeting.trust + decisionGain + (actionBoost.clarity || 0) / 3);
+  meeting.clarity = clamp(meeting.clarity + dependencyGain);
+  meeting.momentum = clamp(meeting.momentum + factGain + (actionBoost.trust || 0) / 4);
+  meeting.friction = clamp(meeting.friction + deliveryGain + (actionBoost.momentum || 0) / 5);
+  meeting.resilience = clamp(meeting.resilience + resilienceGain - (fit.risk?.title === "知識鎖倉" ? 12 : 0));
+
+  if (newLane) meeting.coveredUnits.push(unit);
+  meeting.played.push(person.id);
+  meeting.lastDepartment = person.department;
+  meeting.lastUnit = unit;
+  const signal = fit.risk ? `風險：${fit.risk.title}` : `補上 ${unitName(unit)} 視角`;
+  meeting.log.unshift(`T${meeting.turn}：${person.name} 以「${action.name}」進場。${signal}。`);
+  meeting.turn += 1;
+  if (meeting.turn > 5) {
+    const missing = required.filter((requiredUnit) => !meeting.coveredUnits.includes(requiredUnit));
+    const complete = meeting.trust >= 65 && meeting.clarity >= 70 && meeting.momentum >= 65 && meeting.friction >= 65 && meeting.resilience >= 55 && !missing.length;
+    meeting.log.unshift(complete ? `任務完成：${meeting.scenario.goal}` : `任務未閉環：${missing.length ? `仍缺 ${missing.map(unitName).join(" / ")}` : "需要補 owner、資料或備援，而不只是重抽人物牌"}。`);
+  }
+  drawHand();
+  renderMeeting();
+}
+
+function renderDirectoryLeads(directory) {
+  if (!directory?.leads?.length) return "";
+  const leads = directory.leads.map((lead) => `${lead.name}${lead.localName ? ` / ${lead.localName}` : ""}：${lead.title}`).join("；");
+  return `<div class="detail-block"><b>正式主管／對口</b><p>${leads}</p></div>`;
+}
+
+function orgDirectoryDetail(directory, unit, people) {
+  const children = orgDirectoryChildren(directory.id);
+  const ownMembers = orgDirectoryMembers(directory, people);
+  const path = orgDirectoryPath(directory).join(" / ");
+  const source = directory.source || unit?.verification || "正式組織資料";
+  return `<div class="detail-kicker">${directory.generated ? "系統推導節點" : "正式組織節點"}</div><strong>${directory.name}</strong><span>路徑：${path}</span><div class="detail-grid"><span>下層單位：${children.length}</span><span>直屬成員：${ownMembers.length}</span><span>資料來源：${source}</span></div>${directory.note ? `<div class="detail-block"><b>職掌／備註</b><p>${directory.note}</p></div>` : ""}${renderDirectoryLeads(directory)}${ownMembers.length ? `<div class="detail-block"><b>本層成員</b><p>${ownMembers.map((member) => member.name).join("、")}</p></div>` : ""}`;
+}
+
+function renderPersonDetail(member) {
+  const manager = member.reportsTo ? orgChartMembers().find((person) => person.id === member.reportsTo) : null;
+  const reports = directReportsFor(member.id);
+  const decision = /執行長|總經理|副總|處長|總監/.test(`${member.role || ""}`) ? "核准／決策範圍依正式職位確認" : /經理|副理|主管/.test(`${member.role || ""}`) ? "審核／建議範圍依正式職位確認" : "執行／輸入範圍依正式職位確認";
+  const birth = birthdayLabel(member);
+  return `<div class="detail-kicker">PERSON</div><strong>${member.name}</strong><span>${[member.localName, member.role].filter((item) => !isMissingValue(item)).join(" · ")}</span><div class="detail-grid"><span>主單位：${member.department || unitName(unitFor(member))}</span><span>直屬主管：${manager?.name || ""}</span><span>直屬成員：${reports.length || ""}</span><span>生日：${birth || ""}</span></div><div class="detail-block"><b>任務定位</b><p>${(sandboxData().unitRoleHints[unitFor(member)] || []).map((slotId) => sandboxSlot(slotId)?.zh || slotId).join(" / ") || "依正式職掌判定"}</p></div><div class="detail-block"><b>決策權參考</b><p>${decision}</p></div>`;
+}
+
+function bindEvents() {
+  els.tabs.forEach((tab) => tab.addEventListener("click", () => switchView(tab.dataset.view)));
+  els.orgSearch?.addEventListener("input", () => {
+    state.orgFocus = { type: "root" };
+    state.orgExpandedUnit = null;
+    state.orgExpandedPath = [];
+    state.orgSelected = null;
+    renderOrgMap();
+  });
+  els.orgHome?.addEventListener("click", () => {
+    state.orgFocus = { type: "root" };
+    state.orgExpandedUnit = null;
+    state.orgExpandedPath = [];
+    state.orgSelected = null;
+    if (els.orgSearch) els.orgSearch.value = "";
+    renderOrgMap();
+  });
+  els.orgZoomOut?.addEventListener("click", () => setOrgZoom((state.orgZoom || 1) - .1));
+  els.orgZoomIn?.addEventListener("click", () => setOrgZoom((state.orgZoom || 1) + .1));
+  els.orgZoomReset?.addEventListener("click", () => setOrgZoom(1));
+  els.orgMap?.addEventListener("wheel", handleOrgWheelZoom, { passive: false });
+  els.orgBack?.addEventListener("click", () => {
+    if (state.orgExpandedPath.length > 1) {
+      state.orgExpandedPath.pop();
+      state.orgSelected = { type: "dept", id: state.orgExpandedPath[state.orgExpandedPath.length - 1] };
+    } else if (state.orgExpandedPath.length === 1) {
+      state.orgExpandedPath = [];
+      state.orgSelected = state.orgExpandedUnit ? { type: "unit", id: state.orgExpandedUnit } : null;
+    } else {
+      state.orgExpandedUnit = null;
+      state.orgSelected = null;
+    }
+    renderOrgMap();
+  });
+  els.analyzePair?.addEventListener("click", analyzePair);
+  els.resetMeeting?.addEventListener("click", resetMeeting);
+  els.scenarioSelect?.addEventListener("change", analyzePair);
+}
+
+function init() {
+  fillStaticControls();
+  bindEvents();
+  analyzePair();
+  resetMeeting();
+}
+
+init();
