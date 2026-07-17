@@ -1738,6 +1738,8 @@ function renderPersonDetail(member) {
     ["直屬主管", manager?.name],
     ["直屬成員", reports.length ? `${reports.length} 位` : ""],
     ["生日", birth],
+    ["歸屬來源", member.membershipSource],
+    ["歸屬版本", member.membershipSourceVersion],
     ["匯報來源", member.reportingSource],
     ["匯報版本", member.reportingSourceVersion]
   ].filter(([, value]) => !isMissingValue(value));
@@ -1805,4 +1807,5 @@ function init() {
 }
 
 init();
+
 

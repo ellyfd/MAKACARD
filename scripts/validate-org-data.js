@@ -82,6 +82,11 @@ if (sourcedJobProfiles < jobProfiles.length) {
 
 const formalDirectory = directory.filter((item) => !item.generated);
 const sourceCoverage = formalDirectory.filter((item) => item.source || item.verification).length;
+const membershipResolutions = data.orgMembershipResolutions || [];
+const sourcedMembershipResolutions = membershipResolutions.filter((item) => {
+  const person = people.find((candidate) => candidate.id === item.personId);
+  return person?.membershipSource && person?.membershipSourceVersion && person?.membershipResolution === "exact-department-label";
+}).length;
 const reportingLines = people.filter((person) => person.reportsTo);
 const sourcedReportingLines = reportingLines.filter((person) => person.reportingSource).length;
 const sourceVersionCoverage = formalDirectory.filter((item) => item.sourceVersion).length;
@@ -101,12 +106,14 @@ console.log(JSON.stringify({
   jdSourceCoverage: `${sourcedJobProfiles}/${jobProfiles.length}`,
   formalDirectorySourceCoverage: `${sourceCoverage}/${formalDirectory.length}`,
   formalDirectorySourceVersionCoverage: `${sourceVersionCoverage}/${formalDirectory.length}`,
+  exactMembershipResolutionCoverage: `${sourcedMembershipResolutions}/${membershipResolutions.length}`,
   reportingLineSourceCoverage: `${sourcedReportingLines}/${reportingLines.length}`,
   errors,
   warnings
 }, null, 2));
 
 if (errors.length) process.exit(1);
+
 
 
 
