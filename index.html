@@ -25,6 +25,7 @@
         <button class="tab" type="button" data-view="org">組織圖</button>
         <button class="tab" type="button" data-view="people">人材台帳</button>
         <button class="tab" type="button" data-view="talent">能力地圖</button>
+        <button class="tab" type="button" data-view="sources">資料來源</button>
         <button class="tab" type="button" data-view="lab">任務台帳</button>
       </nav>
 
@@ -155,6 +156,17 @@
             <div><span class="record-stamp">記錄原則</span><strong>每一筆管理資訊都必須有來源、版本、用途與可見範圍。</strong></div>
             <p>公開版僅保留 P0 正式組織資料；受限資料應在登入、權限驗證與審計機制完成後才可調閱。</p>
           </section>
+        </div>
+      </section>
+
+      <section id="sources-view" class="view" aria-label="Source center">
+        <div class="source-layout">
+          <section class="source-head panel">
+            <div><p class="label">Source Center</p><h2>資料來源中心</h2><p>公開版只發布已確認的正式組織快照。每個節點、任職關係與任務草案都應可回查其版本與資料範圍。</p></div>
+            <span class="source-boundary">P0 · 正式組織</span>
+          </section>
+          <section id="source-release" class="source-release" aria-live="polite"></section>
+          <section id="source-files" class="source-files" aria-label="正式來源文件"></section>
         </div>
       </section>
       <section id="lab-view" class="view" aria-label="Draft Room">

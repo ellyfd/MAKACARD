@@ -2375,3 +2375,25 @@ h1, .mission-panel h2, .hand-panel h2, .timeline-panel h2, .org-toolbar h2 { col
 .ledger-gaps { display: grid; gap: 6px; padding: 12px; border: 1px dashed #c5cdc5; background: #fbfcf9; }
 .ledger-gaps strong { color: #5e6e78; font-size: .85rem; line-height: 1.5; }
 @media (max-width: 860px) { .ledger-grid, .ledger-roles ul { grid-template-columns: 1fr; } }
+
+/* Source Center: provenance is a first-class public record. */
+.source-layout { display: grid; gap: 16px; }
+.source-head { display: flex; justify-content: space-between; align-items: end; gap: 20px; padding: 22px; }
+.source-head h2 { margin: 4px 0 8px; color: #344e5f; }
+.source-head p { max-width: 700px; margin: 0; color: #697889; line-height: 1.6; }
+.source-boundary { padding: 7px 10px; border: 1px solid #c9d7cd; border-radius: 3px; color: #476957; background: #edf4ec; font-size: .78rem; font-weight: 800; white-space: nowrap; }
+.source-release { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 12px; }
+.source-release article { display: grid; gap: 6px; min-height: 112px; padding: 16px; border: 1px solid #d6ddd6; border-top: 3px solid #426b84; border-radius: 8px; background: rgba(255,253,248,.96); box-shadow: 0 8px 20px rgba(63,76,75,.06); }
+.source-release span { color: #a8503f; font-size: .7rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+.source-release strong { color: #3b5666; font-size: 1.05rem; overflow-wrap: anywhere; }
+.source-release small { color: #73818b; line-height: 1.45; }
+.source-files { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; }
+.source-file, .source-empty { display: grid; align-content: start; gap: 9px; min-height: 150px; padding: 16px; border: 1px solid #d6ddd6; border-radius: 8px; background: rgba(255,253,248,.96); box-shadow: 0 8px 20px rgba(63,76,75,.06); }
+.source-file > div { display: grid; grid-template-columns: auto 1fr; align-items: start; gap: 9px; }
+.file-seal { display: grid; place-items: center; width: 34px; height: 34px; color: #fffdf8; background: #a8503f; font-size: .66rem; font-weight: 800; }
+.source-file strong { color: #405969; line-height: 1.45; }
+.source-file p { margin: 0; color: #5f7280; font-size: .84rem; }
+.source-file small { margin-top: auto; color: #87939b; font-size: .76rem; }
+.source-empty { place-content: center; text-align: center; color: #667789; }
+@media (max-width: 980px) { .source-release { grid-template-columns: repeat(2, minmax(0,1fr)); } .source-files { grid-template-columns: repeat(2, minmax(0,1fr)); } }
+@media (max-width: 640px) { .source-head { align-items: stretch; flex-direction: column; } .source-release, .source-files { grid-template-columns: 1fr; } }

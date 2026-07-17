@@ -65,6 +65,8 @@ const els = {
   scoreGrid: document.querySelector("#score-grid"),
   pairInsight: document.querySelector("#pair-insight"),
   decisionLedger: document.querySelector("#decision-ledger"),
+  sourceRelease: document.querySelector("#source-release"),
+  sourceFiles: document.querySelector("#source-files"),
   draftCopyRecord: document.querySelector("#copy-draft-record"),
   draftCopyStatus: document.querySelector("#draft-copy-status"),
   meetingTitle: document.querySelector("#meeting-title"),
@@ -341,6 +343,7 @@ function switchView(view) {
   els.views.forEach((viewEl) => viewEl.classList.toggle("active", viewEl.id === `${view}-view`));
   if (view === "org") renderOrgMap();
   if (view === "people") renderPeopleDirectory();
+  if (view === "sources") renderSourceCenter();
 }
 
 function renderOrgMap() {
@@ -1217,12 +1220,28 @@ function fillStaticControls() {
     if (elly) els.peopleSelect.value = elly.id;
     renderPeopleDirectory();
   }
+  renderSourceCenter();
   if (els.capabilityFilter) {
     els.capabilityFilter.innerHTML = [`<option value="all">全部已建檔 JD</option>`, ...GAME_DATA.orgUnits.filter((unit) => (GAME_DATA.jobProfiles || []).some((job) => job.unit === unit.id)).map((unit) => `<option value="${unit.id}">${unit.name}</option>`)].join("");
     renderCapabilityMap();
   }
 }
 
+function renderSourceCenter() {
+  if (!els.sourceRelease || !els.sourceFiles) return;
+  const release = GAME_DATA.publicRelease || {};
+  const sourceFiles = release.sourceFiles || [];
+  const sourceVersionCount = new Set(sourceFiles.map((item) => item.sourceVersion).filter(Boolean)).size;
+  els.sourceRelease.innerHTML = `
+    <article><span>發布快照</span><strong>${release.id || "未標記"}</strong><small>發布日期：${release.publishedAt || ""}</small></article>
+    <article><span>正式節點</span><strong>${release.formalDirectoryCount || 0}</strong><small>只計入已確認組織節點</small></article>
+    <article><span>來源文件</span><strong>${release.sourceCount || sourceFiles.length}</strong><small>${sourceVersionCount} 個資料版本</small></article>
+    <article><span>可見範圍</span><strong>${release.classification || "P0"}</strong><small>不含 P1 任務紀錄與 P2/P3 人才資料</small></article>
+  `;
+  els.sourceFiles.innerHTML = sourceFiles.length ? sourceFiles.map((item) => `
+    <article class="source-file"><div><span class="file-seal">PDF</span><strong>${item.source}</strong></div><p>${item.directoryCount} 個正式組織節點</p><small>資料版本：${item.sourceVersion || "未標記"}</small></article>
+  `).join("") : `<article class="source-empty"><strong>尚無可發布來源</strong><p>公開版不以推測建立來源紀錄。</p></article>`;
+}
 function peopleJobs(member) {
   const text = `${member.name} ${member.localName || ""} ${member.role || ""} ${member.department || ""}`.toLowerCase();
   return (GAME_DATA.jobProfiles || []).filter((job) => {
