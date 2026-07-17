@@ -794,7 +794,7 @@ function orgViewForFocus(hierarchy, focus) {
     title: "Makalot 主架構",
     nodes: hierarchy.units.map((unit) => ({ type: "unit", unit: unit.id, title: unit.name, subtitle: unit.tagline, count: unit.people.length ? `${unit.people.length} 成員` : "", departments: unit.departments.length })),
     summary: `${hierarchy.units.length} 個組織群`,
-    detail: "<strong>主架構</strong><p>點一個組織群放大一層；再點正式部門/中心/課/團隊看下層或成員。</p>"
+    detail: `<strong>主架構</strong><span>公開資料版：${GAME_DATA.publicRelease?.id || "未標記"}</span><span>正式節點：${GAME_DATA.publicRelease?.formalDirectoryCount || 0}</span><span>來源檔：${GAME_DATA.publicRelease?.sourceCount || 0}</span><p>點一個組織群放大一層；再點正式部門/中心/課/團隊看下層或成員。</p>`
   };
 }
 

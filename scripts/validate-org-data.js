@@ -90,6 +90,23 @@ if (sourcedJobProfiles < jobProfiles.length) {
 }
 
 const formalDirectory = directory.filter((item) => !item.generated);
+const publicRelease = data.publicRelease;
+if (!publicRelease?.id || !publicRelease?.publishedAt || !Array.isArray(publicRelease?.sourceFiles)) {
+  errors.push("Missing structured public release manifest");
+} else {
+  if (publicRelease.formalDirectoryCount !== formalDirectory.length) {
+    errors.push(`Public release formal directory count mismatch: ${publicRelease.formalDirectoryCount}/${formalDirectory.length}`);
+  }
+  const releaseSources = new Set(publicRelease.sourceFiles.map((entry) => `${entry.source || ""}::${entry.sourceVersion || ""}`));
+  formalDirectory.forEach((item) => {
+    if (!releaseSources.has(`${item.source || ""}::${item.sourceVersion || ""}`)) {
+      errors.push(`Formal directory ${item.id} is absent from the public release manifest`);
+    }
+  });
+  if (publicRelease.sourceCount !== releaseSources.size) {
+    errors.push(`Public release source count mismatch: ${publicRelease.sourceCount}/${releaseSources.size}`);
+  }
+}
 const sourceCoverage = formalDirectory.filter((item) => item.source || item.verification).length;
 const membershipResolutions = data.orgMembershipResolutions || [];
 const sourcedMembershipResolutions = membershipResolutions.filter((item) => {
