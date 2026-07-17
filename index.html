@@ -23,6 +23,7 @@
       <nav class="tabs" aria-label="MAKACARD views">
         <button class="tab active" type="button" data-view="meeting">Mission Run</button>
         <button class="tab" type="button" data-view="org">Digital Org</button>
+        <button class="tab" type="button" data-view="talent">Capability Map</button>
         <button class="tab" type="button" data-view="lab">Draft Room</button>
       </nav>
 
@@ -114,6 +115,21 @@
         </div>
       </section>
 
+      <section id="talent-view" class="view" aria-label="Capability Map">
+        <div class="capability-layout">
+          <section class="capability-head panel">
+            <div>
+              <p class="label">Talent Intelligence</p>
+              <h2>職務能力底圖</h2>
+              <p>以 JD 與正式職務範圍呈現組織能力需求；不包含個人評分、會議側寫或績效判斷。</p>
+            </div>
+            <label>聚焦單位<select id="capability-filter" aria-label="篩選職務能力單位"></select></label>
+          </section>
+          <section id="capability-summary" class="capability-summary" aria-label="職務能力摘要"></section>
+          <section id="capability-map" class="capability-grid" aria-label="職務能力地圖"></section>
+        </div>
+      </section>
+
       <section id="lab-view" class="view" aria-label="Draft Room">
         <div class="lab-layout">
           <section class="panel controls-panel">
@@ -158,9 +174,12 @@
     <script src="org-provenance-data.js?v=20260717-governance51"></script>
     <script src="org-sandbox-data.js?v=20260717-governance51"></script>
     <script src="public-data-governance.js?v=20260717-governance51"></script>
-    <script src="game.js?v=20260717-governance51"></script>
+    <script src="game.js?v=20260717-capability01"></script>
   </body>
 </html>
+
+
+
 
 
 

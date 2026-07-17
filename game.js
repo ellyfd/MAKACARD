@@ -42,6 +42,9 @@ const els = {
   orgZoomIn: document.querySelector("#org-zoom-in"),
   orgZoomOut: document.querySelector("#org-zoom-out"),
   orgZoomReset: document.querySelector("#org-zoom-reset"),
+  capabilityFilter: document.querySelector("#capability-filter"),
+  capabilitySummary: document.querySelector("#capability-summary"),
+  capabilityMap: document.querySelector("#capability-map"),
   personA: document.querySelector("#person-a"),
   personB: document.querySelector("#person-b"),
   personC: document.querySelector("#person-c"),
@@ -1499,11 +1502,43 @@ function fillStaticControls() {
     select.innerHTML = personSelectOptions(suggestedMemberFor(slotId));
   });
   els.scenarioSelect.value = GAME_DATA.orgMissions.some((mission) => mission.id === "gap-exec-visit") ? "gap-exec-visit" : GAME_DATA.orgMissions[0]?.id;
+  if (els.capabilityFilter) {
+    els.capabilityFilter.innerHTML = [`<option value="all">全部已建檔 JD</option>`, ...GAME_DATA.orgUnits.filter((unit) => (GAME_DATA.jobProfiles || []).some((job) => job.unit === unit.id)).map((unit) => `<option value="${unit.id}">${unit.name}</option>`)].join("");
+    renderCapabilityMap();
+  }
 }
 
 function renderScoreCard(label, value, helper) {
   const safeValue = clamp(value);
   return `<article class="score-card"><span>${label}</span><strong>${safeValue}</strong><meter min="0" max="100" value="${safeValue}"></meter><p>${helper}</p></article>`;
+}
+
+function capabilityLevel(value) {
+  const match = /L(\d)/.exec(value || "");
+  return match ? Number(match[1]) : 0;
+}
+
+function renderCapabilityMap() {
+  if (!els.capabilityMap || !els.capabilitySummary) return;
+  const unitId = els.capabilityFilter?.value || "all";
+  const jobs = (GAME_DATA.jobProfiles || []).filter((job) => unitId === "all" || job.unit === unitId);
+  const competencies = new Map();
+  jobs.forEach((job) => Object.entries(job.competencies || {}).forEach(([name, level]) => {
+    const current = competencies.get(name) || { count: 0, level: 0 };
+    competencies.set(name, { count: current.count + 1, level: Math.max(current.level, capabilityLevel(level)) });
+  }));
+  const unitCount = new Set(jobs.map((job) => job.unit)).size;
+  els.capabilitySummary.innerHTML = [
+    ["JD profiles", jobs.length, "已建檔職務"],
+    ["Units", unitCount, "涵蓋正式組織群"],
+    ["Competencies", competencies.size, "JD 明列核心職能"],
+    ["Data boundary", "JD only", "不含個人評分或側寫"]
+  ].map(([label, value, helper]) => `<article><span>${label}</span><strong>${value}</strong><small>${helper}</small></article>`).join("");
+  els.capabilityMap.innerHTML = jobs.map((job) => {
+    const competencyRows = Object.entries(job.competencies || {}).map(([name, level]) => `<span><b>${name}</b><i>${level}</i></span>`).join("");
+    const timeRows = Object.entries(job.time || {}).slice(0, 4).map(([name, share]) => `<span>${name}<b>${share}%</b></span>`).join("");
+    return `<article class="capability-card"><div class="capability-topline"><span>${unitName(job.unit)}</span><b>${job.group}</b></div><h3>${job.title}</h3><p>${job.belongsTo}</p><div class="capability-competencies">${competencyRows}</div><div class="capability-focus">${(job.focus || []).slice(0, 4).map((item) => `<i>${item}</i>`).join("")}</div>${timeRows ? `<div class="capability-time">${timeRows}</div>` : ""}</article>`;
+  }).join("") || `<article class="capability-empty"><strong>此單位尚無已建檔 JD</strong><p>不以推測補齊職務能力。</p></article>`;
 }
 
 function draftAssignments() {
@@ -1725,6 +1760,7 @@ function bindEvents() {
   els.analyzePair?.addEventListener("click", analyzePair);
   els.resetMeeting?.addEventListener("click", resetMeeting);
   els.scenarioSelect?.addEventListener("change", analyzePair);
+  els.capabilityFilter?.addEventListener("change", renderCapabilityMap);
 }
 
 function init() {
@@ -1735,6 +1771,8 @@ function init() {
 }
 
 init();
+
+
 
 
 
