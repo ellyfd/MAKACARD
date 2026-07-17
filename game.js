@@ -1477,6 +1477,55 @@ function missionSandbox(mission) {
   return mission?.sandbox || { deliverable: "", slots: [], success: [], events: [] };
 }
 
+function missionEventCard(meeting) {
+  const events = missionSandbox(meeting.scenario).events || [];
+  const text = events[(meeting.turn - 1) % Math.max(1, events.length)] || "確認 owner、版本與下一步。";
+  const rules = [
+    {
+      match: /版本|資料|BOM|使用/,
+      title: "資料鏈斷點",
+      actionId: "evidence",
+      effect: { momentum: 9, clarity: 4, resilience: 2 },
+      pressure: { momentum: -7, clarity: -5 }
+    },
+    {
+      match: /客戶|對外|量產端|跨過|跨單位/,
+      title: "跨域接口",
+      actionId: "bridge",
+      effect: { clarity: 9, trust: 5, resilience: 2 },
+      pressure: { clarity: -8, trust: -4 }
+    },
+    {
+      match: /縮短|期限|實體成果/,
+      title: "時間壓力",
+      actionId: "prototype",
+      effect: { friction: 10, momentum: 4, resilience: 2 },
+      pressure: { friction: -7, momentum: -4 }
+    },
+    {
+      match: /owner|承諾|範圍|例外|流程/,
+      title: "責任空窗",
+      actionId: "frame",
+      effect: { trust: 10, clarity: 4, resilience: 1 },
+      pressure: { trust: -7, clarity: -4 }
+    }
+  ];
+  const rule = rules.find((item) => item.match.test(text)) || {
+    title: "任務雜訊",
+    actionId: "gate",
+    effect: { friction: 8, momentum: 4, resilience: 2 },
+    pressure: { friction: -6, momentum: -4 }
+  };
+  const action = actionById(rule.actionId);
+  return { ...rule, text, action };
+}
+
+function applyMissionEffect(meeting, effect = {}) {
+  Object.entries(effect).forEach(([metric, amount]) => {
+    if (metric in meeting) meeting[metric] = clamp(meeting[metric] + amount);
+  });
+}
+
 function sandboxSlot(id) {
   return sandboxData().slotCatalog.find((slot) => slot.id === id);
 }
@@ -1654,6 +1703,7 @@ function resetMeeting() {
 function renderMeeting() {
   const meeting = state.meeting;
   const blueprint = missionSandbox(meeting.scenario);
+  const event = missionEventCard(meeting);
   const requiredUnits = missionRequires(meeting.scenario);
   const covered = new Set(meeting.coveredUnits);
   const missing = requiredUnits.filter((unit) => !covered.has(unit));
@@ -1662,7 +1712,12 @@ function renderMeeting() {
   els.missionBrief.innerHTML = `
     <div class="mission-meta"><span>交付物</span><strong>${blueprint.deliverable}</strong></div>
     <div class="mission-meta"><span>必要席位</span><strong>${blueprint.slots.map((slotId) => sandboxSlot(slotId)?.zh || slotId).join(" / ")}</strong></div>
-    <div class="mission-meta"><span>本回合事件</span><strong>${blueprint.events[(meeting.turn - 1) % Math.max(1, blueprint.events.length)] || "確認 owner、版本與下一步。"}</strong></div>
+    <article class="mission-event-card">
+      <span>EVENT ${Math.min(meeting.turn, 5)}</span>
+      <strong>${event.title}</strong>
+      <p>${event.text}</p>
+      <b>破解牌：${event.action?.icon || ""} ${event.action?.name || event.actionId}</b>
+    </article>
     <div class="lane-strip">${requiredUnits.map((unit) => `<i class="${covered.has(unit) ? "covered" : ""}" style="--unit:${UNIT_COLORS[unit] || "#fff"}">${unitName(unit)}</i>`).join("")}</div>
   `;
   els.turnCount.textContent = `Turn ${Math.min(meeting.turn, 5)} / 5`;
@@ -1687,6 +1742,8 @@ function playMeetingTurn(memberId, actionId = els.missionAction?.value) {
   const crossUnit = meeting.lastUnit && meeting.lastUnit !== unit;
   const riskPenalty = fit.risk ? fit.risk.penalty : 0;
   const actionBoost = action.boosts || {};
+  const event = missionEventCard(meeting);
+  const eventCountered = action.id === event.actionId;
   const decisionGain = (action.id === "frame" ? 16 : 4) + (newLane ? 4 : 0) - riskPenalty / 6;
   const factGain = (action.id === "evidence" ? 17 : action.id === "gate" ? 10 : 4) - riskPenalty / 7;
   const deliveryGain = (action.id === "prototype" ? 17 : action.id === "bridge" ? 10 : 5) + (newLane ? 5 : 0) - riskPenalty / 7;
@@ -1698,13 +1755,15 @@ function playMeetingTurn(memberId, actionId = els.missionAction?.value) {
   meeting.momentum = clamp(meeting.momentum + factGain + (actionBoost.trust || 0) / 4);
   meeting.friction = clamp(meeting.friction + deliveryGain + (actionBoost.momentum || 0) / 5);
   meeting.resilience = clamp(meeting.resilience + resilienceGain - (fit.risk?.title === "知識鎖倉" ? 12 : 0));
+  applyMissionEffect(meeting, eventCountered ? event.effect : event.pressure);
 
   if (newLane) meeting.coveredUnits.push(unit);
   meeting.played.push(person.id);
   meeting.lastDepartment = person.department;
   meeting.lastUnit = unit;
   const signal = fit.risk ? `風險：${fit.risk.title}` : `補上 ${unitName(unit)} 視角`;
-  meeting.log.unshift(`T${meeting.turn}：${person.name} 以「${action.name}」進場。${signal}。`);
+  const eventResult = eventCountered ? `事件破解：${event.title}` : `事件未解：${event.title}`;
+  meeting.log.unshift(`T${meeting.turn}：${person.name} 以「${action.name}」進場。${signal}。${eventResult}。`);
   meeting.turn += 1;
   if (meeting.turn > 5) {
     const missing = required.filter((requiredUnit) => !meeting.coveredUnits.includes(requiredUnit));
@@ -1807,5 +1866,6 @@ function init() {
 }
 
 init();
+
 
 

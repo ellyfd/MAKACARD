@@ -2165,6 +2165,11 @@ body.org-mode .org-focus-detail {
 .mission-meta { display: grid; gap: 4px; padding: 10px; border: 1px solid rgba(255,255,255,.1); border-radius: 7px; background: rgba(7,12,22,.25); }
 .mission-meta span, .detail-kicker { color: #ffcf5a; font-size: .69rem; font-weight: 800; letter-spacing: .11em; text-transform: uppercase; }
 .mission-meta strong { color: #eff7ff; font-size: .86rem; line-height: 1.45; }
+.mission-event-card { display: grid; gap: 6px; padding: 13px; border: 1px solid rgba(255,207,90,.5); border-left: 4px solid #ffcf5a; border-radius: 8px; background: linear-gradient(115deg, rgba(255,207,90,.14), transparent 66%), rgba(255,255,255,.04); }
+.mission-event-card span { color: #ffcf5a; font-size: .68rem; font-weight: 800; letter-spacing: .12em; }
+.mission-event-card strong { color: #fff; font-size: 1rem; }
+.mission-event-card p { margin: 0; color: #c4d2e4; font-size: .86rem; line-height: 1.45; }
+.mission-event-card b { color: #9be96f; font-size: .78rem; }
 .controls-panel { align-content: start; }
 .controls-panel label { gap: 6px; color: #c9d6e5; font-size: .8rem; font-weight: 700; }
 .controls-panel select { min-height: 44px; }
@@ -2223,4 +2228,5 @@ body.org-mode .org-focus-detail {
 .capability-empty { place-content: center; text-align: center; color: #c6d4e4; border-top-color: #ffcf5a; }
 @media (max-width: 980px) { .capability-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); } .capability-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 680px) { .capability-head { align-items: stretch; flex-direction: column; } .capability-head label { min-width: 0; } .capability-summary, .capability-grid { grid-template-columns: 1fr; } }
+
 
