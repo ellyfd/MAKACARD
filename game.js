@@ -66,6 +66,7 @@ const els = {
   meetingScenario: document.querySelector("#meeting-scenario"),
   missionBrief: document.querySelector("#mission-brief"),
   actionCards: document.querySelector("#action-cards"),
+  missionAction: document.querySelector("#mission-action"),
   resetMeeting: document.querySelector("#reset-meeting"),
   turnCount: document.querySelector("#turn-count"),
   meetingLog: document.querySelector("#meeting-log"),
@@ -1207,11 +1208,15 @@ function drawHand() {
     .map((member) => member.id);
 }
 
+function selectedMissionAction(member) {
+  return actionById(els.missionAction?.value) || bestActionForMember(member);
+}
+
 function renderActionCards() {
   const disabled = state.meeting.turn > 5 ? "disabled" : "";
   els.actionCards.innerHTML = state.meeting.hand.map((memberId) => {
     const member = memberById(memberId);
-    const action = bestActionForMember(member);
+    const action = selectedMissionAction(member);
     const fit = cardFit(member, action);
     const rarity = cardRarity(member, action);
     const pips = cardPips(member, action, fit);
@@ -1229,7 +1234,7 @@ function renderActionCards() {
     `;
   }).join("");
   els.actionCards.querySelectorAll(".action-card").forEach((button) => {
-    button.addEventListener("click", () => playMeetingTurn(button.dataset.member));
+    button.addEventListener("click", () => playMeetingTurn(button.dataset.member, els.missionAction?.value));
   });
 }
 
@@ -1504,6 +1509,12 @@ function fillStaticControls() {
   els.memberCount.textContent = roster.length;
   if (els.orgUnitCount) els.orgUnitCount.textContent = (GAME_DATA.orgDirectory || []).length;
   fillSelect(els.scenarioSelect, GAME_DATA.orgMissions, (mission) => mission.name);
+  if (els.missionAction) {
+    els.missionAction.innerHTML = [
+      '<option value="">依職務自動建議</option>',
+      ...GAME_DATA.actionTypes.map((action) => `<option value="${action.id}">${action.icon} ${action.name}</option>`)
+    ].join("");
+  }
   const draftSlots = [
     [els.draftSponsor, "sponsor"],
     [els.draftDecisionOwner, "decision-owner"],
@@ -1664,10 +1675,11 @@ function renderMeeting() {
   renderOrgMap();
 }
 
-function playMeetingTurn(memberId) {
+function playMeetingTurn(memberId, actionId = els.missionAction?.value) {
   const meeting = state.meeting;
   const person = memberById(memberId);
-  const action = bestActionForMember(person);
+  if (!person || meeting.turn > 5) return;
+  const action = actionById(actionId) || bestActionForMember(person);
   const unit = unitFor(person);
   const fit = cardFit(person, action);
   const required = missionRequires(meeting.scenario);
@@ -1780,6 +1792,7 @@ function bindEvents() {
   });
   els.analyzePair?.addEventListener("click", analyzePair);
   els.resetMeeting?.addEventListener("click", resetMeeting);
+  els.missionAction?.addEventListener("change", renderActionCards);
   els.scenarioSelect?.addEventListener("change", analyzePair);
   els.capabilityFilter?.addEventListener("change", renderCapabilityMap);
 }
@@ -1792,15 +1805,4 @@ function init() {
 }
 
 init();
-
-
-
-
-
-
-
-
-
-
-
 

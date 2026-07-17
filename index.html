@@ -74,7 +74,12 @@
                 <p class="label">Hand</p>
                 <h2>本回合人物牌</h2>
               </div>
-              <button id="reset-meeting" class="secondary-button compact" type="button">新任務</button>
+              <div class="mission-controls">
+                <label class="mission-action-control" for="mission-action">戰術牌
+                  <select id="mission-action" aria-label="本回合戰術牌"></select>
+                </label>
+                <button id="reset-meeting" class="secondary-button compact" type="button">新任務</button>
+              </div>
             </div>
             <div id="action-cards" class="action-cards" aria-label="本回合人物牌"></div>
           </section>
@@ -177,9 +182,4 @@
     <script src="game.js?v=20260717-capability01"></script>
   </body>
 </html>
-
-
-
-
-
 
