@@ -85,7 +85,7 @@ const sourceCoverage = formalDirectory.filter((item) => item.source || item.veri
 const membershipResolutions = data.orgMembershipResolutions || [];
 const sourcedMembershipResolutions = membershipResolutions.filter((item) => {
   const person = people.find((candidate) => candidate.id === item.personId);
-  return person?.membershipSource && person?.membershipSourceVersion && person?.membershipResolution === "exact-department-label";
+  return person?.membershipSource && person?.membershipSourceVersion && ["exact-department-label", "exact-department-path"].includes(person?.membershipResolution);
 }).length;
 const reportingLines = people.filter((person) => person.reportsTo);
 const sourcedReportingLines = reportingLines.filter((person) => person.reportingSource).length;
@@ -113,6 +113,7 @@ console.log(JSON.stringify({
 }, null, 2));
 
 if (errors.length) process.exit(1);
+
 
 
 
