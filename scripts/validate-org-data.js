@@ -76,6 +76,8 @@ people.forEach((person) => {
 
 const formalDirectory = directory.filter((item) => !item.generated);
 const sourceCoverage = formalDirectory.filter((item) => item.source || item.verification).length;
+const reportingLines = people.filter((person) => person.reportsTo);
+const sourcedReportingLines = reportingLines.filter((person) => person.reportingSource).length;
 if (sourceCoverage < formalDirectory.length) {
   warnings.push(`Formal directories with source metadata: ${sourceCoverage}/${formalDirectory.length}`);
 }
@@ -86,8 +88,10 @@ console.log(JSON.stringify({
   directories: directory.length,
   people: people.length,
   formalDirectorySourceCoverage: `${sourceCoverage}/${formalDirectory.length}`,
+  reportingLineSourceCoverage: `${sourcedReportingLines}/${reportingLines.length}`,
   errors,
   warnings
 }, null, 2));
 
 if (errors.length) process.exit(1);
+

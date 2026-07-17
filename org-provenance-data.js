@@ -58,6 +58,22 @@
     GAME_DATA[collection] = (GAME_DATA[collection] || []).map((person) => (
       person.orgUnit === "pending" ? { ...person, hiddenFromOrg: true } : person
     ));
+  });
+  const reportingSourceByUnit = {
+    ceo: "公司組織圖202605.pdf",
+    "general-mgmt": "總管理處組織圖202605.pdf",
+    "sales-marketing": "業務行銷群組織圖202605.pdf",
+    "ops-mgmt": "資訊處組織圖202606.pdf",
+    "tech-rd": "工務研發群組織圖202605.pdf",
+    newbiz: "數位產品發展中心202605.pdf"
+  };
+  ["members", "orgPeople"].forEach((collection) => {
+    (GAME_DATA[collection] || []).forEach((person) => {
+      if (person.reportsTo && !person.reportingSource && reportingSourceByUnit[person.orgUnit]) {
+        person.reportingSource = reportingSourceByUnit[person.orgUnit];
+      }
+    });
   });})();
+
 
 
