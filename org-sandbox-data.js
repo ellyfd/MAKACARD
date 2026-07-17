@@ -79,8 +79,34 @@
     ]
   };
 
+  [
+    {
+      id: "gap-exec-visit",
+      name: "Executive Visit Prep",
+      prompt: "高層客戶來訪前，展示、對外訊息與跨單位分工必須在短時間內定版。",
+      goal: "定版展示範圍、現場角色與可交付的下一步。",
+      pressure: { trust: 39, clarity: 28, momentum: 42, friction: 45 }
+    },
+    {
+      id: "techpack-truth-map",
+      name: "Techpack Truth Map",
+      prompt: "同一技術資料被多個單位描述為已完成，團隊需確認資料範圍、來源、owner 與可用性。",
+      goal: "釐清資料層次與版本來源，指定後續維運 owner。",
+      pressure: { trust: 34, clarity: 22, momentum: 36, friction: 55 }
+    },
+    {
+      id: "ai-seed-rollout",
+      name: "AI Seed Rollout",
+      prompt: "AI 試點已啟動，但各單位的工具環境、資料權限與成果期待不同。",
+      goal: "定義試點邊界、資料責任、成果與回報節奏。",
+      pressure: { trust: 42, clarity: 30, momentum: 41, friction: 40 }
+    }
+  ].forEach((mission) => {
+    if (!GAME_DATA.orgMissions.some((item) => item.id === mission.id)) GAME_DATA.orgMissions.push(mission);
+  });
   GAME_DATA.orgMissions.forEach((mission) => {
     const blueprint = missionBlueprints[mission.id] || defaultBlueprint;
     mission.sandbox = { ...defaultBlueprint, ...blueprint };
   });
 })();
+
