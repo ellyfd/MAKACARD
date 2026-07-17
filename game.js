@@ -1541,6 +1541,12 @@ function renderCapabilityMap() {
   }).join("") || `<article class="capability-empty"><strong>此單位尚無已建檔 JD</strong><p>不以推測補齊職務能力。</p></article>`;
 }
 
+function assignmentCue(fit) {
+  if (fit >= 88) return "職務線索強";
+  if (fit >= 72) return "單位線索";
+  return "需確認授權";
+}
+
 function draftAssignments() {
   return [
     { slotId: "sponsor", member: memberById(els.draftSponsor?.value) },
@@ -1585,7 +1591,7 @@ function analyzePair() {
     const slot = sandboxSlot(assignment.slotId);
     const member = assignment.member;
     const fit = member ? roleHintFit(member, assignment.slotId) : 0;
-    return `<article class="assignment-card ${member ? "assigned" : "missing"}"><span>${slot?.zh || assignment.slotId}</span><strong>${member ? member.name : "未指派"}</strong><small>${member ? `${unitName(unitFor(member))} · 任務適配 ${fit}` : slot?.detail || ""}</small></article>`;
+    return `<article class="assignment-card ${member ? "assigned" : "missing"}"><span>${slot?.zh || assignment.slotId}</span><strong>${member ? member.name : "未指派"}</strong><small>${member ? `${unitName(unitFor(member))} · ${assignmentCue(fit)}` : slot?.detail || ""}</small></article>`;
   }).join("");
   els.pairInsight.innerHTML = `
     <div class="draft-deliverable"><span>任務交付物</span><strong>${blueprint.deliverable}</strong></div>
@@ -1771,6 +1777,7 @@ function init() {
 }
 
 init();
+
 
 
 
