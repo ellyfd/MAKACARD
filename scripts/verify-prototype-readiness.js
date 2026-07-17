@@ -28,7 +28,9 @@ const check = (condition, message) => { if (!condition) errors.push(message); };
   "function missionRecord(",
   "function draftRecord(",
   "copyMissionRecord",
-  "copyDraftRecord"
+  "copyDraftRecord",
+  "function publicReleaseLine()",
+  "公開資料快照：${release.id}"
 ].forEach((marker) => check(game.includes(marker), `Missing prototype behavior: ${marker}`));
 
 const sources = [...html.matchAll(/<script src="([^"?]+)\?[^\"]*"><\/script>/g)]
