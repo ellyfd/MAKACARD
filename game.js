@@ -1223,16 +1223,20 @@ function renderCapabilityMap() {
     competencies.set(name, { count: current.count + 1, level: Math.max(current.level, capabilityLevel(level)) });
   }));
   const unitCount = new Set(jobs.map((job) => job.unit)).size;
+  const taskSeatCount = new Set(jobs.flatMap((job) => sandboxData().unitRoleHints[job.unit] || [])).size;
   els.capabilitySummary.innerHTML = [
     ["JD profiles", jobs.length, "已建檔職務"],
     ["Units", unitCount, "涵蓋正式組織群"],
     ["Competencies", competencies.size, "JD 明列核心職能"],
+    ["Task seats", taskSeatCount, "依單位職掌提示的任務席位"],
     ["Data boundary", "JD only", "不含個人評分或側寫"]
   ].map(([label, value, helper]) => `<article><span>${label}</span><strong>${value}</strong><small>${helper}</small></article>`).join("");
   els.capabilityMap.innerHTML = jobs.map((job) => {
     const competencyRows = Object.entries(job.competencies || {}).map(([name, level]) => `<span><b>${name}</b><i>${level}</i></span>`).join("");
     const timeRows = Object.entries(job.time || {}).slice(0, 4).map(([name, share]) => `<span>${name}<b>${share}%</b></span>`).join("");
-    return `<article class="capability-card"><div class="capability-topline"><span>${unitName(job.unit)}</span><b>${job.group}</b></div><div class="capability-source"><span>${job.evidenceClass || "JD"}</span><small>${job.source || ""}${job.sourceVersion ? ` · ${job.sourceVersion}` : ""}</small></div><h3>${job.title}</h3><p>${job.belongsTo}</p><div class="capability-competencies">${competencyRows}</div><div class="capability-focus">${(job.focus || []).slice(0, 4).map((item) => `<i>${item}</i>`).join("")}</div>${timeRows ? `<div class="capability-time">${timeRows}</div>` : ""}</article>`;
+    const taskSeats = (sandboxData().unitRoleHints[job.unit] || []).map((slotId) => sandboxSlot(slotId)?.zh || slotId);
+    const taskSeatRows = taskSeats.length ? `<div class="capability-task-seats"><span>任務席位</span><p>${taskSeats.join(" / ")}</p></div>` : "";
+    return `<article class="capability-card"><div class="capability-topline"><span>${unitName(job.unit)}</span><b>${job.group}</b></div><div class="capability-source"><span>${job.evidenceClass || "JD"}</span><small>${job.source || ""}${job.sourceVersion ? ` · ${job.sourceVersion}` : ""}</small></div><h3>${job.title}</h3><p>${job.belongsTo}</p><div class="capability-competencies">${competencyRows}</div><div class="capability-focus">${(job.focus || []).slice(0, 4).map((item) => `<i>${item}</i>`).join("")}</div>${taskSeatRows}${timeRows ? `<div class="capability-time">${timeRows}</div>` : ""}</article>`;
   }).join("") || `<article class="capability-empty"><strong>此單位尚無已建檔 JD</strong><p>不以推測補齊職務能力。</p></article>`;
 }
 
