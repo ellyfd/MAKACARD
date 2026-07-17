@@ -223,14 +223,12 @@ function memberJobFit(member, mission) {
   if (!jobs.length || !member) return { score: 50, jobs: [], label: "JD 未設定" };
   const unit = unitFor(member);
   const text = `${member.name} ${member.localName || ""} ${member.role || ""} ${member.department || ""}`.toLowerCase();
-  const vectors = vectorsFor(member);
   const scored = jobs.map((job) => {
     let score = job.unit === unit ? 32 : -12;
     const belongs = (job.belongsTo || "").split("/").map((part) => part.trim()).filter(Boolean);
     score += belongs.some((part) => text.includes(part.toLowerCase())) ? 18 : 0;
     const keywords = [...(job.focus || []), ...(job.traits || []), job.title, job.group].filter(Boolean);
     score += keywords.reduce((sum, keyword) => sum + (text.includes(String(keyword).toLowerCase()) ? 7 : 0), 0);
-    score += competencyVectorFit(job, vectors);
     return { job, score: clamp(score) };
   }).sort((left, right) => right.score - left.score);
   const best = scored[0];
@@ -239,18 +237,6 @@ function memberJobFit(member, mission) {
     jobs: scored,
     label: best.score >= 76 ? `JD FIT: ${best.job.title}` : best.score >= 58 ? `JD PARTIAL: ${best.job.title}` : `JD GAP: ${best.job.title}`
   };
-}
-
-function competencyVectorFit(job, vectors) {
-  const competencies = Object.keys(job.competencies || {}).join(" ");
-  let score = 0;
-  if (competencies.includes("溝通協調")) score += (average([vectors.context, vectors.warmth]) - 62) / 4;
-  if (competencies.includes("問題解決")) score += (average([vectors.clarity, vectors.risk, vectors.data]) - 62) / 4;
-  if (competencies.includes("目標導向")) score += (average([vectors.speed, vectors.clarity]) - 62) / 5;
-  if (competencies.includes("團隊合作")) score += (average([vectors.warmth, vectors.context]) - 60) / 5;
-  if (competencies.includes("創新能力")) score += (average([vectors.speed, vectors.data]) - 60) / 5;
-  if (competencies.includes("培育部屬")) score += (average([vectors.context, vectors.clarity]) - 60) / 5;
-  return score;
 }
 
 function renderMissionJobNeeds(mission) {
@@ -484,7 +470,6 @@ function teamResources({ roles, coverage, decisionRights, boundaryLoad, pairFric
 function teamRole(member) {
   const unit = unitFor(member);
   const roleText = `${member.role || ""} ${member.department || ""}`;
-  const vectors = vectorsFor(member);
   if (["ceo", "general-mgmt"].includes(unit) || /總|處長|經理|主管|head|lead/i.test(roleText)) {
     return { id: "sponsor", name: "Sponsor" };
   }
@@ -1247,11 +1232,40 @@ function renderActionCards() {
   });
 }
 
+function actionSlotFor(action) {
+  return {
+    frame: "decision-owner",
+    bridge: "bridge",
+    prototype: "delivery-owner",
+    gate: "risk-controller",
+    evidence: "data-owner",
+    align: "business-owner"
+  }[action.id] || "delivery-owner";
+}
+
+function formalActionFit(member, action, mission = state.meeting?.scenario) {
+  const jdFit = memberJobFit(member, mission);
+  const matchedJob = jdFit.jobs?.[0]?.job;
+  const roleText = `${member.role || ""} ${member.department || ""} ${matchedJob?.title || ""} ${(matchedJob?.focus || []).join(" ")}`;
+  const keywords = {
+    frame: /規格|版本|報價|交期|系統|管理/,
+    bridge: /溝通|協調|客戶|窗口|業務|行銷|專案/,
+    prototype: /樣品|開發|研發|3D|設計|改善|測試/,
+    gate: /品質|檢驗|稽核|驗貨|認證|風險/,
+    evidence: /資料|報表|分析|系統|文件|驗收|BOM/,
+    align: /客戶|業務|行銷|溝通|協調|品牌/
+  };
+  const cue = roleHintFit(member, actionSlotFor(action));
+  const score = clamp(22 + jdFit.score * .45 + Math.max(0, cue - 38) * .4 + (keywords[action.id]?.test(roleText) ? 12 : 0));
+  return { score, jdFit, cue, slotId: actionSlotFor(action) };
+}
+
 function cardFit(member, action) {
   const meeting = state.meeting;
   const unit = unitFor(member);
   const required = missionRequires(meeting.scenario);
-  const vectorScore = vectorsFor(member)[action.vector] - 66;
+  const roleFit = formalActionFit(member, action, meeting.scenario);
+  const vectorScore = roleFit.score - 60;
   const actionNeed = ((meeting.scenario.weights?.[action.vector] || 1) - 1) * 42;
   const requiredBonus = required.includes(unit) ? 18 : -24;
   const newLaneBonus = required.includes(unit) && !meeting.coveredUnits.includes(unit) ? 11 : 0;
@@ -1282,7 +1296,7 @@ function triggeredRisk(member, action, unit) {
   return null;
 }
 function cardRarity(member, action) {
-  const base = vectorsFor(member)[action.vector];
+  const base = formalActionFit(member, action).score;
   if (base >= 96) return "legendary";
   if (base >= 86) return "rare";
   return "common";
@@ -1297,11 +1311,11 @@ function rarityLabel(rarity) {
 }
 
 function cardPips(member, action, fit) {
-  const vector = vectorsFor(member)[action.vector];
   const unit = unitFor(member);
-  const pips = [unitName(unit), `${axisName(action.vector)} ${vector}`];
+  const pips = [unitName(unit)];
   const jdFit = memberJobFit(member, state.meeting.scenario);
   if (jdFit.score >= 76) pips.push("JD FIT");
+  if (formalActionFit(member, action).cue >= 72) pips.push("ROLE CUE");
   if (jdFit.score < 45) pips.push("JD GAP");
   if (fit?.score < 0) pips.push("MISFIT");
   if (state.meeting.lastUnit && state.meeting.lastUnit !== unit) pips.push("COMBO");
@@ -1312,7 +1326,7 @@ function bestActionForMember(person) {
   return GAME_DATA.actionTypes
     .map((action) => ({
       action,
-      score: vectorsFor(person)[action.vector] + (state.meeting.scenario.weights[action.vector] || 1) * 16
+      score: formalActionFit(person, action).score + (state.meeting.scenario.weights[action.vector] || 1) * 12
     }))
     .sort((left, right) => right.score - left.score)[0].action;
 }
@@ -1777,6 +1791,8 @@ function init() {
 }
 
 init();
+
+
 
 
 
