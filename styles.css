@@ -2170,6 +2170,14 @@ body.org-mode .org-focus-detail {
 .mission-event-card strong { color: #fff; font-size: 1rem; }
 .mission-event-card p { margin: 0; color: #c4d2e4; font-size: .86rem; line-height: 1.45; }
 .mission-event-card b { color: #9be96f; font-size: .78rem; }
+.mission-outcome { display: grid; gap: 6px; padding: 14px; border: 1px solid rgba(255,255,255,.18); border-radius: 8px; background: rgba(255,255,255,.05); }
+.mission-outcome span { font-size: .68rem; font-weight: 800; letter-spacing: .12em; }
+.mission-outcome strong { color: #fff; font-size: .96rem; line-height: 1.4; }
+.mission-outcome p { margin: 0; color: #c4d2e4; font-size: .84rem; line-height: 1.45; }
+.mission-outcome.complete { border-color: rgba(155,233,111,.6); background: linear-gradient(115deg, rgba(155,233,111,.15), transparent 68%), rgba(255,255,255,.04); }
+.mission-outcome.complete span { color: #9be96f; }
+.mission-outcome.incomplete { border-color: rgba(255,125,102,.56); background: linear-gradient(115deg, rgba(255,125,102,.14), transparent 68%), rgba(255,255,255,.04); }
+.mission-outcome.incomplete span { color: #ff9b8a; }
 .controls-panel { align-content: start; }
 .controls-panel label { gap: 6px; color: #c9d6e5; font-size: .8rem; font-weight: 700; }
 .controls-panel select { min-height: 44px; }

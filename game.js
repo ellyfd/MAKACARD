@@ -1068,6 +1068,18 @@ function applyMissionEffect(meeting, effect = {}) {
   });
 }
 
+function missionOutcome(meeting, requiredUnits = missionRequires(meeting.scenario)) {
+  if (meeting.turn <= 5) return null;
+  const missingUnits = requiredUnits.filter((unit) => !meeting.coveredUnits.includes(unit));
+  const shortfalls = [
+    meeting.trust < 65 ? "決策閉環" : "",
+    meeting.clarity < 70 ? "依賴覆蓋" : "",
+    meeting.momentum < 65 ? "事實一致" : "",
+    meeting.friction < 65 ? "交付可行" : "",
+    meeting.resilience < 55 ? "韌性" : ""
+  ].filter(Boolean);
+  return { complete: !missingUnits.length && !shortfalls.length, missingUnits, shortfalls };
+}
 function sandboxSlot(id) {
   return sandboxData().slotCatalog.find((slot) => slot.id === id);
 }
@@ -1249,6 +1261,7 @@ function renderMeeting() {
   const requiredUnits = missionRequires(meeting.scenario);
   const covered = new Set(meeting.coveredUnits);
   const missing = requiredUnits.filter((unit) => !covered.has(unit));
+  const outcome = missionOutcome(meeting, requiredUnits);
   els.meetingTitle.textContent = meeting.scenario.name;
   els.meetingScenario.textContent = meeting.scenario.prompt;
   els.missionBrief.innerHTML = `
@@ -1261,6 +1274,8 @@ function renderMeeting() {
       <b>破解牌：${event.action?.icon || ""} ${event.action?.name || event.actionId}</b>
     </article>
     <div class="lane-strip">${requiredUnits.map((unit) => `<i class="${covered.has(unit) ? "covered" : ""}" style="--unit:${UNIT_COLORS[unit] || "#fff"}">${unitName(unit)}</i>`).join("")}</div>
+    ${outcome ? `<article class="mission-outcome ${outcome.complete ? "complete" : "incomplete"}"><span>${outcome.complete ? "MISSION COMPLETE" : "MISSION UNRESOLVED"}</span><strong>${outcome.complete ? meeting.scenario.goal : "這局尚未形成可交付解法"}</strong><p>${outcome.complete ? "必要單位與五項任務條件皆已閉環。" : [outcome.missingUnits.length ? `未覆蓋：${outcome.missingUnits.map(unitName).join(" / ")}` : "", outcome.shortfalls.length ? `未閉環：${outcome.shortfalls.join(" / ")}` : ""].filter(Boolean).join("；")}</p></article>` : ""}
+
   `;
   els.turnCount.textContent = `Turn ${Math.min(meeting.turn, 5)} / 5`;
   ["trust", "clarity", "momentum", "friction", "resilience"].forEach((key) => {
@@ -1296,7 +1311,7 @@ function playMeetingTurn(memberId, actionId = els.missionAction?.value) {
   meeting.clarity = clamp(meeting.clarity + dependencyGain);
   meeting.momentum = clamp(meeting.momentum + factGain + (actionBoost.trust || 0) / 4);
   meeting.friction = clamp(meeting.friction + deliveryGain + (actionBoost.momentum || 0) / 5);
-  meeting.resilience = clamp(meeting.resilience + resilienceGain - (fit.risk?.title === "知識鎖倉" ? 12 : 0));
+  meeting.resilience = clamp(meeting.resilience + resilienceGain);
   applyMissionEffect(meeting, eventCountered ? event.effect : event.pressure);
 
   if (newLane) meeting.coveredUnits.push(unit);
@@ -1308,9 +1323,8 @@ function playMeetingTurn(memberId, actionId = els.missionAction?.value) {
   meeting.log.unshift(`T${meeting.turn}：${person.name} 以「${action.name}」進場。${signal}。${eventResult}。`);
   meeting.turn += 1;
   if (meeting.turn > 5) {
-    const missing = required.filter((requiredUnit) => !meeting.coveredUnits.includes(requiredUnit));
-    const complete = meeting.trust >= 65 && meeting.clarity >= 70 && meeting.momentum >= 65 && meeting.friction >= 65 && meeting.resilience >= 55 && !missing.length;
-    meeting.log.unshift(complete ? `任務完成：${meeting.scenario.goal}` : `任務未閉環：${missing.length ? `仍缺 ${missing.map(unitName).join(" / ")}` : "需要補 owner、資料或備援，而不只是重抽人物牌"}。`);
+    const outcome = missionOutcome(meeting, required);
+    meeting.log.unshift(outcome.complete ? `任務完成：${meeting.scenario.goal}` : `任務未閉環：${outcome.missingUnits.length ? `仍缺 ${outcome.missingUnits.map(unitName).join(" / ")}` : `需補 ${outcome.shortfalls.join(" / ")}`}。`);
   }
   drawHand();
   renderMeeting();
@@ -1408,6 +1422,7 @@ function init() {
 }
 
 init();
+
 
 
 
