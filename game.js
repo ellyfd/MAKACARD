@@ -1313,6 +1313,15 @@ function draftRecord() {
   const coveredUnits = requiredUnits.filter((unit) => selectedUnits.has(unit));
   const missingUnits = requiredUnits.filter((unit) => !selectedUnits.has(unit));
   const missingSlots = blueprint.slots.filter((slotId) => !assignments.find((item) => item.slotId === slotId)?.member);
+  const selected = assignments.filter((item) => item.member);
+  const roleFits = selected.map((item) => roleHintFit(item.member, item.slotId));
+  const decision = clamp((assignments.find((item) => item.slotId === "decision-owner")?.member ? 60 : 0) + (assignments.find((item) => item.slotId === "sponsor")?.member ? 25 : 0) + (selected.length >= 4 ? 10 : 0));
+  const dependency = clamp(requiredUnits.length ? coveredUnits.length / requiredUnits.length * 100 : 0);
+  const facts = clamp((assignments.find((item) => item.slotId === "data-owner")?.member ? 58 : 0) + (assignments.find((item) => item.slotId === "technical-authority")?.member ? 25 : 0) + (missingUnits.length ? 0 : 12));
+  const delivery = clamp((assignments.find((item) => item.slotId === "delivery-owner")?.member ? 60 : 0) + (assignments.find((item) => item.slotId === "bridge")?.member ? 18 : 0) + (selected.length >= 4 ? 12 : 0));
+  const resilience = clamp(new Set(selected.map((item) => item.member.id)).size / Math.max(1, selected.length) * 45 + selectedUnits.size * 12 + (assignments.find((item) => item.slotId === "bridge")?.member ? 12 : 0));
+  const overall = clamp(average([decision, dependency, facts, delivery, resilience]) + (roleFits.length ? average(roleFits) - 55 : -20) * .15);
+  const readiness = overall >= 78 ? "可進場" : overall >= 58 ? "需補位" : "尚未成隊";
   const roleRows = assignments.map((item) => {
     const slot = sandboxSlot(item.slotId)?.zh || item.slotId;
     return `- ${slot}：${item.member ? `${item.member.name}（${unitName(unitFor(item.member))}）` : "未指派"}`;
@@ -1320,6 +1329,7 @@ function draftRecord() {
   return [
     "Org Quest 編隊草案（任務推演）",
     `任務：${mission.name}`,
+    `編隊狀態：${overall} · ${readiness}`,
     `交付物：${blueprint.deliverable || "未定義"}`,
     "",
     "角色配置：",
@@ -1328,6 +1338,7 @@ function draftRecord() {
     `已覆蓋單位：${coveredUnits.map(unitName).join(" / ") || "尚未覆蓋"}`,
     `需要補位：${[...missingSlots.map((slotId) => sandboxSlot(slotId)?.zh || slotId), ...missingUnits.map(unitName)].join(" / ") || "無"}`,
     `成功條件：${(blueprint.success || []).join(" / ") || "未定義"}`,
+    `任務指標：決策閉環 ${decision} / 依賴覆蓋 ${dependency} / 事實一致 ${facts} / 交付可行 ${delivery} / 韌性 ${resilience}`,
     "",
     "說明：此草案僅供任務編隊與後續確認使用，不構成正式任務指派或人事決定。"
   ].join("\n");
