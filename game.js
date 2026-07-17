@@ -62,6 +62,8 @@ const els = {
   fitBadge: document.querySelector("#fit-badge"),
   scoreGrid: document.querySelector("#score-grid"),
   pairInsight: document.querySelector("#pair-insight"),
+  draftCopyRecord: document.querySelector("#copy-draft-record"),
+  draftCopyStatus: document.querySelector("#draft-copy-status"),
   meetingTitle: document.querySelector("#meeting-title"),
   meetingScenario: document.querySelector("#meeting-scenario"),
   missionBrief: document.querySelector("#mission-brief"),
@@ -1297,6 +1299,53 @@ function analyzePair() {
   `;
 }
 
+function draftRecord() {
+  const mission = scenarioById(els.scenarioSelect?.value);
+  if (!mission) return "";
+  const blueprint = missionSandbox(mission);
+  const assignments = draftAssignments();
+  const requiredUnits = missionRequires(mission);
+  const selectedUnits = new Set(assignments.filter((item) => item.member).map((item) => unitFor(item.member)));
+  const coveredUnits = requiredUnits.filter((unit) => selectedUnits.has(unit));
+  const missingUnits = requiredUnits.filter((unit) => !selectedUnits.has(unit));
+  const missingSlots = blueprint.slots.filter((slotId) => !assignments.find((item) => item.slotId === slotId)?.member);
+  const roleRows = assignments.map((item) => {
+    const slot = sandboxSlot(item.slotId)?.zh || item.slotId;
+    return `- ${slot}：${item.member ? `${item.member.name}（${unitName(unitFor(item.member))}）` : "未指派"}`;
+  }).join("\n");
+  return [
+    "Org Quest 編隊草案（任務推演）",
+    `任務：${mission.name}`,
+    `交付物：${blueprint.deliverable || "未定義"}`,
+    "",
+    "角色配置：",
+    roleRows,
+    "",
+    `已覆蓋單位：${coveredUnits.map(unitName).join(" / ") || "尚未覆蓋"}`,
+    `需要補位：${[...missingSlots.map((slotId) => sandboxSlot(slotId)?.zh || slotId), ...missingUnits.map(unitName)].join(" / ") || "無"}`,
+    `成功條件：${(blueprint.success || []).join(" / ") || "未定義"}`,
+    "",
+    "說明：此草案僅供任務編隊與後續確認使用，不構成正式任務指派或人事決定。"
+  ].join("\n");
+}
+
+async function copyDraftRecord() {
+  const record = draftRecord();
+  if (!record) return;
+  let copied = false;
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(record);
+      copied = true;
+    } else {
+      copied = legacyCopyText(record);
+    }
+  } catch (error) {
+    copied = legacyCopyText(record);
+  }
+  if (els.draftCopyStatus) els.draftCopyStatus.textContent = copied ? "編隊草案已複製" : "無法自動複製，請改用選取文字";
+}
+
 function resetMeeting() {
   const mission = GAME_DATA.orgMissions[Math.floor(Math.random() * GAME_DATA.orgMissions.length)];
   state.meeting = {
@@ -1472,6 +1521,7 @@ function bindEvents() {
     renderOrgMap();
   });
   els.analyzePair?.addEventListener("click", analyzePair);
+  els.draftCopyRecord?.addEventListener("click", copyDraftRecord);
   els.resetMeeting?.addEventListener("click", resetMeeting);
   els.missionAction?.addEventListener("change", renderActionCards);
   els.missionBrief?.addEventListener("click", (event) => {

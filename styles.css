@@ -2240,3 +2240,7 @@ body.org-mode .org-focus-detail {
 @media (max-width: 680px) { .capability-head { align-items: stretch; flex-direction: column; } .capability-head label { min-width: 0; } .capability-summary, .capability-grid { grid-template-columns: 1fr; } }
 
 
+
+.draft-result-actions { display: grid; justify-items: end; gap: 6px; }
+.draft-result-actions small { min-height: 1.2em; color: #c4d2e4; font-size: .76rem; }
+@media (max-width: 760px) { .draft-result-actions { justify-items: start; } }
