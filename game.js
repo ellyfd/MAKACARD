@@ -1099,6 +1099,7 @@ function missionRecord(meeting = state.meeting) {
   const log = meeting.log.slice().reverse().map((item) => `- ${item}`).join("\n");
   return [
     "Org Quest 任務紀錄（推演草案）",
+    `公開資料快照：${GAME_DATA.publicRelease?.id || "未標記"}`,
     `任務：${meeting.scenario.name}`,
     `狀態：${status}`,
     `交付物：${blueprint.deliverable || "未定義"}`,
@@ -1328,6 +1329,7 @@ function draftRecord() {
   }).join("\n");
   return [
     "Org Quest 編隊草案（任務推演）",
+    `公開資料快照：${GAME_DATA.publicRelease?.id || "未標記"}`,
     `任務：${mission.name}`,
     `編隊狀態：${overall} · ${readiness}`,
     `交付物：${blueprint.deliverable || "未定義"}`,
