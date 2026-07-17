@@ -2351,3 +2351,27 @@ h1, .mission-panel h2, .hand-panel h2, .timeline-panel h2, .org-toolbar h2 { col
 .capability-task-seats p { color: #526575; }
 @media (max-width: 900px) { .people-head, .record-guidance { align-items: stretch; flex-direction: column; } .people-controls { grid-template-columns: 1fr; } .person-summary { grid-template-columns: 64px 1fr; } .record-state { grid-column: 1 / -1; justify-items: start; text-align: left; } }
 @media (max-width: 650px) { .person-record-grid { grid-template-columns: 1fr; } .person-summary { grid-template-columns: 1fr; } .access-notice { align-items: stretch; flex-direction: column; } .access-notice button { width: 100%; } }
+
+/* Decision ledger: public P0 draft, never a formal assignment. */
+.decision-ledger { display: grid; gap: 14px; margin-top: 16px; padding: 18px; border: 1px solid #d6ddd6; border-radius: 8px; background: rgba(255,253,248,.96); box-shadow: 0 8px 20px rgba(63,76,75,.06); }
+.ledger-heading { display: flex; justify-content: space-between; gap: 16px; align-items: start; padding-bottom: 12px; border-bottom: 1px solid #e2e7e1; }
+.ledger-heading h3 { margin: 0; color: #344e5f; font-size: 1.1rem; }
+.ledger-status { padding: 5px 8px; border: 1px solid #d7b77c; border-radius: 3px; color: #7e6042; background: #fbf2df; font-size: .74rem; font-weight: 800; }
+.ledger-question { display: grid; gap: 7px; padding: 13px 14px; border-left: 4px solid #a8503f; background: #faf4ee; }
+.ledger-question span, .ledger-grid p, .ledger-roles > p, .ledger-gaps > p { margin: 0; color: #a8503f; font-size: .7rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+.ledger-question strong { color: #344e5f; font-size: 1rem; }
+.ledger-question p { margin: 0; color: #657581; font-size: .84rem; line-height: 1.55; }
+.ledger-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px; }
+.ledger-grid section { display: grid; gap: 7px; padding: 12px; border: 1px solid #dee4dd; background: #f6f8f4; }
+.ledger-grid strong { color: #425d6b; font-size: .87rem; line-height: 1.5; }
+.ledger-grid small { color: #778691; font-size: .75rem; line-height: 1.45; }
+.ledger-roles { display: grid; gap: 8px; }
+.ledger-roles ul { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px; margin: 0; padding: 0; list-style: none; }
+.ledger-roles li { display: grid; gap: 2px; padding: 9px 10px; border-top: 2px solid #7c9c86; background: #f2f6f0; }
+.ledger-roles li span { color: #778691; font-size: .72rem; }
+.ledger-roles li strong { color: #3b5666; font-size: .86rem; }
+.ledger-roles li small { color: #6e7d88; font-size: .72rem; }
+.ledger-roles .ledger-empty { grid-column: 1 / -1; border-top-color: #c8b58d; color: #7a6e5a; background: #fbf5e9; }
+.ledger-gaps { display: grid; gap: 6px; padding: 12px; border: 1px dashed #c5cdc5; background: #fbfcf9; }
+.ledger-gaps strong { color: #5e6e78; font-size: .85rem; line-height: 1.5; }
+@media (max-width: 860px) { .ledger-grid, .ledger-roles ul { grid-template-columns: 1fr; } }

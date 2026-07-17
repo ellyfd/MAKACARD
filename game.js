@@ -64,6 +64,7 @@ const els = {
   fitBadge: document.querySelector("#fit-badge"),
   scoreGrid: document.querySelector("#score-grid"),
   pairInsight: document.querySelector("#pair-insight"),
+  decisionLedger: document.querySelector("#decision-ledger"),
   draftCopyRecord: document.querySelector("#copy-draft-record"),
   draftCopyStatus: document.querySelector("#draft-copy-status"),
   meetingTitle: document.querySelector("#meeting-title"),
@@ -1314,6 +1315,26 @@ function draftAssignments() {
   ];
 }
 
+function renderDecisionLedger(mission, blueprint, assignments, missingSlots, missingUnits) {
+  if (!els.decisionLedger || !mission) return;
+  const assigned = assignments.filter((item) => item.member);
+  const roleRows = assigned.length ? assigned.map((item) => {
+    const slot = sandboxSlot(item.slotId)?.zh || item.slotId;
+    return `<li><span>${slot}</span><strong>${item.member.name}</strong><small>${unitName(unitFor(item.member))}</small></li>`;
+  }).join("") : `<li class="ledger-empty"><strong>尚未配置任務角色</strong></li>`;
+  const gaps = [...missingSlots.map((slotId) => sandboxSlot(slotId)?.zh || slotId), ...missingUnits.map(unitName)];
+  els.decisionLedger.innerHTML = `
+    <div class="ledger-heading"><div><p class="label">Decision Ledger</p><h3>決策草案</h3></div><span class="ledger-status">草案 · 未核准</span></div>
+    <div class="ledger-question"><span>決策問題</span><strong>${mission.goal}</strong><p>${mission.prompt}</p></div>
+    <div class="ledger-grid">
+      <section><p>預期交付</p><strong>${blueprint.deliverable}</strong></section>
+      <section><p>資料範圍</p><strong>P0 正式組織</strong><small>${publicReleaseLine()}</small></section>
+      <section><p>核准門檻</p><strong>owner、期限、決策紀錄、P1 存取範圍</strong><small>公開原型僅示範流程，不建立正式任務。</small></section>
+    </div>
+    <div class="ledger-roles"><p>責任席位</p><ul>${roleRows}</ul></div>
+    <div class="ledger-gaps"><p>待確認項目</p><strong>${gaps.length ? gaps.join(" / ") : "角色與必要單位已齊備；仍須企業版核准後才能成立。"}</strong></div>
+  `;
+}
 function analyzePair() {
   const mission = scenarioById(els.scenarioSelect.value);
   if (!mission) return;
@@ -1358,6 +1379,7 @@ function analyzePair() {
       <section><b>成功條件</b><p>${blueprint.success.join(" / ")}</p></section>
     </div>
   `;
+  renderDecisionLedger(mission, blueprint, assignments, missingSlots, missingUnits);
 }
 
 function draftRecord() {
@@ -1384,7 +1406,7 @@ function draftRecord() {
     return `- ${slot}：${item.member ? `${item.member.name}（${unitName(unitFor(item.member))}）` : "未指派"}`;
   }).join("\n");
   return [
-    "Org Quest 編隊草案（任務推演）",
+    "Org Quest 決策草案（任務推演）",
     publicReleaseLine(),
     `任務：${mission.name}`,
     `編隊狀態：${overall} · ${readiness}`,
@@ -1416,7 +1438,7 @@ async function copyDraftRecord() {
   } catch (error) {
     copied = legacyCopyText(record);
   }
-  if (els.draftCopyStatus) els.draftCopyStatus.textContent = copied ? "編隊草案已複製" : "無法自動複製，請改用選取文字";
+  if (els.draftCopyStatus) els.draftCopyStatus.textContent = copied ? "決策草案已複製" : "無法自動複製，請改用選取文字";
 }
 
 function resetMeeting() {
