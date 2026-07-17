@@ -170,6 +170,14 @@ function unitById(id) {
   return GAME_DATA.orgUnits.find((unit) => unit.id === id);
 }
 
+function publicReleaseLine() {
+  const release = GAME_DATA.publicRelease;
+  if (!release?.id) return "公開資料快照：未標記";
+  const directories = Number.isFinite(release.formalDirectoryCount) ? `${release.formalDirectoryCount} 正式節點` : "節點數未標記";
+  const sources = Number.isFinite(release.sourceCount) ? `${release.sourceCount} 來源檔` : "來源數未標記";
+  return `公開資料快照：${release.id}（${directories} / ${sources}）`;
+}
+
 function allOrgMembers() {
   const seen = new Set();
   const enriched = GAME_DATA.members.map((member) => ({
@@ -1099,7 +1107,7 @@ function missionRecord(meeting = state.meeting) {
   const log = meeting.log.slice().reverse().map((item) => `- ${item}`).join("\n");
   return [
     "Org Quest 任務紀錄（推演草案）",
-    `公開資料快照：${GAME_DATA.publicRelease?.id || "未標記"}`,
+    publicReleaseLine(),
     `任務：${meeting.scenario.name}`,
     `狀態：${status}`,
     `交付物：${blueprint.deliverable || "未定義"}`,
@@ -1329,7 +1337,7 @@ function draftRecord() {
   }).join("\n");
   return [
     "Org Quest 編隊草案（任務推演）",
-    `公開資料快照：${GAME_DATA.publicRelease?.id || "未標記"}`,
+    publicReleaseLine(),
     `任務：${mission.name}`,
     `編隊狀態：${overall} · ${readiness}`,
     `交付物：${blueprint.deliverable || "未定義"}`,
