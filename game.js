@@ -1080,6 +1080,70 @@ function missionOutcome(meeting, requiredUnits = missionRequires(meeting.scenari
   ].filter(Boolean);
   return { complete: !missingUnits.length && !shortfalls.length, missingUnits, shortfalls };
 }
+function missionRecord(meeting = state.meeting) {
+  const blueprint = missionSandbox(meeting.scenario);
+  const requiredUnits = missionRequires(meeting.scenario);
+  const outcome = missionOutcome(meeting, requiredUnits);
+  const coveredUnits = meeting.coveredUnits.map(unitName);
+  const missingUnits = outcome?.missingUnits.map(unitName) || requiredUnits.filter((unit) => !meeting.coveredUnits.includes(unit)).map(unitName);
+  const status = outcome ? (outcome.complete ? "任務完成" : "任務未閉環") : "推演進行中";
+  const metricRows = [
+    ["決策閉環", meeting.trust],
+    ["依賴覆蓋", meeting.clarity],
+    ["事實一致", meeting.momentum],
+    ["交付可行", meeting.friction],
+    ["韌性", meeting.resilience]
+  ].map(([label, value]) => `${label} ${value}`).join(" / ");
+  const log = meeting.log.slice().reverse().map((item) => `- ${item}`).join("\n");
+  return [
+    "Org Quest 任務紀錄（推演草案）",
+    `任務：${meeting.scenario.name}`,
+    `狀態：${status}`,
+    `交付物：${blueprint.deliverable || "未定義"}`,
+    `必要單位：${requiredUnits.map(unitName).join(" / ") || "未定義"}`,
+    `已覆蓋單位：${coveredUnits.join(" / ") || "尚未覆蓋"}`,
+    missingUnits.length ? `未覆蓋單位：${missingUnits.join(" / ")}` : "未覆蓋單位：無",
+    outcome?.shortfalls.length ? `未閉環條件：${outcome.shortfalls.join(" / ")}` : "未閉環條件：無",
+    `成功條件：${(blueprint.success || []).join(" / ") || "未定義"}`,
+    `任務指標：${metricRows}`,
+    "",
+    "推演軌跡：",
+    log || "- 尚未進行回合",
+    "",
+    "說明：此紀錄僅為任務推演草案，不構成正式任務指派或人事決定。"
+  ].join("\n");
+}
+
+function legacyCopyText(value) {
+  const textArea = document.createElement("textarea");
+  textArea.value = value;
+  textArea.setAttribute("readonly", "");
+  textArea.style.position = "fixed";
+  textArea.style.opacity = "0";
+  document.body.appendChild(textArea);
+  textArea.select();
+  const copied = document.execCommand("copy");
+  textArea.remove();
+  return copied;
+}
+
+async function copyMissionRecord() {
+  const record = missionRecord();
+  let copied = false;
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(record);
+      copied = true;
+    } else {
+      copied = legacyCopyText(record);
+    }
+  } catch (error) {
+    copied = legacyCopyText(record);
+  }
+  const status = document.querySelector("#mission-copy-status");
+  if (status) status.textContent = copied ? "任務紀錄已複製" : "無法自動複製，請改用選取文字";
+}
+
 function sandboxSlot(id) {
   return sandboxData().slotCatalog.find((slot) => slot.id === id);
 }
@@ -1274,7 +1338,7 @@ function renderMeeting() {
       <b>破解牌：${event.action?.icon || ""} ${event.action?.name || event.actionId}</b>
     </article>
     <div class="lane-strip">${requiredUnits.map((unit) => `<i class="${covered.has(unit) ? "covered" : ""}" style="--unit:${UNIT_COLORS[unit] || "#fff"}">${unitName(unit)}</i>`).join("")}</div>
-    ${outcome ? `<article class="mission-outcome ${outcome.complete ? "complete" : "incomplete"}"><span>${outcome.complete ? "MISSION COMPLETE" : "MISSION UNRESOLVED"}</span><strong>${outcome.complete ? meeting.scenario.goal : "這局尚未形成可交付解法"}</strong><p>${outcome.complete ? "必要單位與五項任務條件皆已閉環。" : [outcome.missingUnits.length ? `未覆蓋：${outcome.missingUnits.map(unitName).join(" / ")}` : "", outcome.shortfalls.length ? `未閉環：${outcome.shortfalls.join(" / ")}` : ""].filter(Boolean).join("；")}</p></article>` : ""}
+    ${outcome ? `<article class="mission-outcome ${outcome.complete ? "complete" : "incomplete"}"><span>${outcome.complete ? "MISSION COMPLETE" : "MISSION UNRESOLVED"}</span><strong>${outcome.complete ? meeting.scenario.goal : "這局尚未形成可交付解法"}</strong><p>${outcome.complete ? "必要單位與五項任務條件皆已閉環。" : [outcome.missingUnits.length ? `未覆蓋：${outcome.missingUnits.map(unitName).join(" / ")}` : "", outcome.shortfalls.length ? `未閉環：${outcome.shortfalls.join(" / ")}` : ""].filter(Boolean).join("；")}</p><button class="secondary-button compact mission-copy-button" type="button" data-copy-mission-record>複製任務紀錄</button><small id="mission-copy-status" aria-live="polite"></small></article>` : ""}
 
   `;
   els.turnCount.textContent = `Turn ${Math.min(meeting.turn, 5)} / 5`;
@@ -1410,6 +1474,9 @@ function bindEvents() {
   els.analyzePair?.addEventListener("click", analyzePair);
   els.resetMeeting?.addEventListener("click", resetMeeting);
   els.missionAction?.addEventListener("change", renderActionCards);
+  els.missionBrief?.addEventListener("click", (event) => {
+    if (event.target.closest("[data-copy-mission-record]")) copyMissionRecord();
+  });
   els.scenarioSelect?.addEventListener("change", analyzePair);
   els.capabilityFilter?.addEventListener("change", renderCapabilityMap);
 }

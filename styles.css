@@ -2178,6 +2178,8 @@ body.org-mode .org-focus-detail {
 .mission-outcome.complete span { color: #9be96f; }
 .mission-outcome.incomplete { border-color: rgba(255,125,102,.56); background: linear-gradient(115deg, rgba(255,125,102,.14), transparent 68%), rgba(255,255,255,.04); }
 .mission-outcome.incomplete span { color: #ff9b8a; }
+.mission-copy-button { justify-self: start; margin-top: 3px; }
+.mission-outcome small { min-height: 1.2em; color: #c4d2e4; font-size: .76rem; }
 .controls-panel { align-content: start; }
 .controls-panel label { gap: 6px; color: #c9d6e5; font-size: .8rem; font-weight: 700; }
 .controls-panel select { min-height: 44px; }
