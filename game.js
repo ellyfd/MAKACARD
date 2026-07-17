@@ -22,7 +22,8 @@ const state = {
   orgSelected: null,
   orgZoom: 1,
   orgPan: null,
-  orgPanMoved: false
+  orgPanMoved: false,
+  localDraftMessage: ""
 };
 
 const els = {
@@ -67,6 +68,7 @@ const els = {
   decisionLedger: document.querySelector("#decision-ledger"),
   sourceRelease: document.querySelector("#source-release"),
   sourceFiles: document.querySelector("#source-files"),
+  localDraftStatus: document.querySelector("#local-draft-status"),
   draftCopyRecord: document.querySelector("#copy-draft-record"),
   draftCopyStatus: document.querySelector("#draft-copy-status"),
   meetingTitle: document.querySelector("#meeting-title"),
@@ -1334,6 +1336,67 @@ function draftAssignments() {
   ];
 }
 
+const LOCAL_DRAFT_KEY = "makacard-p0-decision-drafts";
+
+function readLocalDrafts() {
+  try {
+    const value = JSON.parse(localStorage.getItem(LOCAL_DRAFT_KEY) || "[]");
+    return Array.isArray(value) ? value : [];
+  } catch (error) {
+    return [];
+  }
+}
+
+function writeLocalDrafts(drafts) {
+  try {
+    localStorage.setItem(LOCAL_DRAFT_KEY, JSON.stringify(drafts.slice(0, 8)));
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
+
+function localDraftSnapshot() {
+  const mission = scenarioById(els.scenarioSelect?.value);
+  if (!mission) return null;
+  return {
+    id: `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`,
+    createdAt: new Date().toLocaleString("zh-TW", { dateStyle: "short", timeStyle: "short" }),
+    missionId: mission.id,
+    missionName: mission.name,
+    releaseId: GAME_DATA.publicRelease?.id || "P0",
+    assignments: draftAssignments().map((item) => ({ slotId: item.slotId, memberId: item.member?.id || "" }))
+  };
+}
+
+function saveLocalDraft() {
+  const snapshot = localDraftSnapshot();
+  if (!snapshot) return;
+  const saved = writeLocalDrafts([snapshot, ...readLocalDrafts()]);
+  state.localDraftMessage = saved ? "已儲存於此瀏覽器" : "無法使用此瀏覽器儲存空間";
+  analyzePair();
+}
+
+function loadLocalDraft(id) {
+  const draft = readLocalDrafts().find((item) => item.id === id);
+  if (!draft) return;
+  if (els.scenarioSelect) els.scenarioSelect.value = draft.missionId;
+  const assignments = new Map((draft.assignments || []).map((item) => [item.slotId, item.memberId]));
+  [
+    ["sponsor", els.draftSponsor], ["decision-owner", els.draftDecisionOwner], ["technical-authority", els.draftTechnicalAuthority],
+    ["delivery-owner", els.draftDeliveryOwner], ["data-owner", els.draftDataOwner], ["bridge", els.draftBridge]
+  ].forEach(([slotId, select]) => {
+    if (select && assignments.get(slotId)) select.value = assignments.get(slotId);
+  });
+  state.localDraftMessage = "已載入本機草案";
+  analyzePair();
+}
+
+function deleteLocalDraft(id) {
+  writeLocalDrafts(readLocalDrafts().filter((item) => item.id !== id));
+  state.localDraftMessage = "已移除本機草案";
+  analyzePair();
+}
 function renderDecisionLedger(mission, blueprint, assignments, missingSlots, missingUnits) {
   if (!els.decisionLedger || !mission) return;
   const assigned = assignments.filter((item) => item.member);
@@ -1342,6 +1405,8 @@ function renderDecisionLedger(mission, blueprint, assignments, missingSlots, mis
     return `<li><span>${slot}</span><strong>${item.member.name}</strong><small>${unitName(unitFor(item.member))}</small></li>`;
   }).join("") : `<li class="ledger-empty"><strong>尚未配置任務角色</strong></li>`;
   const gaps = [...missingSlots.map((slotId) => sandboxSlot(slotId)?.zh || slotId), ...missingUnits.map(unitName)];
+  const localDrafts = readLocalDrafts().slice(0, 5);
+  const historyRows = localDrafts.length ? localDrafts.map((draft) => `<li><div><strong>${draft.missionName || draft.missionId}</strong><span>${draft.createdAt || ""} · ${draft.releaseId || "P0"}</span></div><div><button type="button" class="local-draft-load" data-local-draft-load="${draft.id}">載入</button><button type="button" class="local-draft-delete" data-local-draft-delete="${draft.id}" aria-label="刪除本機草案" title="刪除本機草案">×</button></div></li>`).join("") : `<li class="ledger-empty"><strong>尚未儲存本機草案</strong></li>`;
   els.decisionLedger.innerHTML = `
     <div class="ledger-heading"><div><p class="label">Decision Ledger</p><h3>決策草案</h3></div><span class="ledger-status">草案 · 未核准</span></div>
     <div class="ledger-question"><span>決策問題</span><strong>${mission.goal}</strong><p>${mission.prompt}</p></div>
@@ -1352,6 +1417,7 @@ function renderDecisionLedger(mission, blueprint, assignments, missingSlots, mis
     </div>
     <div class="ledger-roles"><p>責任席位</p><ul>${roleRows}</ul></div>
     <div class="ledger-gaps"><p>待確認項目</p><strong>${gaps.length ? gaps.join(" / ") : "角色與必要單位已齊備；仍須企業版核准後才能成立。"}</strong></div>
+    <div class="local-draft-bar"><div><span>本機草案</span><strong>僅保存在目前瀏覽器，不會送出或寫回正式系統。</strong></div><button type="button" id="save-local-draft" class="secondary-button compact">儲存本機草案</button></div><small id="local-draft-status" class="local-draft-status" aria-live="polite">${state.localDraftMessage || ""}</small><section class="local-draft-history"><p>本機歷程</p><ul>${historyRows}</ul></section>
   `;
 }
 function analyzePair() {
@@ -1644,6 +1710,14 @@ function bindEvents() {
   els.scenarioSelect?.addEventListener("change", analyzePair);
   els.capabilityFilter?.addEventListener("change", renderCapabilityMap);
   els.peopleSelect?.addEventListener("change", renderPeopleDirectory);
+  els.decisionLedger?.addEventListener("click", (event) => {
+    const save = event.target.closest("#save-local-draft");
+    const load = event.target.closest("[data-local-draft-load]");
+    const remove = event.target.closest("[data-local-draft-delete]");
+    if (save) saveLocalDraft();
+    if (load) loadLocalDraft(load.dataset.localDraftLoad);
+    if (remove) deleteLocalDraft(remove.dataset.localDraftDelete);
+  });
 }
 
 function init() {

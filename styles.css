@@ -2397,3 +2397,23 @@ h1, .mission-panel h2, .hand-panel h2, .timeline-panel h2, .org-toolbar h2 { col
 .source-empty { place-content: center; text-align: center; color: #667789; }
 @media (max-width: 980px) { .source-release { grid-template-columns: repeat(2, minmax(0,1fr)); } .source-files { grid-template-columns: repeat(2, minmax(0,1fr)); } }
 @media (max-width: 640px) { .source-head { align-items: stretch; flex-direction: column; } .source-release, .source-files { grid-template-columns: 1fr; } }
+
+/* Browser-local P0 draft history. */
+.local-draft-bar { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 12px; border: 1px solid #d8dfd7; background: #f2f6f0; }
+.local-draft-bar div { display: grid; gap: 4px; }
+.local-draft-bar span, .local-draft-history > p { margin: 0; color: #47705b; font-size: .7rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+.local-draft-bar strong { color: #526575; font-size: .84rem; line-height: 1.45; }
+.local-draft-status { min-height: 1.2em; color: #7d6950; font-size: .78rem; }
+.local-draft-history { display: grid; gap: 8px; }
+.local-draft-history ul { display: grid; gap: 7px; margin: 0; padding: 0; list-style: none; }
+.local-draft-history li { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 11px; border-left: 3px solid #8ba390; background: #f7f9f6; }
+.local-draft-history li > div:first-child { display: grid; gap: 2px; min-width: 0; }
+.local-draft-history strong { color: #405969; font-size: .84rem; }
+.local-draft-history li span { overflow: hidden; color: #7b8892; font-size: .74rem; text-overflow: ellipsis; white-space: nowrap; }
+.local-draft-history li > div:last-child { display: flex; flex: 0 0 auto; gap: 6px; }
+.local-draft-load, .local-draft-delete { min-height: 30px; border: 1px solid #cbd5cc; border-radius: 3px; color: #476172; background: #fffdf8; cursor: pointer; }
+.local-draft-load { padding: 0 9px; }
+.local-draft-delete { width: 30px; font-size: 1rem; }
+.local-draft-load:hover { color: #fffdf8; border-color: #426b84; background: #426b84; }
+.local-draft-delete:hover { color: #fffdf8; border-color: #a8503f; background: #a8503f; }
+@media (max-width: 620px) { .local-draft-bar, .local-draft-history li { align-items: stretch; flex-direction: column; } .local-draft-history li > div:last-child { justify-content: flex-end; } }
