@@ -20,7 +20,9 @@ const state = {
   orgExpandedUnit: null,
   orgExpandedPath: [],
   orgSelected: null,
-  orgZoom: 1
+  orgZoom: 1,
+  orgPan: null,
+  orgPanMoved: false
 };
 
 const els = {
@@ -96,52 +98,6 @@ const MISSION_REQUIREMENTS = {
   "gap-exec-visit": ["ceo", "sales-marketing", "newbiz", "tech-rd"],
   "techpack-truth-map": ["ops-mgmt", "tech-rd", "newbiz", "general-mgmt"],
   "ai-seed-rollout": ["general-mgmt", "tech-rd", "ops-mgmt", "newbiz"]
-};
-
-const MEMBER_TRAITS = {
-  adia: ["visual-exec", "needs-boundary"],
-  alan: ["waits-for-brief", "interface"],
-  alex: ["authority", "big-picture", "needs-visible-demo"],
-  andy: ["research-depth", "deadline-needed", "over-research"],
-  chieh: ["throughput", "motivation-risk"],
-  "celia-hsu": ["formal-lead", "tech-rd", "escalation-coach"],
-  "celia-hsu-許佳瑛": ["formal-lead", "tech-rd", "escalation-coach"],
-  debbie: ["presentation-candidate", "profile-thin"],
-  dianne: ["market-sense", "story"],
-  doris: ["coordination", "taste"],
-  elly: ["org-sense", "so-what"],
-  emily: ["visual-quality", "teaching"],
-  "erica-chang": ["meeting-observed", "sales-dev"],
-  "hazel-lin": ["sales-dev", "market-signal"],
-  "emily-chak": ["alex-translator", "boundary", "analysis"],
-  "emily-chak-翟君宜": ["alex-translator", "boundary", "analysis"],
-  jessica: ["workshop", "audience-design"],
-  jan: ["pm", "direct", "remote-owner"],
-  jean: ["content-ai", "route-boundary"],
-  karen: ["architect", "quality-gate-gap"],
-  "karen-king-經國媛": ["architect", "quality-gate-gap"],
-  "lilly-cheng-鄭俐俐": ["truth-mapper", "after-meeting"],
-  "lillian-lin": ["tech-design", "brief-builder"],
-  "brian-lin": ["ai-seed", "needs-evidence"],
-  "brian-lin-林欣煇": ["ai-seed", "needs-evidence"],
-  maggie: ["dev-trip", "material-need"],
-  rock: ["ground-truth", "knowledge-lock"],
-  rou: ["quality-eye", "weak-expression"],
-  rosa: ["workshop", "content-support"],
-  ruochen: ["workshop", "project-sense"],
-  sharon: ["meeting-observed", "role-pending"],
-  sixian: ["reserve", "low-visibility"],
-  tinley: ["growth", "needs-transfer"],
-  vanessa: ["tradeoff", "coordination"],
-  winnie: ["meeting-observed", "role-pending"],
-  yoko: ["reliable", "overloaded", "soft-force"],
-  "wayi-tsai-蔡維溢": ["smart-textile", "manager"],
-  "judy-lee-李宛真": ["actual-operator", "techpack-bom"],
-  "kisa-lin-林嘉慧": ["translation-vault", "needs-mapping"],
-  "jeff-yang-楊璿融": ["boundary-witness", "system-modernization"],
-  "it-694a-74bf-878d": ["boundary-witness", "system-modernization"],
-  "alice-chiu-邱瀞儀": ["pilot-scope", "ie-guardian"],
-  yota: ["remote-owner", "geo-blindspot"]
 };
 
 const UNIT_COLORS = {
@@ -247,10 +203,6 @@ function unitFor(member) {
   return "pending";
 }
 
-function traitsFor(member) {
-  return MEMBER_TRAITS[member.id] || [];
-}
-
 function missionRequires(mission) {
   return MISSION_REQUIREMENTS[mission.id] || ["newbiz", "tech-rd", "sales-marketing"];
 }
@@ -339,28 +291,6 @@ function birthdayLabel(member) {
   return monthDay ? `${monthDay.month}月${monthDay.day}日` : "";
 }
 
-function deepDistillationMarkup(member) {
-  const profile = GAME_DATA.distillations?.[member.id];
-  if (!profile) return "";
-  const aiFit = Number(profile.aiFit || 0);
-  const blocks = [
-    ["啟動", profile.trigger],
-    ["限制", profile.limiter],
-    ["派任", profile.assignment],
-    ["槓桿", profile.leverage],
-    ["風險", profile.risk]
-  ];
-  return `
-    <details class="deep-distill">
-      <summary class="deep-head">
-        <strong>${profile.mode}</strong>
-        <span>AI ${"■".repeat(aiFit)}${"□".repeat(Math.max(0, 5 - aiFit))}</span>
-      </summary>
-      <div>${blocks.map(([label, text]) => `<p><b>${label}</b>${text}</p>`).join("")}</div>
-    </details>
-  `;
-}
-
 function vectorDistance(a, b, key) {
   return Math.abs(vectorsFor(a)[key] - vectorsFor(b)[key]);
 }
@@ -432,8 +362,7 @@ function renderMembers() {
   const activeUnit = els.orgUnitFilter?.value || "all";
   const selectedDept = state.selectedOrgDept;
   const members = allOrgMembers().filter((member) => {
-    const profile = GAME_DATA.distillations?.[member.id];
-    const haystack = `${member.name} ${member.localName || ""} ${member.department} ${member.role} ${birthdayLabel(member)} ${profile ? Object.values(profile).join(" ") : ""}`.toLowerCase();
+    const haystack = `${member.name} ${member.localName || ""} ${member.department} ${member.role} ${birthdayLabel(member)}`.toLowerCase();
     const matchesQuery = !query || haystack.includes(query);
     const matchesUnit = activeUnit === "all" || unitFor(member) === activeUnit;
     const matchesDept = !selectedDept || member.department === selectedDept;
@@ -623,11 +552,6 @@ function bestStrategyFor(a, b, scenario) {
     .sort((left, right) => right.score - left.score)[0].strategy;
 }
 
-function distillHint(member) {
-  const profile = GAME_DATA.distillations?.[member.id];
-  return profile ? `${member.name}: ${profile.mode}` : `${member.name}: 尚未建立深度蒸餾`;
-}
-
 function axisName(key) {
   return {
     clarity: "結論清晰度",
@@ -746,6 +670,35 @@ function handleOrgWheelZoom(event) {
   event.preventDefault();
   const step = event.deltaY > 0 ? -.08 : .08;
   setOrgZoom((state.orgZoom || 1) + step, { x: event.clientX, y: event.clientY });
+}
+
+function beginOrgPan(event) {
+  if (state.activeView !== "org" || event.button !== 0) return;
+  const canvas = event.target.closest(".org-chart-canvas");
+  if (!canvas || event.target.closest("button, input, select, a")) return;
+  state.orgPan = { canvas, x: event.clientX, y: event.clientY, left: canvas.scrollLeft, top: canvas.scrollTop };
+  state.orgPanMoved = false;
+  canvas.classList.add("is-panning");
+  canvas.setPointerCapture?.(event.pointerId);
+}
+
+function moveOrgPan(event) {
+  const pan = state.orgPan;
+  if (!pan) return;
+  const dx = event.clientX - pan.x;
+  const dy = event.clientY - pan.y;
+  if (Math.abs(dx) + Math.abs(dy) > 4) state.orgPanMoved = true;
+  pan.canvas.scrollLeft = pan.left - dx;
+  pan.canvas.scrollTop = pan.top - dy;
+}
+
+function endOrgPan(event) {
+  const pan = state.orgPan;
+  if (!pan) return;
+  pan.canvas.classList.remove("is-panning");
+  if (event?.pointerId !== undefined) pan.canvas.releasePointerCapture?.(event.pointerId);
+  state.orgPan = null;
+  setTimeout(() => { state.orgPanMoved = false; }, 0);
 }
 
 function applyOrgZoom() {
@@ -1265,20 +1218,6 @@ function drawHand() {
     .map((member) => member.id);
 }
 
-function actionProfileBonus(action, profile) {
-  if (!profile) return 0;
-  const text = `${profile.mode} ${profile.trigger} ${profile.assignment} ${profile.leverage} ${profile.risk}`;
-  const map = {
-    frame: ["定義", "PM", "判斷", "架構"],
-    bridge: ["跨地", "協調", "interface", "翻譯", "溝通"],
-    prototype: ["prototype", "研究", "工具", "內容", "AI"],
-    gate: ["標準", "文件", "品質", "風險"],
-    evidence: ["記錄", "資料", "英文", "樣本", "證據"],
-    align: ["授權", "白臉", "被看見", "關係", "表達"]
-  };
-  return (map[action.id] || []).some((keyword) => text.includes(keyword)) ? 14 : 0;
-}
-
 function renderActionCards() {
   const disabled = state.meeting.turn > 5 ? "disabled" : "";
   els.actionCards.innerHTML = state.meeting.hand.map((memberId) => {
@@ -1309,19 +1248,16 @@ function cardFit(member, action) {
   const meeting = state.meeting;
   const unit = unitFor(member);
   const required = missionRequires(meeting.scenario);
-  const traits = traitsFor(member);
-  const profile = GAME_DATA.distillations?.[member.id];
   const vectorScore = vectorsFor(member)[action.vector] - 66;
   const actionNeed = ((meeting.scenario.weights?.[action.vector] || 1) - 1) * 42;
   const requiredBonus = required.includes(unit) ? 18 : -24;
   const newLaneBonus = required.includes(unit) && !meeting.coveredUnits.includes(unit) ? 11 : 0;
   const repeatPenalty = meeting.lastUnit && meeting.lastUnit === unit ? -16 : 0;
-  const profileBonus = actionProfileBonus(action, profile) / 3;
   const jdFit = memberJobFit(member, meeting.scenario);
   const jdBonus = (jdFit.score - 50) / 4;
   const risk = triggeredRisk(member, action, unit);
   const riskPenalty = risk ? risk.penalty : 0;
-  const score = vectorScore + actionNeed + requiredBonus + newLaneBonus + repeatPenalty + profileBonus + jdBonus - riskPenalty;
+  const score = vectorScore + actionNeed + requiredBonus + newLaneBonus + repeatPenalty + jdBonus - riskPenalty;
 
   if (risk?.fatal) return { score, label: "BLOCKER", className: "blocker", risk };
   if (score >= 38) return { score, label: "CORE FIT", className: "core-fit", risk };
@@ -1332,50 +1268,18 @@ function cardFit(member, action) {
 
 function triggeredRisk(member, action, unit) {
   const mission = state.meeting.scenario;
-  const traits = traitsFor(member);
   const required = missionRequires(mission);
   if (!required.includes(unit)) {
-    return { title: "打錯戰場", text: `${unitName(unit)} 不是這張任務的關鍵缺口，會製造更多交接噪音。`, penalty: 16 };
+    return { title: "單位錯配", text: `${unitName(unit)} 不在這個任務的必要單位中，會增加交接成本。`, penalty: 16 };
   }
-  if (member.id === "rock" && ["qc-rework-spike", "sustainability-traceability", "ai-plm-visibility"].includes(mission.id) && action.id !== "evidence") {
-    return { title: "知識鎖倉", text: "技術真相有了，但如果不綁文件化義務，單點風險會變更大。", penalty: 18 };
-  }
-  if (traits.includes("waits-for-brief") && ["digital-sample-adoption", "ai-plm-visibility", "spec-version-drift"].includes(mission.id) && action.id !== "frame") {
-    return { title: "等待模式", text: "需要主動定義需求的局，若沒先授權，會退回等規格。", penalty: 14 };
-  }
-  if (traits.includes("over-research") && ["fabric-trim-delay", "shipment-booking-crunch", "capacity-wip-bottleneck"].includes(mission.id) && action.id === "prototype") {
-    return { title: "研究過深", text: "這局缺的是取捨節奏，過度研究會讓 demo 窗口被吃掉。", penalty: 13 };
-  }
-  if (traits.includes("weak-expression") && ["spec-version-drift", "qc-rework-spike", "sustainability-traceability"].includes(mission.id) && action.id === "bridge") {
-    return { title: "表達斷點", text: "細節判斷很準，但直接放到跨部門翻譯位會卡在說不清。", penalty: 15 };
-  }
-  if (traits.includes("overloaded") && ["fabric-trim-delay", "pp-sample-loop", "shipment-booking-crunch"].includes(mission.id)) {
-    return { title: "超載", text: "可靠牌不是免洗資源，繼續加壓會讓 Trust 看似上升、Friction 暗中累積。", penalty: 12 };
-  }
-  if (traits.includes("quality-gate-gap") && ["qc-rework-spike", "spec-version-drift", "capacity-wip-bottleneck"].includes(mission.id) && action.id === "gate") {
-    return { title: "白臉真空", text: "架構可以設，但品質 gate 需要外部標準撐住，不然現場會滑動。", penalty: 10 };
-  }
-  if (traits.includes("needs-visible-demo") && ["gap-exec-visit", "digital-sample-adoption", "ai-plm-visibility"].includes(mission.id) && !["prototype", "frame"].includes(action.id)) {
-    return { title: "需要實體", text: "高層場若只講抽象敘事，會進入反覆猜方向；先做可看的版本或凍結主軸。", penalty: 14 };
-  }
-  if (traits.includes("needs-evidence") && ["techpack-truth-map", "ai-seed-rollout", "ai-plm-visibility"].includes(mission.id) && action.id !== "evidence") {
-    return { title: "口頭確認需佐證", text: "這張牌能推動，但系統事實不能只靠印象；要綁 owner、文件與範圍證據。", penalty: 16 };
-  }
-  if (traits.includes("needs-mapping") && mission.id === "techpack-truth-map" && !["evidence", "bridge"].includes(action.id)) {
-    return { title: "資料不可用", text: "翻譯資料若缺款號與前後端 mapping，存在不等於可用。", penalty: 13 };
-  }
-  if (traits.includes("actual-operator") && mission.id === "techpack-truth-map" && action.id !== "evidence") {
-    return { title: "範圍需標註", text: "實際執行者能提供真相，但必須把 BOM、POM、做工範圍切清楚。", penalty: 10 };
-  }
-  if (traits.includes("profile-thin") && state.meeting.turn <= 2) {
-    return { title: "資料薄", text: "太早把低觀察資料的人放核心位，會增加推演不確定性。", penalty: 10 };
+  const jdFit = memberJobFit(member, mission);
+  if (jdFit.score < 45) {
+    return { title: "JD 範圍不足", text: "此任務與該職務的已知職掌重疊有限，需明確補上對口或授權。", penalty: 12 };
   }
   return null;
 }
-
 function cardRarity(member, action) {
-  const profile = GAME_DATA.distillations?.[member.id];
-  const base = vectorsFor(member)[action.vector] + actionProfileBonus(action, profile);
+  const base = vectorsFor(member)[action.vector];
   if (base >= 96) return "legendary";
   if (base >= 86) return "rare";
   return "common";
@@ -1391,10 +1295,8 @@ function rarityLabel(rarity) {
 
 function cardPips(member, action, fit) {
   const vector = vectorsFor(member)[action.vector];
-  const profile = GAME_DATA.distillations?.[member.id];
   const unit = unitFor(member);
   const pips = [unitName(unit), `${axisName(action.vector)} ${vector}`];
-  if (profile?.aiFit >= 4) pips.push("AI+");
   const jdFit = memberJobFit(member, state.meeting.scenario);
   if (jdFit.score >= 76) pips.push("JD FIT");
   if (jdFit.score < 45) pips.push("JD GAP");
@@ -1404,11 +1306,10 @@ function cardPips(member, action, fit) {
 }
 
 function bestActionForMember(person) {
-  const profile = GAME_DATA.distillations?.[person.id];
   return GAME_DATA.actionTypes
     .map((action) => ({
       action,
-      score: vectorsFor(person)[action.vector] + (state.meeting.scenario.weights[action.vector] || 1) * 16 + actionProfileBonus(action, profile)
+      score: vectorsFor(person)[action.vector] + (state.meeting.scenario.weights[action.vector] || 1) * 16
     }))
     .sort((left, right) => right.score - left.score)[0].action;
 }
@@ -1432,7 +1333,7 @@ function playMeetingTurn(memberId) {
   const scores = scorePair(self, person, pseudoScenario, strategy);
   const boost = action.boosts;
   const vectorFit = (vectorsFor(person)[action.vector] - 50) / 6;
-  const orgFit = actionProfileBonus(action, GAME_DATA.distillations?.[person.id]) / 4;
+  const orgFit = 0;
   const jdFit = memberJobFit(person, meeting.scenario);
   const jdBoost = (jdFit.score - 50) / 10;
   const crossUnit = meeting.lastUnit && meeting.lastUnit !== unit;
@@ -1447,8 +1348,7 @@ function playMeetingTurn(memberId) {
   meeting.momentum = clamp(meeting.momentum + (boost.momentum || 0) + (scores.decision - 64) / 12 + (sameLane ? 2 : 0) + (newRequiredLane ? 5 : 0) + jdBoost / 2 - (offLane ? 5 : 0));
   meeting.friction = clamp(meeting.friction + (boost.friction || 0) + (scores.stress - 50) / 8 - orgFit + (crossUnit ? -3 : 0) + (sameLane ? 8 : 0) + riskPenalty / 2 + (offLane ? 8 : 0));
 
-  const profile = GAME_DATA.distillations?.[person.id];
-  const solution = profile ? profile.leverage : `${unitName(unit)} 進場，補上一個正式組織視角。`;
+  const solution = `${unitName(unit)} 進場，補上一個正式組織視角。`;
   const comboText = crossUnit ? `跨單位 combo：${unitName(meeting.lastUnit)} → ${unitName(unit)}` : sameLane ? "同單位連打：速度上升，但 tunnel vision 增加" : "開場佈局";
   const riskText = fit.risk ? `風險觸發「${fit.risk.title}」：${fit.risk.text}` : "沒有明顯錯配。";
   meeting.log.unshift(`T${meeting.turn}: ${person.name} / ${unitName(unit)} 打出「${action.name}」〔${fit.label}〕。${comboText}。${jdFit.label}。${riskText}`);
@@ -1515,6 +1415,10 @@ function bindEvents() {
   els.orgZoomIn?.addEventListener("click", () => setOrgZoom((state.orgZoom || 1) + .1));
   els.orgZoomReset?.addEventListener("click", () => setOrgZoom(1));
   els.orgMap?.addEventListener("wheel", handleOrgWheelZoom, { passive: false });
+  els.orgMap?.addEventListener("pointerdown", beginOrgPan);
+  els.orgMap?.addEventListener("pointermove", moveOrgPan);
+  els.orgMap?.addEventListener("pointerup", endOrgPan);
+  els.orgMap?.addEventListener("pointercancel", endOrgPan);
   els.orgBack?.addEventListener("click", () => {
     if (state.orgExpandedPath.length > 1) {
       state.orgExpandedPath.pop();
@@ -1800,6 +1704,10 @@ function bindEvents() {
   els.orgZoomIn?.addEventListener("click", () => setOrgZoom((state.orgZoom || 1) + .1));
   els.orgZoomReset?.addEventListener("click", () => setOrgZoom(1));
   els.orgMap?.addEventListener("wheel", handleOrgWheelZoom, { passive: false });
+  els.orgMap?.addEventListener("pointerdown", beginOrgPan);
+  els.orgMap?.addEventListener("pointermove", moveOrgPan);
+  els.orgMap?.addEventListener("pointerup", endOrgPan);
+  els.orgMap?.addEventListener("pointercancel", endOrgPan);
   els.orgBack?.addEventListener("click", () => {
     if (state.orgExpandedPath.length > 1) {
       state.orgExpandedPath.pop();
@@ -1826,3 +1734,6 @@ function init() {
 }
 
 init();
+
+
+

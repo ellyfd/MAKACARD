@@ -209,8 +209,6 @@ const GAME_DATA = {
       animal: "羊",
       star: "天相星",
       style: "重視穩定與交付，適合用清楚範圍和檢核點對齊。",
-      distilled: { confidence: "中", turns: 54, traits: ["短句確認", "現場補位", "快速接話"] },
-      vectors: { clarity: 82, context: 62, speed: 54, risk: 76, data: 72, warmth: 58 }
     },
     {
       id: "alan",
@@ -227,8 +225,6 @@ const GAME_DATA = {
       animal: "猴",
       star: "天同星",
       style: "偏好有目標、有邊界的討論，能接受新方法但需要看到產出。",
-      distilled: { confidence: "高", turns: 178, traits: ["進度核對", "工程交接", "問題回覆"] },
-      vectors: { clarity: 76, context: 58, speed: 70, risk: 55, data: 68, warmth: 50 }
     },
     {
       id: "alex",
@@ -245,7 +241,6 @@ const GAME_DATA = {
       animal: "鼠",
       star: "天府星",
       style: "適合用願景、取捨與商業結果對話，避免陷入過細的執行枝節。",
-      vectors: { clarity: 88, context: 70, speed: 68, risk: 72, data: 66, warmth: 52 }
     },
     {
       id: "andy",
@@ -262,7 +257,6 @@ const GAME_DATA = {
       animal: "鼠",
       star: "七殺星",
       style: "推進感強，適合給明確目標和可立即動手的切入點。",
-      vectors: { clarity: 74, context: 48, speed: 82, risk: 50, data: 60, warmth: 48 }
     },
     {
       id: "chieh",
@@ -278,8 +272,6 @@ const GAME_DATA = {
       animal: "馬",
       star: "破軍星",
       style: "能快速開局，也容易被模糊需求消耗；最好把問題變成選項。",
-      distilled: { confidence: "低", turns: 18, traits: ["進度回報", "先解眼前問題", "實作導向"] },
-      vectors: { clarity: 80, context: 45, speed: 84, risk: 46, data: 56, warmth: 44 }
     },
     {
       id: "debbie",
@@ -295,7 +287,6 @@ const GAME_DATA = {
       animal: "牛",
       star: "廉貞星",
       style: "適合直接講重點和預期成果，節奏拖太長會降低耐心。",
-      vectors: { clarity: 78, context: 50, speed: 82, risk: 54, data: 58, warmth: 45 }
     },
     {
       id: "dianne",
@@ -312,7 +303,6 @@ const GAME_DATA = {
       animal: "雞",
       star: "太陰星",
       style: "擅長感受脈絡和受眾反應，適合先對齊語氣再進入任務。",
-      vectors: { clarity: 62, context: 84, speed: 52, risk: 64, data: 62, warmth: 78 }
     },
     {
       id: "doris",
@@ -329,8 +319,6 @@ const GAME_DATA = {
       animal: "豬",
       star: "天同星",
       style: "在協調和美感判斷上敏銳，適合用共識框架推進。",
-      distilled: { confidence: "高", turns: 53, traits: ["deadline 意識", "流程協調", "友善收斂"] },
-      vectors: { clarity: 64, context: 78, speed: 54, risk: 60, data: 58, warmth: 82 }
     },
     {
       id: "elly",
@@ -347,8 +335,6 @@ const GAME_DATA = {
       animal: "豬",
       star: "武曲星",
       style: "偏好結論有立場、脈絡夠完整、能回答 so what 的討論。",
-      distilled: { confidence: "高", turns: 779, traits: ["高頻提問", "脈絡整合", "行動收斂"] },
-      vectors: { clarity: 86, context: 88, speed: 66, risk: 70, data: 78, warmth: 56 }
     },
     {
       id: "emily",
@@ -365,8 +351,6 @@ const GAME_DATA = {
       animal: "狗",
       star: "廉貞星",
       style: "重視品質與穩定判斷，適合用具體案例和明確標準溝通。",
-      distilled: { confidence: "高", turns: 125, traits: ["品牌想像", "視覺語言", "教學轉譯"] },
-      vectors: { clarity: 78, context: 66, speed: 52, risk: 74, data: 72, warmth: 62 }
     },
     {
       id: "jan",
@@ -382,8 +366,6 @@ const GAME_DATA = {
       animal: "鼠",
       star: "紫微星",
       style: "能把情緒感知轉成成果導向，適合先說目標再保留彈性。",
-      distilled: { confidence: "低", turns: 12, traits: ["進度回報", "確認追問", "客戶回饋"] },
-      vectors: { clarity: 72, context: 70, speed: 62, risk: 58, data: 62, warmth: 76 }
     },
     {
       id: "jean",
@@ -399,8 +381,6 @@ const GAME_DATA = {
       animal: "馬",
       star: "七殺星",
       style: "反應快、點子多，適合用短迭代和可視化產物聚焦。",
-      distilled: { confidence: "低", turns: 12, traits: ["執行回報", "版型比較", "做工調整"] },
-      vectors: { clarity: 58, context: 56, speed: 86, risk: 42, data: 54, warmth: 66 }
     },
     {
       id: "karen",
@@ -416,8 +396,6 @@ const GAME_DATA = {
       animal: "虎",
       star: "七殺星",
       style: "能快速判斷現場可不可行，適合用決策選項和風險交換溝通。",
-      distilled: { confidence: "高", turns: 259, traits: ["現場判斷", "催動進度", "直接追問"] },
-      vectors: { clarity: 82, context: 56, speed: 74, risk: 68, data: 62, warmth: 50 }
     },
     {
       id: "rock",
@@ -433,8 +411,6 @@ const GAME_DATA = {
       animal: "馬",
       star: "天機星",
       style: "適合討論系統關係與替代方案，溝通時要給空間發散再收斂。",
-      distilled: { confidence: "低", turns: 12, traits: ["支援補位", "工具操作", "流程整理"] },
-      vectors: { clarity: 64, context: 66, speed: 76, risk: 50, data: 68, warmth: 60 }
     },
     {
       id: "rou",
@@ -450,8 +426,6 @@ const GAME_DATA = {
       animal: "兔",
       star: "貪狼星",
       style: "對人和內容氛圍敏銳，適合給舞台、方向和清楚的成功樣貌。",
-      distilled: { confidence: "低", turns: 19, traits: ["內容跟催", "語氣回報", "社群節奏"] },
-      vectors: { clarity: 66, context: 68, speed: 78, risk: 48, data: 54, warmth: 78 }
     },
     {
       id: "sixian",
@@ -467,8 +441,6 @@ const GAME_DATA = {
       animal: "馬",
       star: "太陰星",
       style: "穩定、務實、重視成果，適合用明確 deliverable 對齊。",
-      distilled: { confidence: "低", turns: 15, traits: ["支援排程", "確認召集", "短句回覆"] },
-      vectors: { clarity: 84, context: 60, speed: 58, risk: 78, data: 74, warmth: 56 }
     },
     {
       id: "tinley",
@@ -484,8 +456,6 @@ const GAME_DATA = {
       animal: "豬",
       star: "紫微星",
       style: "適合處理探索型議題，先給脈絡和判斷準則會更穩。",
-      distilled: { confidence: "中", turns: 42, traits: ["詢問可行性", "風險感知", "彈性配合"] },
-      vectors: { clarity: 68, context: 82, speed: 54, risk: 62, data: 66, warmth: 72 }
     },
     {
       id: "vanessa",
@@ -502,8 +472,6 @@ const GAME_DATA = {
       animal: "鼠",
       star: "巨門星",
       style: "擅長把自由度和現實限制拉在一起，適合討論優先級與資源取捨。",
-      distilled: { confidence: "高", turns: 87, traits: ["脈絡說明", "目的重述", "跨方協調"] },
-      vectors: { clarity: 84, context: 68, speed: 62, risk: 82, data: 70, warmth: 54 }
     },
     {
       id: "yoko",
@@ -519,8 +487,6 @@ const GAME_DATA = {
       animal: "蛇",
       star: "巨門星",
       style: "適合用明確主張和成果舞台溝通，避免只給零碎任務。",
-      distilled: { confidence: "中", turns: 71, traits: ["款式進度", "資源需求", "變更回報"] },
-      vectors: { clarity: 76, context: 54, speed: 76, risk: 58, data: 62, warmth: 62 }
     },
     {
       id: "yota",
@@ -536,8 +502,6 @@ const GAME_DATA = {
       animal: "兔",
       star: "天府星",
       style: "適合做探索與落地之間的橋接，需要清楚問題和可試驗範圍。",
-      distilled: { confidence: "中", turns: 38, traits: ["進度更新", "急件處理", "執行排程"] },
-      vectors: { clarity: 72, context: 72, speed: 72, risk: 58, data: 72, warmth: 58 }
     },
     {
       id: "celia-hsu",
@@ -547,8 +511,6 @@ const GAME_DATA = {
       orgUnit: "tech-rd",
       birthday: "待補",
       style: "開發暨技術處正式主管，3D研發中心直屬上級；適合處理研發資源、品質標準與跨部門優先級。",
-      distilled: { confidence: "中", turns: 3, traits: ["正式組織", "開發技術", "資料待補"] },
-      vectors: { clarity: 62, context: 58, speed: 58, risk: 62, data: 58, warmth: 58 }
     },
     {
       id: "jessica",
@@ -558,8 +520,6 @@ const GAME_DATA = {
       orgUnit: "pending",
       birthday: "待補",
       style: "Workshop 與 GTM 情境中的內部協作角色，適合放在活動設計、受眾定位與收斂討論。",
-      distilled: { confidence: "低", turns: 2, traits: ["workshop", "活動定位", "資料待補"] },
-      vectors: { clarity: 68, context: 76, speed: 56, risk: 62, data: 60, warmth: 70 }
     },
     {
       id: "rosa",
@@ -569,8 +529,6 @@ const GAME_DATA = {
       orgUnit: "pending",
       birthday: "待補",
       style: "Workshop 情境中出現的內部角色，先作為品牌互動與內容支援卡。",
-      distilled: { confidence: "低", turns: 1, traits: ["workshop", "內容支援", "資料待補"] },
-      vectors: { clarity: 60, context: 74, speed: 58, risk: 56, data: 56, warmth: 76 }
     },
     {
       id: "ruochen",
@@ -580,8 +538,6 @@ const GAME_DATA = {
       orgUnit: "pending",
       birthday: "待補",
       style: "與 ROU / 林芓葇不同人，先作為 Workshop project 互動與需求理解角色。",
-      distilled: { confidence: "低", turns: 2, traits: ["workshop", "project理解", "需避免同名混淆"] },
-      vectors: { clarity: 64, context: 78, speed: 54, risk: 64, data: 60, warmth: 72 }
     },
     {
       id: "hazel-lin",
@@ -591,8 +547,6 @@ const GAME_DATA = {
       orgUnit: "sales-marketing",
       birthday: "待補",
       style: "Seoul Dev Trip 內部成員，適合承接市場觀察、開發素材與款式方向整理。",
-      distilled: { confidence: "低", turns: 1, traits: ["dev trip", "市場訊號", "資料待補"] },
-      vectors: { clarity: 66, context: 78, speed: 62, risk: 58, data: 64, warmth: 66 }
     },
     {
       id: "lillian-lin",
@@ -602,8 +556,6 @@ const GAME_DATA = {
       orgUnit: "tech-rd",
       birthday: "待補",
       style: "Seoul Dev Trip 內部成員，先作為開發 brief、樣布與款式同步角色。",
-      distilled: { confidence: "低", turns: 1, traits: ["dev trip", "開發brief", "資料待補"] },
-      vectors: { clarity: 68, context: 72, speed: 60, risk: 62, data: 62, warmth: 62 }
     },
     {
       id: "maggie",
@@ -613,8 +565,6 @@ const GAME_DATA = {
       orgUnit: "pending",
       birthday: "待補",
       style: "Seoul Dev Trip 內部成員，適合協助把客戶方向轉成素材需求與下一步行動。",
-      distilled: { confidence: "低", turns: 1, traits: ["dev trip", "素材需求", "資料待補"] },
-      vectors: { clarity: 64, context: 74, speed: 64, risk: 58, data: 60, warmth: 68 }
     },
     {
       id: "erica-chang",
@@ -624,8 +574,6 @@ const GAME_DATA = {
       orgUnit: "sales-marketing",
       birthday: "待補",
       style: "DICKS 定位裁印花會議中的內部角色，適合處理 2D 定位、版型與工差風險。",
-      distilled: { confidence: "低", turns: 1, traits: ["2D定位", "供應鏈", "資料待補"] },
-      vectors: { clarity: 72, context: 58, speed: 62, risk: 78, data: 70, warmth: 52 }
     },
     {
       id: "sharon",
@@ -635,8 +583,6 @@ const GAME_DATA = {
       orgUnit: "pending",
       birthday: "待補",
       style: "DICKS 定位裁印花會議中的內部角色，先作為版型與花位交接支援卡。",
-      distilled: { confidence: "低", turns: 1, traits: ["2D定位", "花位交接", "資料待補"] },
-      vectors: { clarity: 68, context: 60, speed: 64, risk: 74, data: 68, warmth: 56 }
     },
     {
       id: "winnie",
@@ -646,8 +592,6 @@ const GAME_DATA = {
       orgUnit: "pending",
       birthday: "待補",
       style: "DICKS 定位裁印花會議中的內部角色，適合補足工廠端規格確認與量產風險視角。",
-      distilled: { confidence: "低", turns: 1, traits: ["2D定位", "量產風險", "資料待補"] },
-      vectors: { clarity: 66, context: 62, speed: 60, risk: 76, data: 70, warmth: 58 }
     },
     {
       id: "mandy-huang",
@@ -657,7 +601,6 @@ const GAME_DATA = {
       orgUnit: "general-mgmt",
       birthday: "待補",
       style: "AI 種子計畫發起者，適合啟動跨群變革、定義推動節奏與組織級授權。",
-      vectors: { clarity: 82, context: 78, speed: 64, risk: 72, data: 70, warmth: 62 }
     },
     {
       id: "tiffany-sung",
@@ -667,7 +610,6 @@ const GAME_DATA = {
       orgUnit: "sales-marketing",
       birthday: "待補",
       style: "業務行銷群最高主管，適合把客戶訊號、品牌方向與商業取捨拉回決策桌。",
-      vectors: { clarity: 84, context: 76, speed: 66, risk: 74, data: 68, warmth: 58 }
     },
     {
       id: "anne-hu",
@@ -677,7 +619,6 @@ const GAME_DATA = {
       orgUnit: "tech-rd",
       birthday: "待補",
       style: "工務處主管，負責品質、工業工程與大貨技師團隊的現場落地判斷。",
-      vectors: { clarity: 78, context: 64, speed: 70, risk: 82, data: 72, warmth: 52 }
     },
     {
       id: "benjamin-hsieh",
@@ -687,7 +628,6 @@ const GAME_DATA = {
       orgUnit: "ops-mgmt",
       birthday: "待補",
       style: "資訊處主管，適合處理系統、權限、資料治理與 AI 工具落地支援。",
-      vectors: { clarity: 76, context: 66, speed: 62, risk: 80, data: 84, warmth: 50 }
     },
     {
       id: "christine-wen",
@@ -697,7 +637,6 @@ const GAME_DATA = {
       orgUnit: "ops-mgmt",
       birthday: "待補",
       style: "財會管理處主管，適合在新產品、展會與投資議題中補上成本、預算與風險約束。",
-      vectors: { clarity: 78, context: 64, speed: 56, risk: 86, data: 82, warmth: 52 }
     },
     {
       id: "wayi-tsai",
@@ -707,7 +646,6 @@ const GAME_DATA = {
       orgUnit: "newbiz",
       birthday: "待補",
       style: "智慧紡織發展中心 lead，適合把專案線、技術題與新事業驗證接成可管理節奏。",
-      vectors: { clarity: 76, context: 72, speed: 64, risk: 70, data: 76, warmth: 58 }
     },
     {
       id: "evy-chen",
@@ -717,7 +655,6 @@ const GAME_DATA = {
       orgUnit: "tech-rd",
       birthday: "待補",
       style: "運籌處主管，適合把產銷、物流與交付限制放回任務推演。",
-      vectors: { clarity: 74, context: 68, speed: 68, risk: 76, data: 72, warmth: 54 }
     },
     {
       id: "douglas-lu",
@@ -727,7 +664,6 @@ const GAME_DATA = {
       orgUnit: "sales-marketing",
       birthday: "待補",
       style: "行銷發展處主管，適合連接商品開發、材質研發、品牌敘事與設計端客戶對口。",
-      vectors: { clarity: 82, context: 80, speed: 64, risk: 68, data: 66, warmth: 60 }
     },
     {
       id: "arthur-kuo",
@@ -737,7 +673,6 @@ const GAME_DATA = {
       orgUnit: "sales-marketing",
       birthday: "待補",
       style: "業務六處主管，適合處理廠號系列、Accessories 與業務六處跨線取捨。",
-      vectors: { clarity: 78, context: 66, speed: 66, risk: 74, data: 68, warmth: 54 }
     },
     {
       id: "teresa-hsueh",
@@ -747,7 +682,6 @@ const GAME_DATA = {
       orgUnit: "tech-rd",
       birthday: "待補",
       style: "樣品研發部 lead，適合把樣品、製版、生管與研發中心的節點串起來。",
-      vectors: { clarity: 76, context: 68, speed: 70, risk: 76, data: 70, warmth: 56 }
     },
     {
       id: "artie-yu",
@@ -757,7 +691,6 @@ const GAME_DATA = {
       orgUnit: "tech-rd",
       birthday: "待補",
       style: "特工研發中心 lead，適合處理技術開發、水洗印繡與大貨技術管理。",
-      vectors: { clarity: 74, context: 62, speed: 72, risk: 78, data: 70, warmth: 52 }
     },
     {
       id: "sylvia-chou",
@@ -767,7 +700,6 @@ const GAME_DATA = {
       orgUnit: "tech-rd",
       birthday: "待補",
       style: "估碼中心 lead，適合把報價、大貨與估碼限制納入開發節奏。",
-      vectors: { clarity: 74, context: 64, speed: 66, risk: 78, data: 74, warmth: 54 }
     },
     {
       id: "michael-song",
@@ -777,7 +709,6 @@ const GAME_DATA = {
       orgUnit: "consulting",
       birthday: "待補",
       style: "顧問室資深角色，適合補上組織記憶、制度觀點與高階風險提醒。",
-      vectors: { clarity: 82, context: 82, speed: 48, risk: 84, data: 76, warmth: 56 }
     },
     {
       id: "annie-wang",
@@ -787,7 +718,6 @@ const GAME_DATA = {
       orgUnit: "overseas",
       birthday: "待補",
       style: "海外產區總經理，適合提供產區落地、製造節奏與跨地限制。",
-      vectors: { clarity: 76, context: 76, speed: 68, risk: 78, data: 70, warmth: 58 }
     },
     {
       id: "leo-tsai",
@@ -797,7 +727,6 @@ const GAME_DATA = {
       orgUnit: "overseas",
       birthday: "待補",
       style: "海外產區與工務研發群協調角色，適合把產區現實與研發節奏接上。",
-      vectors: { clarity: 78, context: 74, speed: 68, risk: 80, data: 72, warmth: 54 }
     },
     {
       id: "karen-chou",
@@ -807,7 +736,6 @@ const GAME_DATA = {
       orgUnit: "sales-marketing",
       birthday: "待補",
       style: "業務一處主管，ATH/BR/GAP 帳戶主人，適合承接客戶優先級與正式窗口。",
-      vectors: { clarity: 82, context: 74, speed: 66, risk: 72, data: 68, warmth: 56 }
     },
     {
       id: "mandy-chen",
@@ -817,7 +745,6 @@ const GAME_DATA = {
       orgUnit: "sales-marketing",
       birthday: "待補",
       style: "MK Mandy(ON) = 陳瑋今 Mandy Chen；業務七處主管，管轄 VD/PQA for Old Navy，適合把正式客戶節點與內部準備接起來。",
-      vectors: { clarity: 82, context: 76, speed: 68, risk: 72, data: 68, warmth: 58 }
     },
     {
       id: "ivy-liao",
@@ -827,7 +754,6 @@ const GAME_DATA = {
       orgUnit: "sales-marketing",
       birthday: "待補",
       style: "業務一處 A部 lead，適合處理 BR/UA/ATH/GS/GO/IPSS 與專案整合。",
-      vectors: { clarity: 78, context: 76, speed: 68, risk: 70, data: 68, warmth: 58 }
     },
     {
       id: "erica-hsu",
@@ -837,7 +763,6 @@ const GAME_DATA = {
       orgUnit: "sales-marketing",
       birthday: "待補",
       style: "業務一處 B部 head，負責 GAP/GO Knits，適合處理客戶帳戶與開發量產整合。",
-      vectors: { clarity: 78, context: 70, speed: 68, risk: 74, data: 68, warmth: 54 }
     },
     {
       id: "ellen-chang",
@@ -847,7 +772,6 @@ const GAME_DATA = {
       orgUnit: "sales-marketing",
       birthday: "待補",
       style: "業務一處採購課 head，適合主料、副料與跨品牌採購整合。",
-      vectors: { clarity: 76, context: 66, speed: 68, risk: 80, data: 74, warmth: 52 }
     },
     {
       id: "tania-liu",
@@ -857,7 +781,6 @@ const GAME_DATA = {
       orgUnit: "sales-marketing",
       birthday: "待補",
       style: "業務二處統籌，處理 Sanmar、DKS、Calia、VRST 等業務二處主軸。",
-      vectors: { clarity: 78, context: 72, speed: 68, risk: 72, data: 68, warmth: 56 }
     },
     {
       id: "jessica-wang",
@@ -867,7 +790,6 @@ const GAME_DATA = {
       orgUnit: "sales-marketing",
       birthday: "待補",
       style: "業務二處 A部 Development lead，適合處理 DKS-Calia/VRST 與 Sanmar 開發線。",
-      vectors: { clarity: 74, context: 72, speed: 70, risk: 68, data: 66, warmth: 60 }
     },
     {
       id: "vince-hsu",
@@ -877,7 +799,6 @@ const GAME_DATA = {
       orgUnit: "sales-marketing",
       birthday: "待補",
       style: "業務二處 B部負責人，適合處理 DSG/PG/AP/Golf 帳戶與跨線協調。",
-      vectors: { clarity: 78, context: 68, speed: 68, risk: 74, data: 68, warmth: 54 }
     },
     {
       id: "cynthia-fu",
@@ -887,7 +808,6 @@ const GAME_DATA = {
       orgUnit: "sales-marketing",
       birthday: "待補",
       style: "業務三處主管，負責 NET、HLF、A&F、WMT、KOH 等多品牌全處統籌。",
-      vectors: { clarity: 80, context: 72, speed: 66, risk: 76, data: 70, warmth: 54 }
     },
     {
       id: "sasha-lai",
@@ -897,7 +817,6 @@ const GAME_DATA = {
       orgUnit: "sales-marketing",
       birthday: "待補",
       style: "業務五處主管，負責 TGT/GAP_TSD 全處統籌，適合放入 Target 相關任務。",
-      vectors: { clarity: 80, context: 72, speed: 68, risk: 74, data: 70, warmth: 56 }
     },
     {
       id: "ruo-chen",
@@ -907,7 +826,6 @@ const GAME_DATA = {
       orgUnit: "sales-marketing",
       birthday: "待補",
       style: "業務五處 A部 TGT Performance Development lead；與 3D 的 ROU 不同人。",
-      vectors: { clarity: 74, context: 70, speed: 68, risk: 72, data: 68, warmth: 58 }
     },
     {
       id: "maggie-tsai",
@@ -917,7 +835,6 @@ const GAME_DATA = {
       orgUnit: "sales-marketing",
       birthday: "待補",
       style: "業務五處 C部 Production 成員，適合放入 TGT Adult Sleepwear 與新客戶生產線情境。",
-      vectors: { clarity: 66, context: 70, speed: 66, risk: 64, data: 62, warmth: 66 }
     },
     {
       id: "emily-chak",
@@ -927,7 +844,6 @@ const GAME_DATA = {
       orgUnit: "sales-marketing",
       birthday: "待補",
       style: "橫跨執行長室聯絡與業務七處專案，適合當高層訊號與專案執行之間的轉接點。",
-      vectors: { clarity: 78, context: 80, speed: 66, risk: 70, data: 68, warmth: 60 }
     },
     {
       id: "melody-lin",
@@ -937,7 +853,6 @@ const GAME_DATA = {
       orgUnit: "sales-marketing",
       birthday: "待補",
       style: "業務七處 B部 head，兼專案管理與大貨整合，適合 SWIM/FLEECE/FR 與 Beyond Yoga 任務。",
-      vectors: { clarity: 80, context: 74, speed: 68, risk: 74, data: 70, warmth: 56 }
     },
     {
       id: "maggie-chen",
@@ -947,7 +862,6 @@ const GAME_DATA = {
       orgUnit: "sales-marketing",
       birthday: "待補",
       style: "業務七處 A部 Development 成員，適合 IPS Studiosmooth/Sleektech 開發情境。",
-      vectors: { clarity: 66, context: 70, speed: 66, risk: 64, data: 62, warmth: 66 }
     },
     {
       id: "yulia-huang",
@@ -957,7 +871,6 @@ const GAME_DATA = {
       orgUnit: "sales-marketing",
       birthday: "待補",
       style: "材質研發二課與區域型供應鏈瓜地馬拉兼任角色，適合材質、副料與區域供應鏈情境。",
-      vectors: { clarity: 76, context: 72, speed: 64, risk: 78, data: 76, warmth: 56 }
     },
     {
       id: "brian-lin",
@@ -967,7 +880,6 @@ const GAME_DATA = {
       orgUnit: "tech-rd",
       birthday: "待補",
       style: "工務管理課經理，AI 種子計畫主推者，適合把 AI 轉型變成可執行制度。",
-      vectors: { clarity: 80, context: 74, speed: 72, risk: 72, data: 78, warmth: 56 }
     },
     {
       id: "puli-yu",
@@ -977,7 +889,6 @@ const GAME_DATA = {
       orgUnit: "investment",
       birthday: "待補",
       style: "轉投資企業角色，先作為外部事業連動卡，詳細資料待補。",
-      vectors: { clarity: 60, context: 64, speed: 54, risk: 64, data: 58, warmth: 58 }
     },
     {
       id: "hongren-huang",
@@ -987,7 +898,6 @@ const GAME_DATA = {
       orgUnit: "investment",
       birthday: "待補",
       style: "轉投資企業角色，先作為外部事業連動卡，詳細資料待補。",
-      vectors: { clarity: 60, context: 64, speed: 54, risk: 64, data: 58, warmth: 58 }
     },
     {
       id: "huihui",
@@ -1003,8 +913,6 @@ const GAME_DATA = {
       animal: "待補",
       star: "待補",
       style: "目前觀察資料極少，先以保留判斷和接手風險標記為主。",
-      distilled: { confidence: "低", turns: 1, traits: ["資料稀薄", "2D 接手風險", "需直接觀察"] },
-      vectors: { clarity: 58, context: 52, speed: 50, risk: 70, data: 54, warmth: 50 }
     }
   ],
   scenarios: [
@@ -1281,5 +1189,6 @@ const GAME_DATA = {
     "金-木": "相剋：標準會修剪願景，適合做策略取捨。"
   }
 };
+
 
 

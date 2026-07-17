@@ -1806,6 +1806,7 @@ body.org-mode .org-map {
 }
 
 .org-chart-canvas {
+  cursor: grab;
   width: 100%;
   overflow-x: auto;
   overflow-y: auto;
@@ -1814,6 +1815,7 @@ body.org-mode .org-map {
 }
 
 body.org-mode .org-chart-canvas {
+  cursor: grab;
   width: 100vw;
   max-width: 100vw;
   height: 100%;
@@ -2164,3 +2166,5 @@ body.org-mode .org-focus-detail {
 .detail-block p { margin: 5px 0 0; color: #d3deec; font-size: .86rem; line-height: 1.55; }
 @media (max-width: 1180px) { .meeting-stats { grid-template-columns: repeat(3, minmax(0,1fr)); } }
 @media (max-width: 760px) { .meeting-stats, .assignment-grid, .draft-columns { grid-template-columns: 1fr; } .result-panel { min-height: 0; } }
+.org-chart-canvas.is-panning { cursor: grabbing; user-select: none; }
+

@@ -22,7 +22,7 @@ const warnings = [];
 const directory = data.orgDirectory || [];
 const units = data.orgUnits || [];
 const people = [...(data.members || []), ...(data.orgPeople || [])];
-const forbiddenPersonFields = ["distilled", "gameMove", "riskTell"];
+const forbiddenPersonFields = ["distilled", "gameMove", "riskTell", "vectors"];
 
 function duplicates(items, key, label) {
   const counts = new Map();
@@ -94,4 +94,5 @@ console.log(JSON.stringify({
 }, null, 2));
 
 if (errors.length) process.exit(1);
+
 

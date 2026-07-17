@@ -35,11 +35,14 @@
     delete person.distilled;
     delete person.gameMove;
     delete person.riskTell;
+    delete person.vectors;
   });
 
   delete GAME_DATA.distillations;
   delete GAME_DATA.peopleIntel;
   GAME_DATA.publicDataVersion = "2026-07-17-governance";
 })();
+
+
 
 
