@@ -1552,7 +1552,7 @@ function renderCapabilityMap() {
   els.capabilityMap.innerHTML = jobs.map((job) => {
     const competencyRows = Object.entries(job.competencies || {}).map(([name, level]) => `<span><b>${name}</b><i>${level}</i></span>`).join("");
     const timeRows = Object.entries(job.time || {}).slice(0, 4).map(([name, share]) => `<span>${name}<b>${share}%</b></span>`).join("");
-    return `<article class="capability-card"><div class="capability-topline"><span>${unitName(job.unit)}</span><b>${job.group}</b></div><h3>${job.title}</h3><p>${job.belongsTo}</p><div class="capability-competencies">${competencyRows}</div><div class="capability-focus">${(job.focus || []).slice(0, 4).map((item) => `<i>${item}</i>`).join("")}</div>${timeRows ? `<div class="capability-time">${timeRows}</div>` : ""}</article>`;
+    return `<article class="capability-card"><div class="capability-topline"><span>${unitName(job.unit)}</span><b>${job.group}</b></div><div class="capability-source"><span>${job.evidenceClass || "JD"}</span><small>${job.source || ""}${job.sourceVersion ? ` · ${job.sourceVersion}` : ""}</small></div><h3>${job.title}</h3><p>${job.belongsTo}</p><div class="capability-competencies">${competencyRows}</div><div class="capability-focus">${(job.focus || []).slice(0, 4).map((item) => `<i>${item}</i>`).join("")}</div>${timeRows ? `<div class="capability-time">${timeRows}</div>` : ""}</article>`;
   }).join("") || `<article class="capability-empty"><strong>此單位尚無已建檔 JD</strong><p>不以推測補齊職務能力。</p></article>`;
 }
 
@@ -1792,6 +1792,7 @@ function init() {
 }
 
 init();
+
 
 
 

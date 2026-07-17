@@ -74,6 +74,12 @@ people.forEach((person) => {
   });
 });
 
+const jobProfiles = data.jobProfiles || [];
+const sourcedJobProfiles = jobProfiles.filter((job) => job.source && job.sourceVersion).length;
+if (sourcedJobProfiles < jobProfiles.length) {
+  warnings.push(`JD profiles with source and version: ${sourcedJobProfiles}/${jobProfiles.length}`);
+}
+
 const formalDirectory = directory.filter((item) => !item.generated);
 const sourceCoverage = formalDirectory.filter((item) => item.source || item.verification).length;
 const reportingLines = people.filter((person) => person.reportsTo);
@@ -92,6 +98,7 @@ console.log(JSON.stringify({
   units: units.length,
   directories: directory.length,
   people: people.length,
+  jdSourceCoverage: `${sourcedJobProfiles}/${jobProfiles.length}`,
   formalDirectorySourceCoverage: `${sourceCoverage}/${formalDirectory.length}`,
   formalDirectorySourceVersionCoverage: `${sourceVersionCoverage}/${formalDirectory.length}`,
   reportingLineSourceCoverage: `${sourcedReportingLines}/${reportingLines.length}`,
@@ -100,6 +107,7 @@ console.log(JSON.stringify({
 }, null, 2));
 
 if (errors.length) process.exit(1);
+
 
 
 

@@ -60,6 +60,13 @@
     events: ["資訊不一致", "跨單位依賴尚未確認", "交付期限被壓縮"]
   };
 
+  GAME_DATA.jobProfiles = (GAME_DATA.jobProfiles || []).map((job) => ({
+    ...job,
+    source: job.source || "聚陽實業職務說明書資料庫",
+    sourceVersion: job.sourceVersion || "2026-05",
+    evidenceClass: "JD"
+  }));
+
   GAME_DATA.sandbox = {
     version: "2026-07-17",
     sourcePolicy: {
@@ -109,4 +116,5 @@
     mission.sandbox = { ...defaultBlueprint, ...blueprint };
   });
 })();
+
 
