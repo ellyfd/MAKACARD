@@ -1658,7 +1658,7 @@ function orgDirectoryDetail(directory, unit, people) {
   const ownMembers = orgDirectoryMembers(directory, people);
   const path = orgDirectoryPath(directory).join(" / ");
   const source = directory.source || unit?.verification || "正式組織資料";
-  return `<div class="detail-kicker">${directory.generated ? "系統推導節點" : "正式組織節點"}</div><strong>${directory.name}</strong><span>路徑：${path}</span><div class="detail-grid"><span>下層單位：${children.length}</span><span>直屬成員：${ownMembers.length}</span><span>資料來源：${source}</span></div>${directory.note ? `<div class="detail-block"><b>職掌／備註</b><p>${directory.note}</p></div>` : ""}${renderDirectoryLeads(directory)}${ownMembers.length ? `<div class="detail-block"><b>本層成員</b><p>${ownMembers.map((member) => member.name).join("、")}</p></div>` : ""}`;
+  return `<div class="detail-kicker">${directory.generated ? "系統推導節點" : "正式組織節點"}</div><strong>${directory.name}</strong><span>路徑：${path}</span><div class="detail-grid"><span>下層單位：${children.length}</span><span>直屬成員：${ownMembers.length}</span><span>資料來源：${source}</span>${directory.sourceVersion ? `<span>來源版本：${directory.sourceVersion}</span>` : ""}</div>${directory.note ? `<div class="detail-block"><b>職掌／備註</b><p>${directory.note}</p></div>` : ""}${renderDirectoryLeads(directory)}${ownMembers.length ? `<div class="detail-block"><b>本層成員</b><p>${ownMembers.map((member) => member.name).join("、")}</p></div>` : ""}`;
 }
 
 function renderPersonDetail(member) {
@@ -1670,7 +1670,8 @@ function renderPersonDetail(member) {
     ["直屬主管", manager?.name],
     ["直屬成員", reports.length ? `${reports.length} 位` : ""],
     ["生日", birth],
-    ["匯報來源", member.reportingSource]
+    ["匯報來源", member.reportingSource],
+    ["匯報版本", member.reportingSourceVersion]
   ].filter(([, value]) => !isMissingValue(value));
   const taskRoles = (sandboxData().unitRoleHints[unitFor(member)] || [])
     .map((slotId) => sandboxSlot(slotId)?.zh || slotId)
@@ -1734,6 +1735,8 @@ function init() {
 }
 
 init();
+
+
 
 
 

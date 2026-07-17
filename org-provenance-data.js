@@ -40,6 +40,10 @@
     "investment-companies": "轉投資企業組織圖202605.pdf"
   };
 
+  const sourceVersion = (source) => {
+    const match = /(20\d{2})(\d{2})/.exec(source || "");
+    return match ? `${match[1]}-${match[2]}` : "";
+  };
   const byId = new Map((GAME_DATA.orgDirectory || []).map((item) => [item.id, item]));
   const sourceFor = (item) => {
     let cursor = item;
@@ -52,7 +56,10 @@
 
   GAME_DATA.orgDirectory = (GAME_DATA.orgDirectory || [])
     .filter((item) => item.id !== "pending-members")
-    .map((item) => ({ ...item, source: item.source || sourceFor(item) }));
+    .map((item) => {
+      const source = item.source || sourceFor(item);
+      return { ...item, source, sourceVersion: item.sourceVersion || sourceVersion(source) };
+    });
 
   ["members", "orgPeople"].forEach((collection) => {
     GAME_DATA[collection] = (GAME_DATA[collection] || []).map((person) => (
@@ -72,8 +79,14 @@
       if (person.reportsTo && !person.reportingSource && reportingSourceByUnit[person.orgUnit]) {
         person.reportingSource = reportingSourceByUnit[person.orgUnit];
       }
+      if (person.reportingSource && !person.reportingSourceVersion) {
+        person.reportingSourceVersion = sourceVersion(person.reportingSource);
+      }
     });
   });})();
+
+
+
 
 
 
