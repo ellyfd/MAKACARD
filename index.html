@@ -4,15 +4,15 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>MAKACARD | Org Quest</title>
-    <link rel="stylesheet" href="styles.css?v=20260717-sandbox50">
+    <link rel="stylesheet" href="styles.css?v=20260717-talent-workbench01">
   </head>
   <body>
     <main class="app-shell">
       <header class="app-header">
         <div>
           <p class="eyebrow">MAKACARD</p>
-          <h1>Org Quest</h1>
-          <p class="intro">正式組織、人才能力與跨單位任務的數位沙盤。</p>
+          <h1>組織人材帳</h1>
+          <p class="intro">以正式組織、職務能力與任務決策紀錄，支援可追溯的管理協作。</p>
         </div>
         <div class="header-metrics" aria-label="Dataset summary">
           <span><strong id="member-count">21</strong> people</span>
@@ -21,10 +21,11 @@
       </header>
 
       <nav class="tabs" aria-label="MAKACARD views">
-        <button class="tab active" type="button" data-view="meeting">Mission Run</button>
-        <button class="tab" type="button" data-view="org">Digital Org</button>
-        <button class="tab" type="button" data-view="talent">Capability Map</button>
-        <button class="tab" type="button" data-view="lab">Draft Room</button>
+        <button class="tab active" type="button" data-view="meeting">今日任務</button>
+        <button class="tab" type="button" data-view="org">組織圖</button>
+        <button class="tab" type="button" data-view="people">人材台帳</button>
+        <button class="tab" type="button" data-view="talent">能力地圖</button>
+        <button class="tab" type="button" data-view="lab">任務台帳</button>
       </nav>
 
       <section id="meeting-view" class="view active" aria-label="Mission Run">
@@ -135,6 +136,27 @@
         </div>
       </section>
 
+
+      <section id="people-view" class="view" aria-label="Talent directory">
+        <div class="people-layout">
+          <section class="people-head panel">
+            <div>
+              <p class="label">Talent Directory</p>
+              <h2>人材台帳</h2>
+              <p>僅呈現正式任職、匯報關係、職務能力與任務席位。敏感觀察與人事資料不在公開版顯示。</p>
+            </div>
+            <div class="people-controls">
+              <label>人員<select id="people-select" aria-label="選擇人員"></select></label>
+              <label>資料範圍<select id="people-scope" aria-label="選擇資料範圍"><option value="public">P0 正式組織</option><option value="restricted" disabled>P1 內部營運（需登入）</option><option value="confidential" disabled>P2 人資機密（需核准）</option></select></label>
+            </div>
+          </section>
+          <section id="people-profile" class="person-record" aria-live="polite"></section>
+          <section class="record-guidance panel">
+            <div><span class="record-stamp">記錄原則</span><strong>每一筆管理資訊都必須有來源、版本、用途與可見範圍。</strong></div>
+            <p>公開版僅保留 P0 正式組織資料；受限資料應在登入、權限驗證與審計機制完成後才可調閱。</p>
+          </section>
+        </div>
+      </section>
       <section id="lab-view" class="view" aria-label="Draft Room">
         <div class="lab-layout">
           <section class="panel controls-panel">
@@ -181,7 +203,7 @@
     <script src="org-membership-data.js?v=20260717-membership01"></script>
     <script src="org-sandbox-data.js?v=20260717-governance51"></script>
     <script src="public-data-governance.js?v=20260717-governance51"></script>
-    <script src="game.js?v=20260717-capability01"></script>
+    <script src="game.js?v=20260717-talent-workbench01"></script>
   </body>
 </html>
 

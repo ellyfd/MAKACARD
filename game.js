@@ -43,6 +43,8 @@ const els = {
   orgZoomOut: document.querySelector("#org-zoom-out"),
   orgZoomReset: document.querySelector("#org-zoom-reset"),
   capabilityFilter: document.querySelector("#capability-filter"),
+  peopleSelect: document.querySelector("#people-select"),
+  peopleProfile: document.querySelector("#people-profile"),
   capabilitySummary: document.querySelector("#capability-summary"),
   capabilityMap: document.querySelector("#capability-map"),
   personA: document.querySelector("#person-a"),
@@ -337,6 +339,7 @@ function switchView(view) {
   els.tabs.forEach((tab) => tab.classList.toggle("active", tab.dataset.view === view));
   els.views.forEach((viewEl) => viewEl.classList.toggle("active", viewEl.id === `${view}-view`));
   if (view === "org") renderOrgMap();
+  if (view === "people") renderPeopleDirectory();
 }
 
 function renderOrgMap() {
@@ -1008,7 +1011,7 @@ function bestActionForMember(person) {
   return GAME_DATA.actionTypes
     .map((action) => ({
       action,
-      score: formalActionFit(person, action).score + (state.meeting.scenario.weights[action.vector] || 1) * 12
+      score: formalActionFit(person, action).score + (state.meeting.scenario?.weights?.[action.vector] || 1) * 12
     }))
     .sort((left, right) => right.score - left.score)[0].action;
 }
@@ -1206,12 +1209,57 @@ function fillStaticControls() {
     select.innerHTML = personSelectOptions(suggestedMemberFor(slotId));
   });
   els.scenarioSelect.value = GAME_DATA.orgMissions.some((mission) => mission.id === "gap-exec-visit") ? "gap-exec-visit" : GAME_DATA.orgMissions[0]?.id;
+  if (els.peopleSelect) {
+    const people = allOrgMembers().filter((member) => member.name).sort((a, b) => a.name.localeCompare(b.name));
+    els.peopleSelect.innerHTML = people.map((member) => `<option value="${member.id}">${member.name}${member.localName ? ` / ${member.localName}` : ""}</option>`).join("");
+    const elly = people.find((member) => member.id === "elly");
+    if (elly) els.peopleSelect.value = elly.id;
+    renderPeopleDirectory();
+  }
   if (els.capabilityFilter) {
     els.capabilityFilter.innerHTML = [`<option value="all">全部已建檔 JD</option>`, ...GAME_DATA.orgUnits.filter((unit) => (GAME_DATA.jobProfiles || []).some((job) => job.unit === unit.id)).map((unit) => `<option value="${unit.id}">${unit.name}</option>`)].join("");
     renderCapabilityMap();
   }
 }
 
+function peopleJobs(member) {
+  const text = `${member.name} ${member.localName || ""} ${member.role || ""} ${member.department || ""}`.toLowerCase();
+  return (GAME_DATA.jobProfiles || []).filter((job) => {
+    if (job.unit === unitFor(member)) return true;
+    return (job.belongsTo || "").toLowerCase().split("/").some((part) => part.trim() && text.includes(part.trim()));
+  }).slice(0, 4);
+}
+
+function renderPeopleDirectory() {
+  if (!els.peopleProfile) return;
+  const member = memberById(els.peopleSelect?.value) || allOrgMembers().find((person) => person.id === "elly") || allOrgMembers()[0];
+  if (!member) return;
+  const manager = member.reportsTo ? orgChartMembers().find((person) => person.id === member.reportsTo) : null;
+  const reports = directReportsFor(member.id);
+  const jobs = peopleJobs(member);
+  const taskRoles = (sandboxData().unitRoleHints[unitFor(member)] || []).map((slotId) => sandboxSlot(slotId)?.zh || slotId).filter(Boolean);
+  const sourceRows = [
+    ["任職來源", member.membershipSource, member.membershipSourceVersion],
+    ["匯報來源", member.reportingSource, member.reportingSourceVersion]
+  ].filter(([, source]) => !isMissingValue(source));
+  const role = [member.localName, member.role].filter((value) => !isMissingValue(value)).join(" · ") || "正式職稱未提供";
+  const jobRows = jobs.length ? jobs.map((job) => `<li><strong>${job.title}</strong><span>${job.group || "JD"} · ${job.evidenceClass || "JD"}</span></li>`).join("") : `<li class="record-empty"><strong>尚無可對應 JD</strong><span>不以推測建立能力紀錄。</span></li>`;
+  const sourceHtml = sourceRows.length ? sourceRows.map(([label, source, version]) => `<li><strong>${label}</strong><span>${source}${version ? ` · ${version}` : ""}</span></li>`).join("") : `<li class="record-empty"><strong>來源未標記</strong><span>公開版不補造資料。</span></li>`;
+  els.peopleProfile.innerHTML = `
+    <article class="person-summary">
+      <div class="person-seal">${initials(member.name)}</div>
+      <div><p class="label">P0 · Formal organization</p><h2>${member.name}</h2><p>${role}</p><div class="person-path">${member.department || unitName(unitFor(member))}</div></div>
+      <div class="record-state"><span>公開範圍</span><strong>正式資料</strong><small>${publicReleaseLine()}</small></div>
+    </article>
+    <div class="person-record-grid">
+      <section class="record-card"><p>任職關係</p><dl><div><dt>主單位</dt><dd>${member.department || unitName(unitFor(member))}</dd></div><div><dt>直屬主管</dt><dd>${manager?.name || ""}</dd></div><div><dt>直屬成員</dt><dd>${reports.length ? `${reports.length} 位` : ""}</dd></div><div><dt>生日</dt><dd>${birthdayLabel(member) || ""}</dd></div></dl></section>
+      <section class="record-card"><p>任務席位</p>${taskRoles.length ? `<ul class="record-list">${taskRoles.map((roleName) => `<li><strong>${roleName}</strong><span>依單位職掌提示</span></li>`).join("")}</ul>` : `<div class="record-empty"><strong>未建立任務席位</strong><span>不以個人特質推斷。</span></div>`}</section>
+      <section class="record-card"><p>已對應職務能力</p><ul class="record-list">${jobRows}</ul></section>
+      <section class="record-card"><p>資料來源與版本</p><ul class="record-list">${sourceHtml}</ul></section>
+    </div>
+    <section class="access-notice"><span>受限資料區</span><strong>P1 任務紀錄、P2 人資機密與 P3 原始證據須登入、用途聲明與稽核後才可調閱。</strong><button type="button" disabled>需企業登入</button></section>
+  `;
+}
 function renderScoreCard(label, value, helper) {
   const safeValue = clamp(value);
   return `<article class="score-card"><span>${label}</span><strong>${safeValue}</strong><meter min="0" max="100" value="${safeValue}"></meter><p>${helper}</p></article>`;
@@ -1554,6 +1602,7 @@ function bindEvents() {
   });
   els.scenarioSelect?.addEventListener("change", analyzePair);
   els.capabilityFilter?.addEventListener("change", renderCapabilityMap);
+  els.peopleSelect?.addEventListener("change", renderPeopleDirectory);
 }
 
 function init() {
