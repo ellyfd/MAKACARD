@@ -42,7 +42,7 @@ node scripts/validate-org-data.js
 node scripts/report-org-coverage.js
 ```
 
-驗證器會檢查組織階層、成員 ID、單位來源、公開生日格式，以及不應出現在 GitHub Pages 的私人人才情報欄位。覆蓋稽核會列出已掛組織節點、已驗證匯報來源與仍需 PDF／人令確認的部門缺口；它不會推測直屬關係。
+驗證器會檢查組織階層、成員 ID、單位來源、公開生日格式，以及不應出現在 GitHub Pages 的私人人才情報欄位；同時禁止公開 runtime 讀取舊版人格向量或會議側寫欄位。覆蓋稽核會列出已掛組織節點、已驗證匯報來源與仍需 PDF／人令確認的部門缺口；它不會推測直屬關係。
 ## 本機開啟
 
 直接在瀏覽器開啟 `index.html` 即可。
@@ -50,6 +50,7 @@ node scripts/report-org-coverage.js
 ## GitHub Pages
 
 在 repo 的 `Settings > Pages` 設定：`Deploy from a branch`，選 `main` 與 `/root`。GitHub 會發布網站。
+
 
 
 

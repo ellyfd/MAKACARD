@@ -23,6 +23,15 @@ const directory = data.orgDirectory || [];
 const units = data.orgUnits || [];
 const people = [...(data.members || []), ...(data.orgPeople || [])];
 const forbiddenPersonFields = ["distilled", "gameMove", "riskTell", "vectors"];
+const runtimeSource = fs.readFileSync(path.join(root, "game.js"), "utf8");
+const forbiddenRuntimePatterns = [
+  { label: "member.vectors", pattern: /\bmember\.vectors\b/ },
+  { label: "member.gameMove", pattern: /\bmember\.gameMove\b/ },
+  { label: "member.riskTell", pattern: /\bmember\.riskTell\b/ }
+];
+forbiddenRuntimePatterns.forEach(({ label, pattern }) => {
+  if (pattern.test(runtimeSource)) errors.push(`Public runtime reads private field: ${label}`);
+});
 
 function duplicates(items, key, label) {
   const counts = new Map();
@@ -113,6 +122,7 @@ console.log(JSON.stringify({
 }, null, 2));
 
 if (errors.length) process.exit(1);
+
 
 
 
