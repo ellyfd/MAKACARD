@@ -1760,9 +1760,23 @@ function orgDirectoryDetail(directory, unit, people) {
 function renderPersonDetail(member) {
   const manager = member.reportsTo ? orgChartMembers().find((person) => person.id === member.reportsTo) : null;
   const reports = directReportsFor(member.id);
-  const decision = /執行長|總經理|副總|處長|總監/.test(`${member.role || ""}`) ? "核准／決策範圍依正式職位確認" : /經理|副理|主管/.test(`${member.role || ""}`) ? "審核／建議範圍依正式職位確認" : "執行／輸入範圍依正式職位確認";
   const birth = birthdayLabel(member);
-  return `<div class="detail-kicker">PERSON</div><strong>${member.name}</strong><span>${[member.localName, member.role].filter((item) => !isMissingValue(item)).join(" · ")}</span><div class="detail-grid"><span>主單位：${member.department || unitName(unitFor(member))}</span><span>直屬主管：${manager?.name || ""}</span><span>直屬成員：${reports.length || ""}</span><span>生日：${birth || ""}</span></div><div class="detail-block"><b>任務定位</b><p>${(sandboxData().unitRoleHints[unitFor(member)] || []).map((slotId) => sandboxSlot(slotId)?.zh || slotId).join(" / ") || "依正式職掌判定"}</p></div><div class="detail-block"><b>決策權參考</b><p>${decision}</p></div>`;
+  const details = [
+    ["主單位", member.department || unitName(unitFor(member))],
+    ["直屬主管", manager?.name],
+    ["直屬成員", reports.length ? `${reports.length} 位` : ""],
+    ["生日", birth],
+    ["匯報來源", member.reportingSource]
+  ].filter(([, value]) => !isMissingValue(value));
+  const taskRoles = (sandboxData().unitRoleHints[unitFor(member)] || [])
+    .map((slotId) => sandboxSlot(slotId)?.zh || slotId)
+    .filter(Boolean);
+  const assignments = (member.additionalAssignments || [])
+    .filter((assignment) => assignment.department || assignment.orgUnit)
+    .map((assignment) => [assignment.department || unitName(assignment.orgUnit), assignment.role].filter((value) => !isMissingValue(value)).join(" · "));
+  const decisionRights = Array.isArray(member.decisionRights) ? member.decisionRights.filter(Boolean) : [];
+
+  return `<div class="detail-kicker">PERSON</div><strong>${member.name}</strong><span>${[member.localName, member.role].filter((item) => !isMissingValue(item)).join(" · ")}</span>${details.length ? `<div class="detail-grid">${details.map(([label, value]) => `<span>${label}：${value}</span>`).join("")}</div>` : ""}${taskRoles.length ? `<div class="detail-block"><b>任務定位</b><p>${taskRoles.join(" / ")}</p></div>` : ""}${assignments.length ? `<div class="detail-block"><b>兼任／矩陣關係</b><p>${assignments.join("；")}</p></div>` : ""}${decisionRights.length ? `<div class="detail-block"><b>正式決策權</b><p>${decisionRights.join(" / ")}</p></div>` : ""}`;
 }
 
 function bindEvents() {
