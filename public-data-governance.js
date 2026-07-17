@@ -14,6 +14,8 @@
     return /^\d{2}-\d{2}$/.test(value) ? value : "";
   };
 
+  GAME_DATA.members = (GAME_DATA.members || []).filter((person) => !person.hiddenFromOrg);
+  GAME_DATA.orgPeople = (GAME_DATA.orgPeople || []).filter((person) => !person.hiddenFromOrg);
   const people = [...(GAME_DATA.members || []), ...(GAME_DATA.orgPeople || [])];
   people.forEach((person) => {
     const birthday = normalizeBirthday(person.birthdayText || person.birthday);
@@ -39,3 +41,5 @@
   delete GAME_DATA.peopleIntel;
   GAME_DATA.publicDataVersion = "2026-07-17-governance";
 })();
+
+
