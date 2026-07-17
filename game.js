@@ -779,12 +779,13 @@ function childOrgNodes(node, people) {
   const directory = orgDirectoryById(node.deptId);
   if (!directory) return [];
   const children = orgDirectoryChildren(directory.id);
-  if (children.length) return children.map((child) => orgDirectoryNode(child, people));
-  return topLevelDirectoryMembers(directory, people).map((member) => personOrgNode(member, {
+  const directPeople = topLevelDirectoryMembers(directory, people).map((member) => personOrgNode(member, {
     unit: directory.unit,
     dept: directory.name,
     deptId: directory.id
   }));
+  const childDepartments = children.map((child) => orgDirectoryNode(child, people));
+  return [...directPeople, ...childDepartments];
 }
 
 function personOrgNode(member, context = {}) {
@@ -1791,6 +1792,7 @@ function init() {
 }
 
 init();
+
 
 
 
